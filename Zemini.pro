@@ -35,14 +35,18 @@ SOURCES += main.cpp\
     Database\Entities\AbstractFile.cpp \
     Database\Entities\Directory.cpp \
     Database\EntityManagers\DirectoryManager.cpp \
-    Database\EntityManagers\DatabaseManager.cpp \
+    Database\DatabaseManager.cpp \
     Database\EntityManagers\AbstractManager.cpp \
     # Service sources
     Services\LocalDbService.cpp \
     Services\NetworkService.cpp \
     Services\DirectoryService.cpp \
+    Tests/TestsManager.cpp \
+    Services/ServiceContainer.cpp \
+    Services/ZeminiService.cpp
 
 HEADERS  += Config\Parameters.h \
+    Config\Functions.h \
     # Controller headers
     Controllers\PreferencesForm.h \
     Controllers\RegisterForm.h \
@@ -59,13 +63,16 @@ HEADERS  += Config\Parameters.h \
     Database\EntityManagers\CategoryManager.h \
     Database\Entities\User.h \
     Database\EntityManagers\UserManager.h \
-    Database\EntityManagers\DatabaseManager.h \
+    Database\DatabaseManager.h \
     Database\EntityManagers\AbstractManager.h \
     Database\EntityManagers\FileManager.h \
     # Service headers
     Services\DirectoryService.h \
     Services\NetworkService.h \
-    Services\LocalDbService.h
+    Services\LocalDbService.h \
+    Tests/TestsManager.h \
+    Services/ServiceContainer.h \
+    Services/ZeminiService.h
 
 
 FORMS    += Views\PreferencesForm.ui \

@@ -3,7 +3,14 @@
 /***            Default constructor         ***/
 User::User()
 {
-    //Nothing to do here for now
+    this->id = 0;
+    this->familyname = "";
+    this->firstname = "";
+    this->email = "";
+    //this->dateinscription = (*(new QDateTime()));
+    this->activated = 0;
+    this->password = "";
+    this->username = "";
 }
 
 /***            Another constructor for setting up the values of the class object           ***/
@@ -13,11 +20,9 @@ User::User(QString familyname, QString firstname, QString email,QString username
     this->familyname = familyname;
     this->firstname = firstname;
     this->email = email;
-    this->phonenumber = "+229";
     this->activated = 0;
     this->password = password;
     //this->dateinscription = (*(new QDateTime()));
-    //this->roles = (*(new QList<QString>()));
     this->username = username;
 }
 
@@ -28,10 +33,9 @@ User::User(int id,QString familyname, QString firstname, QString email,QString u
     this->familyname = familyname;
     this->firstname = firstname;
     this->email = email;
-    this->phonenumber = "+229";
     this->activated = 0;
     this->password = password;
-    this->dateinscription = (*(new QDateTime()));
+    //this->dateinscription = (*(new QDateTime()));
     this->username = username;
 }
 
@@ -44,11 +48,6 @@ QString User::getFirstname()
 QString User::getFamilyname()
 {
     return this->familyname;
-}
-
-QString User::getPhonenumber()
-{
-    return this->phonenumber;
 }
 
 QString User::getEmail()
@@ -71,10 +70,12 @@ QString User::getPassword()
     return this->password;
 }
 
+/*
 QDateTime User::getDateInscription()
 {
     return this->dateinscription;
 }
+*/
 
 bool User::isActivated()
 {
@@ -90,11 +91,6 @@ void User::setFirstname(QString firstname)
 void User::setFamilyname(QString familyname)
 {
     this->familyname =familyname;
-}
-
-void User::setPhonenumber(QString phonenumber)
-{
-    this->phonenumber = phonenumber;
 }
 
 void User::setId(int id)
@@ -117,10 +113,12 @@ void User::setPassword(QString password)
     this->password = password;
 }
 
+/*
 void User::setDateInscription(QDateTime dateinscription)
 {
     this->dateinscription = dateinscription;
 }
+*/
 
 void User::setActivated(bool activated)
 {
@@ -131,6 +129,6 @@ void User::toString()
 {
     //qDebug()<< "--- user's data display ---";
     //qDebug()<< "id : " + QString::number(this->id) + ", familyname : " + this->familyname + ", firstname : " + this->firstname +
-               ", email : " + this->email + ", username : " + this->username + ", password : " + this->password +
-               ", dateinscription : " + this->dateinscription.toString() + ", phonenumber : " + this->phonenumber;
+    //           ", email : " + this->email + ", username : " + this->username + ", password : " + this->password +
+    //           ", dateinscription : " + this->dateinscription.toString() + ", phonenumber : " + this->phonenumber;
 }

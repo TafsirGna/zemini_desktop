@@ -1,6 +1,5 @@
 #include "Controllers\RegisterForm.h"
 #include "ui_RegisterForm.h"
-#include <QDesktopWidget>
 
 RegisterForm::RegisterForm(QWidget *parent, NetworkService * networkService) :
         QWidget(parent),
@@ -9,11 +8,10 @@ RegisterForm::RegisterForm(QWidget *parent, NetworkService * networkService) :
     ui->setupUi(this);
 
     // Setting the regExpr for email lineEdit
-    QRegExp emailRegExpr("^[a-zA-Z0-9._-]+@[a-zA-Z0-9._-]{2,}\\.[a-z]{2,4}$");
-    emailValidator = new QRegExpValidator(emailRegExpr, this);
+    emailValidator = new QRegExpValidator(Parameters::emailRegExpr(), this);
 
     // display the user default image on the top of the form
-    QPixmap pixmap(Parameters::devAppFolder() + "\\Resources\\Images\\user_icon.png");
+    QPixmap pixmap(Parameters::userIcon());
 
     // make a circle image
     QBitmap mask(pixmap.size());

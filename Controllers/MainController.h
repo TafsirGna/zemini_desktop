@@ -5,7 +5,6 @@
 #include <QDir>
 #include <QDebug>
 #include <QMessageBox>
-#include "Services\DirectoryService.h"
 #include <QWidget>
 #include <QFile>
 #include <QDesktopServices>
@@ -13,79 +12,68 @@
 #include <QMenu>
 #include "Controllers\PreferencesForm.h"
 #include "Controllers\RegisterForm.h"
-#include "Services\NetworkService.h"
-#include "Database\EntityManagers\DatabaseManager.h"
+#include "Database\DatabaseManager.h"
 #include "Controllers\LogInForm.h"
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
 #include "Database\EntityManagers\DirectoryManager.h"
 #include <QFileSystemWatcher>
-#include "Services\LocalDbService.h"
+#include "Services/ServiceContainer.h"
 
 class MainController : public QWidget
 {
     Q_OBJECT
 
 private:
+    // Variables
     QSystemTrayIcon * trayIcon;
-    DirectoryService * dirService;
-    QMenu * contextMenu;
     ZeminiPreferencesForm * zeminiPreferencesForm;
     RegisterForm * registerForm;
     User * m_user;
-    UserManager * userManager;
-    FileManager * fileManager;
-    DirectoryManager * dirManager;
-    TypeManager * typeManager;
-    CategoryManager * categoryManager;
-    NetworkService * networkService;
     LogInForm * logInForm;
     QSqlDatabase localDb;
-    QList<AbstractManager> listEntitiesManager;
-    QFileSystemWatcher * fsWatcher;
-    QList<QFileSystemWatcher *> fsWatchersList;
-    LocalDBService * localDbService;
+    bool firstLaunch;
+    ServiceContainer * serviceContainer;
 
-protected:
-    void initializeFSWatcher();
+
+    // Functions
+    void completeInstallation();
+    bool installationCompleted();
+    bool displayTrayIcon();
+    bool checkInitialDbData();
 
 public:
     MainController();
-    void start();
-
-    //function that create a the directory if it doesn't exist yet
-    void make_directory();
-
-    //function that create a the link to the directory in order to make it as favorite one if it doesn't exist yet
-    void make_link();
-
-    // this function start all the processes related to the application  
-
-private slots:
-    void completeInstallation();
-    bool installationCompleted();
-
-public slots:
-    void showDirectory();
-    void manageActivation(QSystemTrayIcon::ActivationReason);
-    void showPreferences();
-    void showZeminiWebSite();
+    ZeminiService * getService(QString);
+    /*
     void handleReplyUserReceived(QNetworkReply *);
     void handleUserData1(User *);
     void handleUserData2(User *);
     void backToWelcomeForm();
-    void showLogInForm();
     void handleRecoveryData(User *);
-    void handleUserDataDownloaded(QNetworkReply*);
-    void updateLocalDatabase(QFileInfoList *fileInfoList);
+    void updateLocalDatabase(QFileInfoList *);
     void updateRemoteDatabase();
     void handleEndofRequest(QNetworkReply *);
     void handleDirectoryChanges(QString path);
     void handleManagerEndofProcessing(int);
-    void addFileSystemWatcher(QFileSystemWatcher * fsWatcher);
+    void addFileSystemWatcher(QFileSystemWatcher *);
     void addFileSystemWatcher(QStringList);
+    void initializeFSWatcher();
+    */
+
+private slots:
+    void showDirectory();
     void showRegisterForm();
+    void manageActivation(QSystemTrayIcon::ActivationReason);
+    void showLogInForm();
+    //void insertInitDbData(QList<Category> * );
+    void showPreferences();
+    void showZeminiWebSite();
+
+public slots:
+    void start();
+
 };
 
 #endif // CLASSMAINCONTROLLER_H

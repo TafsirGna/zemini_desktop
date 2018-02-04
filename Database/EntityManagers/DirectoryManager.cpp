@@ -8,6 +8,7 @@ DirectoryManager::DirectoryManager() : AbstractManager()
 
 DirectoryManager::DirectoryManager(QSqlDatabase &db,TypeManager * typeManager) : AbstractManager(db)
 {
+    /*
     str_Url = Parameters::url()+"/FileDbClasses/TestDirectoryManager.php";
     this->typeManager = typeManager;
 
@@ -15,15 +16,16 @@ DirectoryManager::DirectoryManager(QSqlDatabase &db,TypeManager * typeManager) :
             this, SLOT(handleEndofRequest(QNetworkReply*)));
 
     showDatabaseDirectories();
+    */
 }
 
 DirectoryManager::DirectoryManager(QSqlDatabase &db) : AbstractManager(db)
 {
-    str_Url = Parameters::url()+"/FileDbClasses/TestDirectoryManager.php";
-    this->typeManager = new TypeManager(db);
+    //str_Url = Parameters::url()+"/FileDbClasses/TestDirectoryManager.php";
+    //this->typeManager = new TypeManager(db);
 
-    connect(this->accessManager, SIGNAL(finished(QNetworkReply*)),
-            this, SLOT(handleEndofRequest(QNetworkReply*)));
+    //connect(this->accessManager, SIGNAL(finished(QNetworkReply*)),
+    //        this, SLOT(handleEndofRequest(QNetworkReply*)));
 
     showDatabaseDirectories();
 }
@@ -31,14 +33,14 @@ DirectoryManager::DirectoryManager(QSqlDatabase &db) : AbstractManager(db)
 void DirectoryManager::saveDirectory(Directory *directory)
 {
 
-    QUrl params(str_Url+"?action=1"+    //action (1) shows we want to save updates
+    /*QUrl params(str_Url+"?action=1"+    //action (1) shows we want to save updates
                 "&filename=" + directory->getName() +
                 "&size="+ QString::number(directory->getSize())+
                 "&datecreation="+ directory->getDatecreation().toString(Parameters::timeFormat())
-                );
+                );*/
 
     //request.setHeader(QNetworkRequest::ContentTypeHeader,"application/x-www-form-urlencoded");
-    this->accessManager->get(QNetworkRequest(params));
+    //this->accessManager->get(QNetworkRequest(params));
 
 }
 
@@ -80,9 +82,11 @@ bool DirectoryManager::saveDirectoryLocally(QFileInfo *fileInfo)
 
 Directory * DirectoryManager::convertToDirectory(QFileInfo *fileInfo)
 {
+    /*
     Directory *parentDirectory = findDirectoryByPath(fileInfo->path());
     Type * type = typeManager->findTypeByName(Parameters::getTypeByPath(fileInfo->path()));
     return new Directory(fileInfo->baseName(),fileInfo->created(),fileInfo->size(),fileInfo->filePath(),2,type,parentDirectory);
+    */
 }
 
 Directory * DirectoryManager::findDirectoryByPath(QString path)
@@ -206,7 +210,7 @@ void DirectoryManager::deleteDBIrrelevantDirs()
 
 void DirectoryManager::checkDirsIntegrity()
 {
-
+    /*
     QList<Directory> dirsList = findDirectoryByIdDirectory(0);
 
     // if (dirsList == NULL) return;
@@ -218,7 +222,7 @@ void DirectoryManager::checkDirsIntegrity()
         directory.setDirectory(parentdir);
         updateDirectoryLocally(&directory);
     }
-
+    */
 }
 
 QList<Directory> DirectoryManager::findDirectoryByStatus(int status)

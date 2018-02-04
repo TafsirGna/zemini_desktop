@@ -1,22 +1,18 @@
 #include "localdbservice.h"
 
 /***        Builders        ***/
-LocalDBService::LocalDBService(QSqlDatabase db, QObject *parent) : QThread(parent)
+LocalDBService::LocalDBService()
 {
-    fileInfoList = new QFileInfoList();
-    this->db = db;
-
-    // Initializing entity managers
-    categoryManager = new CategoryManager(db);
-    typeManager = new TypeManager(db,categoryManager);
-    dirManager = new DirectoryManager(db,typeManager);
-    fileManager= new FileManager(db,typeManager,dirManager);
-    userManager = new UserManager(db);
+    userManager = NULL;
+    categoryManager = NULL;
+    typeManager = NULL;
+    fileManager = NULL;
+    directoryManager = NULL;
 }
 
 /***        Implementation of run function      ***/
-void LocalDBService::run()
-{
+//void LocalDBService::run()
+//{
     /*
     if (fileInfoList->size() == 0)
         return;
@@ -70,26 +66,7 @@ void LocalDBService::run()
 
     emit dataSavedLocally();
     */
-}
-
-void LocalDBService::terminateLocalDatabaseUpdate()
-{
-    // i check the integrity of the local database
-    dirManager->checkDirsIntegrity();
-    fileManager->checkFilesIntegrity();
-}
-
-/***        This function passes arguments from the parent object to this thread        ***/
-void LocalDBService::setArguments(QFileInfoList *fileInfoList)
-{
-    this->fileInfoList = fileInfoList;
-}
-
-void LocalDBService::setEntitiesManagers(DirectoryManager *dirManager, FileManager *fileManager)
-{
-    this->fileManager = fileManager;
-    this->dirManager = dirManager;
-}
+//}
 
 bool LocalDBService::isDbEmpty()
 {
@@ -99,7 +76,48 @@ bool LocalDBService::isDbEmpty()
     return false;
 }
 
-UserManager * LocalDBService::getUserManager()
+AbstractManager * LocalDBService::getManager(QString manager)
 {
-    return userManager;
+    if (manager == LocalDBService::USER){
+        if (userManager == NULL)
+            userManager = new UserManager();
+        return userManager;
+    }
+
+    if (manager == LocalDBService::CATEGORY){
+        if (categoryManager == NULL)
+            categoryManager = new CategoryManager();
+        return categoryManager;
+    }
+
+    if (manager == LocalDBService::TYPE){
+        if (typeManager == NULL)
+            typeManager = new TypeManager();
+        return typeManager;
+    }
+
+    if (manager == LocalDBService::DIR){
+        if (directoryManager == NULL)
+            directoryManager = new DirectoryManager();
+        return directoryManager;
+    }
+
+    if (manager == LocalDBService::FILE){
+        if (fileManager == NULL)
+            fileManager = new FileManager();
+        return fileManager;
+    }
+
+    return NULL;
+}
+
+bool LocalDBService::save(QFileInfo fileInfo)
+{
+    qDebug() << " in localDBservice save function " << endl;
+    if (fileInfo.isDir()){
+        Directory dir();
+    }
+    else if (fileInfo.isFile()){
+
+    }
 }

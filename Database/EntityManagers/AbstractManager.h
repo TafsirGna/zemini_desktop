@@ -17,12 +17,9 @@ class AbstractManager : public QObject
     Q_OBJECT
 protected:
         //  Properties
-        QNetworkAccessManager * accessManager;
-        QString str_Url;
-        bool connected;
         QSqlDatabase db;
-        int action;
         QSqlQuery * query;
+        QString queryString;
         bool busy;
 
         //  Functions
@@ -33,7 +30,6 @@ public:
     AbstractManager(QSqlDatabase &db);
     AbstractManager(const AbstractManager & absManager);
     AbstractManager & operator =(const AbstractManager & absManager);
-    bool isConnected();
 
     bool isBusy();
 

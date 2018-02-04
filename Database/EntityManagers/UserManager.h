@@ -17,13 +17,11 @@ public:
     UserManager(QSqlDatabase &db);
 
     //Prototypes of the main functions of this class
-    void saveUser(User user);
-    bool saveUserLocally(User user);
+    bool insertUser(User user);
     void updateUser(User user);
     void deleteUser(User user);
     User * getUser();
     void downloadUser(User * user);
-    void showUsersInDb();
 
 signals:
     void replyUserReceived(QNetworkReply *);
@@ -31,8 +29,8 @@ signals:
     void replyUserDownload(QNetworkReply *);
 
 public slots:
-        void handleReplyUserRequest(QNetworkReply *);
-        void handleReplyPingFinished(bool);
+        //void handleReplyUserRequest(QNetworkReply *);
+        //void handleReplyPingFinished(bool);
 };
 
 #endif // CLASSUSERMANAGER_H

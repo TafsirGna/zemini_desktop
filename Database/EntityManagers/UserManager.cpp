@@ -5,15 +5,10 @@
 UserManager::UserManager(QSqlDatabase &db): AbstractManager(db)
 {
     user = NULL;
-    //Nothing to do here for now
-    str_Url = Parameters::url()+"/UserDbClasses/TestUserManager.php";
-
-    //i make the connections between the objects of the class
-    //QWidget::connect(this,SIGNAL(replyUserFinished(QNetworkReply*)),((MainController * ) this->parent),SLOT(handleReplyUserFinished(QNetworkReply*)));
-    QWidget::connect(accessManager,SIGNAL(finished(QNetworkReply*)),this,SLOT(handleReplyUserRequest(QNetworkReply*)));
 }
 
 /***            This function allows to create or save a user into a database           ***/
+/*
 void UserManager::saveUser(User user)
 {
     //qDebug()<<"sending data";
@@ -29,14 +24,14 @@ void UserManager::saveUser(User user)
         //if the user is connected then the data on the user is sent to the server
 
         QUrl params;
-        /*
+
         params.addQueryItem("action",QString::number(1));
         params.addQueryItem("familyname",user.getFamilyname());
         params.addQueryItem("firstname",user.getFirstname());
         params.addQueryItem("email",user.getEmail());
         params.addQueryItem("username",user.getUsername());
         params.addQueryItem("password",user.getPassword());
-        */
+
 
         QUrl resource(str_Url);
         QNetworkRequest request(resource);
@@ -44,10 +39,13 @@ void UserManager::saveUser(User user)
         this->accessManager->get(QNetworkRequest(params));
     }
 }
+*/
 
-bool UserManager::saveUserLocally(User user)
+bool UserManager::insertUser(User user)
 {
-    QString request = "INSERT INTO User(id,familyname, firstname, email, username, password, dateinscription, activated) VALUES("+QString::number(user.getId())+", '"+user.getFamilyname()+"', '"+user.getFirstname()+"', '"+user.getEmail()+"','"+user.getUsername()+"','"+user.getPassword()+"','"+user.getDateInscription().toString(Parameters::timeFormat())+"',"+((user.isActivated()) ? QString::number(1) : QString::number(0))+")";
+    //QString request = "INSERT INTO User VALUES("+QString::number(user.getId())+", '"+user.getFamilyname()+"', '"+user.getFirstname()+"', '"+user.getEmail()+"','"+user.getUsername()+"','"+user.getPassword()+"','"+user.getDateInscription().toString(Parameters::timeFormat())+"',"+((user.isActivated()) ? QString::number(1) : QString::number(0))+")";
+    QString request = "INSERT INTO User VALUES("+QString::number(user.getId())+", '"+user.getFamilyname()+"', '"+user.getFirstname()+"', '"+user.getEmail()+"','"+user.getUsername()+"','"+user.getPassword()+"',"+((user.isActivated()) ? QString::number(1) : QString::number(0))+")";
+    qDebug() << request << endl;
     query->exec(request);
     if(!query->isActive()){
         qDebug()<<"Erreur insertion User: " + query->lastError().text();
@@ -68,29 +66,11 @@ void UserManager::deleteUser(User user)
 
 }
 
-void UserManager::handleReplyUserRequest(QNetworkReply * net_reply)
-{
-    switch(action)
-    {
-    case 1: //i've entered a user into tha remote database
-        emit replyUserReceived(net_reply);
-        break;
-    case 4: //i've tried to download user's informations
-        emit replyUserDownload(net_reply);
-        break;
-    }
-}
-
-void UserManager::handleReplyPingFinished(bool response)
-{
-    this->connected = response;
-}
-
 User * UserManager::getUser()
 {
     //if (user != NULL)
     //    return user;
-
+    qDebug() << "test" << endl;
     query->exec("select id,familyname, firstname, email, username, password, dateinscription, activated from user where id = 1");
     if (query->next())
     {
@@ -108,20 +88,20 @@ void UserManager::downloadUser(User *user)
 {
     //if the user is connected then the data on the user is sent to the server
 
-    this->action = 4;
+    //this->action = 4;
 
-    QUrl params(str_Url+"?action=4"+
+    /*QUrl params(str_Url+"?action=4"+
                 "&email=" + user->getEmail() +
                 "&password=" + user->getPassword() +
                 "&familyname="+ user->getFamilyname()+
                 "&firstname="+ user->getFirstname()+
                 "&username=" + user->getUsername()
-                );
+                );*/
 
     //request.setHeader(QNetworkRequest::ContentTypeHeader,"application/x-www-form-urlencoded");
-    this->accessManager->get(QNetworkRequest(params));
+    //this->accessManager->get(QNetworkRequest(params));
 }
-
+/*
 void UserManager::showUsersInDb()
 {
     query->exec("select id,familyname, firstname, email, username, password, dateinscription, activated from user");
@@ -137,5 +117,5 @@ void UserManager::showUsersInDb()
         //return user;
     }
     qDebug() << " --- end of listing ";
-}
+}*/
 

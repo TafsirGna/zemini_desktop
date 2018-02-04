@@ -8,9 +8,9 @@
 #include <QBitmap>
 #include <QLineEdit>
 #include <QRegExpValidator>
-#include <QRegExp>
 #include "Config/Parameters.h"
 #include "Services/NetworkService.h"
+#include <QDesktopWidget>
 
 namespace Ui {
     class RegisterForm;

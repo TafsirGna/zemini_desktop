@@ -11,28 +11,28 @@ FileManager::FileManager() : AbstractManager()
 
 FileManager::FileManager(QSqlDatabase &db) : AbstractManager(db)
 {
-    str_Url = Parameters::url()+"/FileDbClasses/TestFileManager.php";
+    //str_Url = Parameters::url()+"/FileDbClasses/TestFileManager.php";
 
     this->typeManager = new TypeManager(db);
     this->directoryManager = new DirectoryManager(db);
     this->filestosave = new QList<File>();
 
-    connect(this->accessManager, SIGNAL(finished(QNetworkReply*)),
-            this, SLOT(handleEndofRequest(QNetworkReply*)));
+    //connect(this->accessManager, SIGNAL(finished(QNetworkReply*)),
+            //this, SLOT(handleEndofRequest(QNetworkReply*)));
 
     //showDatabaseFiles();
 }
 
 FileManager::FileManager(QSqlDatabase &db, TypeManager * typeManager, DirectoryManager * directoryManager) : AbstractManager(db)
 {
-    str_Url = Parameters::url()+"/FileDbClasses/TestFileManager.php";
+    //str_Url = Parameters::url()+"/FileDbClasses/TestFileManager.php";
 
     this->typeManager = typeManager;
     this->directoryManager = directoryManager;
     this->filestosave = new QList<File>();
 
-    connect(this->accessManager, SIGNAL(finished(QNetworkReply*)),
-            this, SLOT(handleEndofRequest(QNetworkReply*)));
+    //connect(this->accessManager, SIGNAL(finished(QNetworkReply*)),
+    //        this, SLOT(handleEndofRequest(QNetworkReply*)));
 
     //showDatabaseFiles();
 }
@@ -40,15 +40,15 @@ FileManager::FileManager(QSqlDatabase &db, TypeManager * typeManager, DirectoryM
 /***            This function creates or if you want, saves a given instance of contenu into the database          ***/
 void FileManager::saveFile(File * file)
 {
-    QUrl params(str_Url+"?action=1"+    //action (1) shows we want to save updates
+    /*QUrl params(str_Url+"?action=1"+    //action (1) shows we want to save updates
                 "&filename=" + file->getName() +
                 "&suffix=" + file->getSuffix() +
                 "&size="+ QString::number(file->getSize())+
                 "&datecreation="+ file->getDatecreation().toString(Parameters::timeFormat())
                 );
-
+    */
     //request.setHeader(QNetworkRequest::ContentTypeHeader,"application/x-www-form-urlencoded");
-    this->accessManager->get(QNetworkRequest(params));
+    //this->accessManager->get(QNetworkRequest(params));
 
 }
 
@@ -136,10 +136,12 @@ bool FileManager::updateFileLocally(QFileInfo *fileInfo)
 
 File * FileManager::convertToFile(QFileInfo fileInfo)
 {
+    /*
     Directory * directory = directoryManager->findDirectoryByPath(fileInfo.path());
     Type * type = typeManager->findTypeByName(Parameters::getTypeByPath(fileInfo.path()));
     type->getId();
     return new File(fileInfo.baseName(),fileInfo.created(),fileInfo.size(),fileInfo.filePath(),2,type,fileInfo.suffix(),directory);
+    */
 }
 
 File * FileManager::findFileByPath(QString path)
@@ -214,6 +216,7 @@ void FileManager::deleteDBIrrelevantFiles()
 
 void FileManager::checkFilesIntegrity()
 {
+    /*
     QList<File> filesList = findFileByIdDirectory(0);
     //if (filesList == NULL) return;
     for (int i=0;i<filesList.size();i++)
@@ -223,6 +226,7 @@ void FileManager::checkFilesIntegrity()
         file.setDirectory(directory);
         updateFileLocally(&file);
     }
+    */
 }
 
 QList<File> FileManager::findFileByIdDirectory(int iddirectory)

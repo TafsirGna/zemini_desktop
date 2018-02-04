@@ -4,92 +4,41 @@
 #include <QString>
 #include <QDir>
 #include <QRegExpValidator>
+#include <QRegExp>
+#include <QSqlDatabase>
+#include <Database/DatabaseManager.h>
 
 class Parameters
 {
 public:
 
-    static QString appVersion()
-    {
-        return "1.0";
-    }
+    const static QString appVersion;
 
-    static QString webSite()
-    {
-        return "Groovieandroid.com";
-    }
+    const static QString webSite;
 
-    static QString url ()
-    {
-        return "http://192.168.56.1";
-    }
+    const static QString url;
 
-    static int networkTimerFrequency()
-    {
-        return 10000;
-    }
+    const static int networkTimerFrequency;
 
-    static QString storageDirectory()
-    {
-        return QDir().homePath()+"/Zemini";
-    }
+    const static QString storageDirectory;
 
-    static QString moviesDirectory()
-    {
-        return storageDirectory()+"/Movies";
-    }
+    const static QString setupDirectory;
 
-    static QString seriesDirectory()
-    {
-        return storageDirectory()+"/Series";
-    }
+    const static QString iconLocation;
 
-    static QString softwaresDirectory()
-    {
-        return storageDirectory()+"/Softwares";
-    }
+    const static QString devAppFolder;
 
-    static QString setupDirectory()
-    {
-        return QDir().homePath()+"/ZeminiSetup";
-    }
+    const static QString userIcon;
 
-    static QString iconLocation()
-    {
-        return Parameters::setupDirectory()+"/zemini_logo.png";
-    }
+    const static QString timeFormat;
 
-    static QString booksDirectory()
-    {
-        return storageDirectory()+"/Books";
-    }
+    const static int passwordMinLength;
 
-    static int getDirServiceSleepTime()
-    {
-        return 60;
-    }
+    const static QRegExp * emailRegExpr;
 
-    static QString timeFormat()
-    {
-        QString format = "yyyy-MM-dd hh:mm:ss";
-        return format;
-    }
+    const static QSqlDatabase * localDb;
 
-    static int passwordMinLength()
-    {
-        return 6;
-    }
-
-    static bool isEmailValid(QString email)
-    {
-        // here , i check if the email entered is valid or not after a certain regular expression
-
-        QRegExp rx("^[a-z0-9._-]+@[a-z0-9._-]{2,}\\.[a-z]{2,4}$");
-        //email = "gnatafsir@gmail.com";
-        return rx.exactMatch(email);
-
-    }
-
+    /*
     static QString getTypeByPath(QString path)
     {
         QString result = "None";
@@ -118,68 +67,28 @@ public:
         return result;
     }
 
-    /***    this creates the zemini directory if it doesn't exist yet    ***/
+    // this creates the zemini directory if it doesn't exist yet
     static void make_directories(QString rootDir)
     {
-        rootDir.replace("\\","/");
-        //QMessageBox::information(0,"path",directoryPath);
-        QDir zeminiDirectory(rootDir);
-        if (!zeminiDirectory.exists())
-        {
-            if (!zeminiDirectory.mkdir("."))
-                qDebug()<<"Error creating the main folder"<<endl;
-        }
 
-        QString programsDirPath = rootDir+"/Softwares";
-        programsDirPath.replace("\\","/");
-        QDir programsDir(programsDirPath);
-        if (!programsDir.exists())
-        {
-            if (!programsDir.mkdir("."))
-                qDebug()<<"Error creating the programs folder"<<endl;
-        }
-
-        QString gameDirPath = rootDir+"/Games";
-        gameDirPath.replace("\\","/");
-        QDir gameDir(gameDirPath);
-        if (!gameDir.exists())
-        {
-            if (!gameDir.mkdir("."))
-                qDebug()<<"Error creating the game folder"<<endl;
-        }
-
-        QString documentsDirPath = rootDir+"/Books";
-        documentsDirPath.replace("\\","/");
-        QDir documentsDir(documentsDirPath);
-        if (!documentsDir.exists())
-        {
-            if (!documentsDir.mkdir("."))
-                qDebug()<<"Error creating the books folder"<<endl;
-        }
-
-        QString moviesDirPath = rootDir+"/Movies";
-        moviesDirPath.replace("\\","/");
-        QDir moviesDir(moviesDirPath);
-        if (!moviesDir.exists())
-        {
-            if (!moviesDir.mkdir("."))
-                qDebug()<<"Error creating the movies folder"<<endl;
-        }
-
-        QString seriesDirPath = rootDir+"/Series";
-        seriesDirPath.replace("\\","/");
-        QDir seriesDir(seriesDirPath);
-        if (!seriesDir.exists())
-        {
-            if (!seriesDir.mkdir("."))
-                qDebug()<<"Error creating the series folder"<<endl;
-        }
     }
-
-    static QString devAppFolder()
-    {
-        return "C:\\Users\\Tafsir\\Documents\\QtProjects\\Zemini_desktop";
-    }
+    */
 };
+
+const QString Parameters::appVersion = "1.0";
+const QString Parameters::webSite = "Groovieandroid.com";
+const QString Parameters::url = "http://192.168.56.1/Symfony/web/desktop";
+const int Parameters::networkTimerFrequency = 10000;
+const QString Parameters::storageDirectory = QDir().homePath()+"/Zemini";
+const QString Parameters::setupDirectory = QDir().homePath()+"/ZeminiSetup";
+const QString Parameters::iconLocation = Parameters::setupDirectory+"/zemini.ico";
+const QString Parameters::devAppFolder = "C:\\Users\\Tafsir\\Documents\\QtProjects\\Zemini_desktop";
+const QString Parameters::userIcon = Parameters::devAppFolder + "\\Resources\\Images\\user_icon.png";
+const QString Parameters::timeFormat = "yyyy-MM-dd hh:mm:ss";
+const int Parameters::passwordMinLength = 6;
+const QRegExp * Parameters::emailRegExpr = new QRegExp("^[a-z0-9._-]+@[a-z0-9._-]{2,}\\.[a-z]{2,4}$");
+DatabaseManager dbManager;
+const QSqlDatabase * Parameters::localDb = dbManager.connectToDatabase("ZeminiDB", "root","localhost", 3306, "","QSQLITE", "db");
+
 
 #endif // ZEMINIPARAMETERS_H
