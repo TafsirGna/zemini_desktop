@@ -26,11 +26,10 @@ private:
         QNetworkAccessManager * networkAccessManager;
         QTimer * timer;
         bool connected;
-        QWidget * parent;
         int requestCode;
 
 public:
-        NetworkService(QWidget *);
+        NetworkService();
         bool isConnected();
         void getInitialDbData();
         void run();

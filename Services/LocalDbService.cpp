@@ -1,5 +1,11 @@
 #include "localdbservice.h"
 
+const QString LocalDBService::USER = "user";
+const QString LocalDBService::CATEGORY = "category";
+const QString LocalDBService::DIR = "directory";
+const QString LocalDBService::FILE = "file";
+const QString LocalDBService::TYPE = "type";
+
 /***        Builders        ***/
 LocalDBService::LocalDBService()
 {
@@ -70,7 +76,7 @@ LocalDBService::LocalDBService()
 
 bool LocalDBService::isDbEmpty()
 {
-    User * user = userManager->getUser();
+    User * user = getUserManager()->getUser();
     if (user == NULL)
         return true;
     return false;
@@ -79,33 +85,23 @@ bool LocalDBService::isDbEmpty()
 AbstractManager * LocalDBService::getManager(QString manager)
 {
     if (manager == LocalDBService::USER){
-        if (userManager == NULL)
-            userManager = new UserManager();
-        return userManager;
+       return getUserManager();
     }
 
     if (manager == LocalDBService::CATEGORY){
-        if (categoryManager == NULL)
-            categoryManager = new CategoryManager();
-        return categoryManager;
+       return getCategoryManager();
     }
 
     if (manager == LocalDBService::TYPE){
-        if (typeManager == NULL)
-            typeManager = new TypeManager();
-        return typeManager;
+        return getTypeManager();
     }
 
     if (manager == LocalDBService::DIR){
-        if (directoryManager == NULL)
-            directoryManager = new DirectoryManager();
-        return directoryManager;
+        return getDirectoryManager();
     }
 
     if (manager == LocalDBService::FILE){
-        if (fileManager == NULL)
-            fileManager = new FileManager();
-        return fileManager;
+        return getFileManager();
     }
 
     return NULL;
@@ -120,4 +116,44 @@ bool LocalDBService::save(QFileInfo fileInfo)
     else if (fileInfo.isFile()){
 
     }
+}
+
+bool LocalDBService::save(User * user)
+{
+    this->userManager->insertUser(*user);
+}
+
+UserManager * LocalDBService::getUserManager()
+{
+    if (userManager == NULL)
+        userManager = new UserManager();
+    return userManager;
+}
+
+CategoryManager * LocalDBService::getCategoryManager()
+{
+    if (categoryManager == NULL)
+        categoryManager = new CategoryManager();
+    return categoryManager;
+}
+
+TypeManager * LocalDBService::getTypeManager()
+{
+    if (typeManager == NULL)
+        typeManager = new TypeManager();
+    return typeManager;
+}
+
+FileManager * LocalDBService::getFileManager()
+{
+    if (fileManager == NULL)
+        fileManager = new FileManager();
+    return fileManager;
+}
+
+DirectoryManager * LocalDBService::getDirectoryManager()
+{
+    if (directoryManager == NULL)
+        directoryManager = new DirectoryManager();
+    return directoryManager;
 }

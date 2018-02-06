@@ -6,15 +6,10 @@ CategoryManager::CategoryManager() : AbstractManager()
 
 }
 
-CategoryManager::CategoryManager( QSqlDatabase &db) : AbstractManager(db)
-{
-
-}
-
 // --- implementations of functions used to retrieve category object from the local database following some given critera
 Category * CategoryManager::findCategoryById(int id)
 {
-    queryString = "select id,name from category where id = '"+QString::number(id)+"' ";
+    QString queryString = "select id,name from category where id = '"+QString::number(id)+"' ";
     query->exec(queryString);
     if (!query->isActive())
     {
@@ -30,7 +25,7 @@ Category * CategoryManager::findCategoryById(int id)
 
 bool CategoryManager::addCategory(Category category)
 {
-    queryString = "insert into Category values('"+QString::number(category.getId())+"', '"+category.getName()+"')";
+    QString queryString = "insert into Category values('"+QString::number(category.getId())+"', '"+category.getName()+"')";
     query->exec(queryString);
     return query->isActive();
 }
@@ -39,7 +34,7 @@ QList<Category> * CategoryManager::getAllCategories()
 {
     QList<Category> * categories = NULL;
 
-    queryString = "select id, name from category";
+    QString queryString = "select id, name from category";
     query->exec(queryString);
     if (!query->isActive()){
         return categories;
@@ -59,10 +54,19 @@ QList<Category> * CategoryManager::getAllCategories()
 
 Category * CategoryManager::getByName(QString name)
 {
-    queryString = "select * from Category where name = '"+name+"'";
+    QString queryString = "select * from Category where name = '"+name+"'";
     query->exec(queryString);
     if (query->next()){
         return new Category(query->value(0).toInt(), query->value(1).toString());
     }
     return NULL;
+}
+
+bool CategoryManager::isEmpty()
+{
+    QString queryString = "select count(*) from Category";
+    query->exec(queryString);
+    if(query->next() && query->value(0).toInt() == 0)
+        return true;
+    return false;
 }

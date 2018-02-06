@@ -1,0 +1,77 @@
+#ifndef FUNCTIONS_H
+#define FUNCTIONS_H
+
+#include <Database/Entities/User.h>
+#include <QVariantMap>
+#include "Config/Parameters.h"
+#include <QList>
+#include <Database/Entities/Category.h>
+
+
+class Functions
+{
+public:
+
+    /**
+     * @brief fromJsonToUser
+     * Turn a json object into a user object
+     * @param variantMap
+     * @return
+     */
+    static User * fromJsonToUser(QVariantMap variantMap)
+    {
+        User * user = new User();
+
+        user->setId(variantMap["id"].toInt());
+        //user->setFamilyname(variantMap["familyname"].toString());
+        //user->setFirstname(variantMap["firstname"].toString());
+        user->setEmail(variantMap["email"].toString());
+        user->setPassword(variantMap["password"].toString());
+        //user->setDateInscription(variantMap["dateinscription"].toString());
+        user->setUsername(variantMap["username"].toString());
+
+        return user;
+    }
+
+    /**
+     * @brief isEmailValid
+     * Check a given email validity
+     * @param email
+     * @return
+     */
+    static bool isEmailValid(QString email)
+    {
+        return true;
+    }
+
+    static QList<Category> *  fromJsonToCategories(QVariantMap variantMap)
+    {
+        QList<Category> * categories = new QList<Category>();
+        for (QVariantMap::const_iterator iter = variantMap.begin(); iter != variantMap.end(); ++iter){
+            if (iter.key() != "requestCode"){
+                Category * cat = new Category(iter.key().toInt(), iter.value().toString());
+                categories->append(*cat);
+                //qDebug() << "id : " << cat->getId() << " name : " << cat->getName()<< endl;
+            }
+        }
+        return categories;
+    }
+
+    /**
+     * @brief makeLinkToZeminiFolder
+     * Create a link to the Zemini folder
+     */
+    static void makeLinkToZeminiFolder()
+    {
+        QString dirPath= QDir().homePath()+"/Zemini";
+        dirPath.replace("\\","/");
+        QString linkPath = QDir().homePath()+"/Links/Zemini.lnk";
+        linkPath.replace("\\","/");
+        QFile dir (dirPath);
+        bool link_created = dir.link(linkPath);
+        if (!link_created)
+            qDebug("Failed to create the link");
+    }
+};
+
+#endif // FUNCTIONS_H

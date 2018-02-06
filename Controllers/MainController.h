@@ -45,6 +45,7 @@ private:
 
 public:
     MainController();
+    void start();
     ZeminiService * getService(QString);
     /*
     void handleReplyUserReceived(QNetworkReply *);
@@ -67,12 +68,14 @@ private slots:
     void showRegisterForm();
     void manageActivation(QSystemTrayIcon::ActivationReason);
     void showLogInForm();
-    //void insertInitDbData(QList<Category> * );
+    void insertInitDbData(QList<Category> * );
     void showPreferences();
     void showZeminiWebSite();
+    void setArgs(AbstractController * );
 
 public slots:
-    void start();
+    bool setUserFolder();
+
 
 };
 

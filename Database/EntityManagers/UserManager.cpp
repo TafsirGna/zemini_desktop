@@ -2,7 +2,7 @@
 #include "Controllers\MainController.h"
 
 /***            Constructors            ***/
-UserManager::UserManager(QSqlDatabase &db): AbstractManager(db)
+UserManager::UserManager(): AbstractManager()
 {
     user = NULL;
 }
@@ -70,7 +70,6 @@ User * UserManager::getUser()
 {
     //if (user != NULL)
     //    return user;
-    qDebug() << "test" << endl;
     query->exec("select id,familyname, firstname, email, username, password, dateinscription, activated from user where id = 1");
     if (query->next())
     {

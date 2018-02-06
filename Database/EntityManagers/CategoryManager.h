@@ -14,6 +14,7 @@ public:
     CategoryManager();
     CategoryManager(QSqlDatabase &db);
     Category *getByName(QString);
+    bool isEmpty();
 
     bool addCategory(Category category);
     QList<Category> * getAllCategories();

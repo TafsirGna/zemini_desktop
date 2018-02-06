@@ -6,35 +6,14 @@ FileManager::FileManager() : AbstractManager()
 {
     this->typeManager = new TypeManager();
     this->directoryManager = new DirectoryManager();
-    this->filestosave = new QList<File>();
+    //this->filestosave = new QList<File>();
 }
 
-FileManager::FileManager(QSqlDatabase &db) : AbstractManager(db)
+FileManager::FileManager(TypeManager * typeManager, DirectoryManager * directoryManager): AbstractManager()
 {
-    //str_Url = Parameters::url()+"/FileDbClasses/TestFileManager.php";
-
-    this->typeManager = new TypeManager(db);
-    this->directoryManager = new DirectoryManager(db);
-    this->filestosave = new QList<File>();
-
-    //connect(this->accessManager, SIGNAL(finished(QNetworkReply*)),
-            //this, SLOT(handleEndofRequest(QNetworkReply*)));
-
-    //showDatabaseFiles();
-}
-
-FileManager::FileManager(QSqlDatabase &db, TypeManager * typeManager, DirectoryManager * directoryManager) : AbstractManager(db)
-{
-    //str_Url = Parameters::url()+"/FileDbClasses/TestFileManager.php";
-
     this->typeManager = typeManager;
     this->directoryManager = directoryManager;
-    this->filestosave = new QList<File>();
-
-    //connect(this->accessManager, SIGNAL(finished(QNetworkReply*)),
-    //        this, SLOT(handleEndofRequest(QNetworkReply*)));
-
-    //showDatabaseFiles();
+    //this->filestosave = new QList<File>();
 }
 
 /***            This function creates or if you want, saves a given instance of contenu into the database          ***/
@@ -53,6 +32,7 @@ void FileManager::saveFile(File * file)
 }
 
 /***            here i wants to save the files into the local database          ***/
+/*
 bool FileManager::saveFileLocally(File *file)
 {
     int max_id = -1;
@@ -70,7 +50,7 @@ bool FileManager::saveFileLocally(File *file)
         max_id++;
     }
 
-    QString request = "INSERT INTO file VALUES('"+QString::number(max_id)+"',"+QString::number(file->getDirectory()->getId())+","+QString::number(file->getType()->getId())+",'"+file->getDatecreation().toString(Parameters::timeFormat())+"','"+file->getName()+"','"+file->getPath()+"','"+QString::number(file->getSize())+"','"+QString::number(file->getStatus())+"','"+file->getSuffix()+"')";
+    QString request = "INSERT INTO file VALUES('"+QString::number(max_id)+"',"+QString::number(file->getDirectory()->getId())+","+QString::number(file->getType()->getId())+",'"+file->getDatecreation().toString(Parameters::timeFormat)+"','"+file->getName()+"','"+file->getPath()+"','"+QString::number(file->getSize())+"','"+QString::number(file->getStatus())+"','"+file->getSuffix()+"')";
     //qDebug() << request;
 
     query->exec(request);
@@ -82,37 +62,9 @@ bool FileManager::saveFileLocally(File *file)
 
     return true;
 }
+*/
 
-bool FileManager::saveFileLocally(QFileInfo *fileInfo)
-{
-    File * file = convertToFile(*fileInfo);
-
-    return saveFileLocally(file);
-}
-
-/***            This function is a rewrite of the above function with a collection of Contenu objects passed as arguments           ***/
-void FileManager::saveFile(QList<File> listFiles)
-{
-    for (int i=0;i<listFiles.size();i++)
-    {
-        File file = (listFiles.at(i));
-        saveFile(&file);
-    }
-}
-
-/***            This function is a rewrite of the above function with a collection of fileInfo objects passed as arguments           ***/
-void FileManager::saveFile(QFileInfoList * filelist)
-{
-    //I convert the QFileInfoList into a QList of Contenu
-    for (int i=0;i<filelist->size();i++)
-    {
-        QFileInfo fileInfo =filelist->at(i);
-        File * file = convertToFile(fileInfo);
-
-        saveFile(file);
-    }
-}
-
+/*
 bool FileManager::updateFileLocally(File *file)
 {
     //QString request = "update file set filename = '"+file->getName()+"', size = '"+QString::number(file->getSize())+"', status = '"+QString::number(file->getStatus())+"', path = '"+file->getPath()+"', datecreation = '"+file->getDatecreation().toString(ZeminiParameters::timeFormat())+"' where id = '"+QString::number(file->getId())+"'";
@@ -133,7 +85,7 @@ bool FileManager::updateFileLocally(QFileInfo *fileInfo)
     File * file = convertToFile(*fileInfo);
     return updateFileLocally(file);
 }
-
+*/
 File * FileManager::convertToFile(QFileInfo fileInfo)
 {
     /*
@@ -144,6 +96,7 @@ File * FileManager::convertToFile(QFileInfo fileInfo)
     */
 }
 
+/*
 File * FileManager::findFileByPath(QString path)
 {
     // then if there's a directory with these specs, we retrieve the values that we need
@@ -202,7 +155,7 @@ void FileManager::handleEndofRequest(QNetworkReply* reply)
 
 }
 
-/*
+
 void FileManager::deleteDBIrrelevantFiles()
 {
     QString request = "delete from file where status = 0";
@@ -212,11 +165,11 @@ void FileManager::deleteDBIrrelevantFiles()
         qDebug()<<"Error when deleting irrelevant files";
     }
 }
-*/
+
 
 void FileManager::checkFilesIntegrity()
 {
-    /*
+
     QList<File> filesList = findFileByIdDirectory(0);
     //if (filesList == NULL) return;
     for (int i=0;i<filesList.size();i++)
@@ -226,8 +179,9 @@ void FileManager::checkFilesIntegrity()
         file.setDirectory(directory);
         updateFileLocally(&file);
     }
-    */
+
 }
+
 
 QList<File> FileManager::findFileByIdDirectory(int iddirectory)
 {
@@ -313,4 +267,5 @@ bool FileManager::deleteFileLocally(File * file)
     }
     return true;
 }
+*/
 

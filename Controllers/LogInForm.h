@@ -10,28 +10,24 @@
 #include <QBitmap>
 #include <QTimer>
 #include <QLineEdit>
-#include <Services/NetworkService.h>
 #include <QDesktopWidget>
-#include <Services/LocalDbService.h>
-#include <Services/DirectoryService.h>
+#include <Services/ServiceContainer.h>
+#include <Controllers/AbstractController.h>
 
 namespace Ui {
     class LogInForm;
 }
 
-class LogInForm : public QWidget
+class LogInForm : public QWidget, AbstractController
 {
     Q_OBJECT
 
 public:
-    explicit LogInForm(QWidget *parent = 0, NetworkService * networkService = 0, LocalDBService* localDbService = 0, DirectoryService* directoryService = 0);
+    explicit LogInForm(QWidget *parent = 0, ServiceContainer *serviceContainer = 0);
     ~LogInForm();
 
 private:
     Ui::LogInForm *ui;
-    NetworkService * networkService;
-    LocalDBService* localDbService;
-    DirectoryService* directoryService;
 
 private slots:
     void on_le_password_textChanged(QString password);
@@ -48,6 +44,8 @@ public slots:
     bool areCredentialsOk(int, User *);
 
 signals:
+    void onStart(AbstractController *);
+    void userToSave(User *);
     void userLoggedIn();
     void signUpLinkActivated();
 };

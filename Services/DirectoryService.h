@@ -23,7 +23,7 @@ private:
 protected:
 
 public:
-    DirectoryService(QObject * parent); //FolderThread's constructor
+    DirectoryService(); //FolderThread's constructor
     bool makeInitDirectories(QList<Category> *);
     void watchZeminiFolder();
     void start();

@@ -8,10 +8,10 @@ RegisterForm::RegisterForm(QWidget *parent, NetworkService * networkService) :
     ui->setupUi(this);
 
     // Setting the regExpr for email lineEdit
-    emailValidator = new QRegExpValidator(Parameters::emailRegExpr(), this);
+    emailValidator = new QRegExpValidator(*(Parameters::emailRegExpr), this);
 
     // display the user default image on the top of the form
-    QPixmap pixmap(Parameters::userIcon());
+    QPixmap pixmap(Parameters::userIcon);
 
     // make a circle image
     QBitmap mask(pixmap.size());

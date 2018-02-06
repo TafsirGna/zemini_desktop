@@ -19,6 +19,13 @@ private :
     UserManager * userManager;
     TypeManager * typeManager;
 
+    // Some getters
+    UserManager * getUserManager();
+    CategoryManager * getCategoryManager();
+    FileManager * getFileManager();
+    DirectoryManager * getDirectoryManager();
+    TypeManager * getTypeManager();
+
 protected:
 
 public:
@@ -38,14 +45,8 @@ public:
     AbstractManager * getManager(QString);
 
 public slots:
+    bool save(User *);
     bool save(QFileInfo);
 
 };
-
-const QString LocalDBService::USER = "user";
-const QString LocalDBService::CATEGORY = "category";
-const QString LocalDBService::DIR = "directory";
-const QString LocalDBService::FILE = "file";
-const QString LocalDBService::TYPE = "type";
-
 #endif // LOCALDBSERVICE_H

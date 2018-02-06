@@ -12,9 +12,9 @@ private :
     CategoryManager * categoryManager;
 public:
     TypeManager();
-    TypeManager(QSqlDatabase &db);
-    TypeManager(QSqlDatabase &db, CategoryManager * categoryManager);
+    TypeManager(CategoryManager * categoryManager);
 
+    /*
     //functions to retrieve a type object from the local database using a given critera
     Type * findTypeById(int id);
     Type * findTypeByName(QString name);
@@ -22,8 +22,8 @@ public:
     int getAllTypesSize();
     int getTypeSize(QString nameType);
     int getTypePercentage(QString nameType);
-
     Type * getDefaultType();
+    */
 };
 
 #endif // CLASSTYPEMANAGER_H

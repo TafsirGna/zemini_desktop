@@ -28,14 +28,16 @@ ZeminiPreferencesForm::ZeminiPreferencesForm(QList<AbstractManager> * listEntiti
     typeManager = (TypeManager *) &(listEntitiesManager->at(1));
     userManager = (UserManager *) &(listEntitiesManager->at(4));
     //dirManager = (DirectoryManager *) &(listEntitiesManager->at(2));
-    dirManager = new DirectoryManager(*db);
+    dirManager = new DirectoryManager();
 
     // here's the code that calculates the percentage of each type and shows it under the statistics tab
+    /*
     ui->progressBarMovies->setValue(typeManager->getTypePercentage("Movies"));
     ui->progressBarSeries->setValue(typeManager->getTypePercentage("Series"));
     ui->progressBarOthers->setValue(typeManager->getTypePercentage("Others"));
     ui->progressBarSoftwares->setValue(typeManager->getTypePercentage("Softwares"));
     ui->progressBarSongs->setValue(typeManager->getTypePercentage("Songs"));
+    */
 
     // And here, i fill the email field with user's email
     ui->le_email->setText(userManager->getUser()->getEmail());

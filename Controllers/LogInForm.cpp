@@ -1,22 +1,19 @@
 #include "Controllers\LogInForm.h"
 #include "ui_LogInForm.h"
 
-LogInForm::LogInForm(QWidget *parent, NetworkService * networkService, LocalDBService *localDbService, DirectoryService* directoryService) :
+LogInForm::LogInForm(QWidget *parent, ServiceContainer * serviceContainer) :
     QWidget(parent),
     ui(new Ui::LogInForm)
 {
     ui->setupUi(this);
 
-    // setting services
-    this->networkService = networkService;
-    this->localDbService = localDbService;
-    this->directoryService = directoryService;
+    this->serviceContainer = serviceContainer;
 
     ui->le_mail->setFocus();
     ui->le_password->setEchoMode(QLineEdit::Password);
 
     // display the user default image on the top of the form
-    QPixmap pixmap(Parameters::userIcon());
+    QPixmap pixmap(Parameters::userIcon);
 
     // make a circle image
     QBitmap mask(pixmap.size());
@@ -44,7 +41,7 @@ LogInForm::LogInForm(QWidget *parent, NetworkService * networkService, LocalDBSe
     setMaximumSize(size());
 
     // connecting signals to slots
-    connect(networkService, SIGNAL(credentialsChecked(int, User *)), this, SLOT(areCredentialsOk(int, User *)));
+    connect(((NetworkService*) this->serviceContainer->getService(ZeminiService::Network)), SIGNAL(credentialsChecked(int, User *)), this, SLOT(areCredentialsOk(int, User *)));
 }
 
 LogInForm::~LogInForm()
@@ -54,13 +51,13 @@ LogInForm::~LogInForm()
 
 void LogInForm::on_le_password_textChanged(QString )
 {
-    if (networkService->isConnected())
+    if (((NetworkService*) this->serviceContainer->getService(ZeminiService::Network))->isConnected())
         removeErrorSignes(ui->lb_password, ui->le_password);
 }
 
 void LogInForm::on_le_mail_textChanged(const QString &arg1)
 {
-    if (networkService->isConnected())
+    if (((NetworkService*) this->serviceContainer->getService(ZeminiService::Network))->isConnected())
         removeErrorSignes(ui->lb_mail, ui->le_mail);
 }
 
@@ -82,7 +79,7 @@ void LogInForm::removeErrorSignes(QLabel * label, QLineEdit * lineEdit)
 
 void LogInForm::on_bt_ok_clicked()
 {
-    if (!networkService->isConnected()){
+    if (!((NetworkService*) this->serviceContainer->getService(ZeminiService::Network))->isConnected()){
 
         ui->lb_error_text->setText("Error connexion");
         ui->lb_error_text->setVisible(true);
@@ -99,7 +96,7 @@ void LogInForm::on_bt_ok_clicked()
     }
 
     // sending a request to the server to check the credentials
-    networkService->checkCredentials(ui->le_mail->text(), ui->le_password->text());
+    ((NetworkService*) this->serviceContainer->getService(ZeminiService::Network))->checkCredentials(ui->le_mail->text(), ui->le_password->text());
 }
 
 void LogInForm::on_lb_sign_up_linkActivated(const QString &link)
@@ -109,7 +106,7 @@ void LogInForm::on_lb_sign_up_linkActivated(const QString &link)
 
 bool LogInForm::isValidEmail()
 {
-    return Parameters::emailRegExpr().exactMatch(ui->le_mail->text());
+    return Parameters::emailRegExpr->exactMatch(ui->le_mail->text());
 }
 
 bool LogInForm::areCredentialsOk(int resultCode, User * user)
@@ -128,11 +125,8 @@ bool LogInForm::areCredentialsOk(int resultCode, User * user)
     }
 
     // saving the user in the local database
-    localDbService->getUserManager()->insertUser(*user);
+    emit userToSave(user);
 
-    // making the directories following the categories
-    QList<Category> * categories = localDbService->getCategoryManager()->getAllCategories();
-    directoryService->makeInitDirectories(categories);
     emit userLoggedIn();
     this->hide();
     //TYPE* dynamic_cast<TYPE*>(object);

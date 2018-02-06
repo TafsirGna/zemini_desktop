@@ -10,14 +10,16 @@ MainController::MainController()
 
     // Initialization of all the forms
     registerForm = new RegisterForm(0);
-    logInForm = new LogInForm(0);
+    logInForm = new LogInForm(0, this->serviceContainer);
     trayIcon = new QSystemTrayIcon();
 
     //Setting connections with the child threads
     QWidget::connect(registerForm,SIGNAL(logInLinkActivated()),this,SLOT(showLogInForm()));
+    //QWidget::connect(logInForm, SIGNAL(onStart(AbstractController * )), this, SLOT(setArgs(AbstractController *)));
     QWidget::connect(logInForm, SIGNAL(signUpLinkActivated()), this, SLOT(showRegisterForm()));
+    QWidget::connect(logInForm, SIGNAL(userToSave(User*)), ((LocalDBService *)this->getService(ZeminiService::LocalDatabase)), SLOT(save(User *)));
     QWidget::connect(this->serviceContainer->getService(ZeminiService::Network), SIGNAL(initDataGot(QList<Category>*)), this, SLOT(insertInitDbData(QList<Category> *)));
-    QWidget::connect(logInForm, SIGNAL(userLoggedIn()), this, SLOT(start()));
+    QWidget::connect(logInForm, SIGNAL(userLoggedIn()), this, SLOT(setUserFolder()));
     QWidget::connect(trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),this, SLOT(manageActivation(QSystemTrayIcon::ActivationReason)));
     QWidget::connect(this->serviceContainer->getService(ZeminiService::FileSystem), SIGNAL(fileInfoToSave(QFileInfo)), this->serviceContainer->getService(ZeminiService::LocalDatabase), SLOT(save(QFileInfo)));
     //QWidget::connect(trayIcon, SIGNAL(messageClicked()), this, SLOT(showDirectory()));
@@ -42,7 +44,6 @@ void MainController::start()
         completeInstallation();
     }
     else{
-
         displayTrayIcon();
         // if the user account is not activated
         LocalDBService * localDbService = (LocalDBService *) this->getService(ZeminiService::LocalDatabase);
@@ -112,6 +113,9 @@ void MainController::showZeminiWebSite()
 /***            Once, the user installs the sofware, at the first launch he must complete the pocedure by supplying some informations           ***/
 void MainController::completeInstallation()
 {
+    if (!checkInitialDbData())
+        ((NetworkService *) this->getService(ZeminiService::Network))->getInitialDbData();
+
     ((NetworkService *) this->getService(ZeminiService::Network))->getInitialDbData();
     registerForm->show();
 }
@@ -146,11 +150,13 @@ bool MainController::installationCompleted()
 
 void MainController::insertInitDbData(QList<Category> * categories)
 {
+    LocalDBService * localDbService = (LocalDBService *) this->getService(ZeminiService::LocalDatabase);
+    CategoryManager * categoryManager = (CategoryManager *) localDbService->getManager(LocalDBService::CATEGORY);
     if (categories != NULL){
         for (int i = 0; i < categories->size(); i++){
             Category category = categories->at(i);
-            if (localDbService->getCategoryManager()->getByName(category.getName()) != NULL){
-                if (!localDbService->getCategoryManager()->addCategory(categories->at(i)))
+            if (categoryManager->getByName(category.getName()) != NULL){
+                if (!categoryManager->addCategory(categories->at(i)))
                     qDebug() << "category " << category.getName() <<" not inserted : " << endl;
                 else
                     qDebug() << "category " << category.getName() <<" inserted : " << endl;
@@ -189,4 +195,28 @@ bool MainController::displayTrayIcon()
 ZeminiService * MainController::getService(QString service)
 {
     return this->serviceContainer->getService(service);
+}
+
+bool MainController::checkInitialDbData()
+{
+    LocalDBService * localDbService = (LocalDBService *) this->getService(ZeminiService::LocalDatabase);
+    CategoryManager * categoryManager = (CategoryManager *) localDbService->getManager(LocalDBService::CATEGORY);
+    if (categoryManager->isEmpty())
+        return false;
+    return true;
+}
+
+bool MainController::setUserFolder()
+{
+    LocalDBService * localDbService = (LocalDBService *) this->getService(ZeminiService::LocalDatabase);
+    CategoryManager * categoryManager = (CategoryManager *) localDbService->getManager(LocalDBService::CATEGORY);
+
+    // making the directories following the categories
+    QList<Category> * categories = categoryManager->getAllCategories();
+    ((DirectoryService * ) this->getService(ZeminiService::FileSystem))->makeInitDirectories(categories);
+}
+
+void MainController::setArgs(AbstractController * controller)
+{
+    controller->setServiceContainer(this->serviceContainer);
 }

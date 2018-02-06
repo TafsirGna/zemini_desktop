@@ -19,10 +19,12 @@ RC_FILE = Config\zemini.rc
 
 SOURCES += main.cpp\
     #Controller sources
+    Config\Parameters.cpp \
     Controllers\MainController.cpp \
     Controllers\PreferencesForm.cpp \
     Controllers\RegisterForm.cpp \
     Controllers\LogInForm.cpp \
+    Controllers\AbstractController.cpp \
     #Database sources
     Database\Entities\User.cpp \
     Database\EntityManagers\UserManager.cpp \
@@ -52,6 +54,7 @@ HEADERS  += Config\Parameters.h \
     Controllers\RegisterForm.h \
     Controllers\LogInForm.h \
     Controllers\MainController.h \
+    Controllers\AbstractController.h \
     # Database headers
     Database\Entities\File.h \
     Database\Entities\Category.h \

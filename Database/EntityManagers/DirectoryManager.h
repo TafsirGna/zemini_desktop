@@ -19,8 +19,7 @@ protected:
 public:
     //builders
     DirectoryManager();
-    DirectoryManager(QSqlDatabase &db);
-    DirectoryManager(QSqlDatabase &db,TypeManager * typeManager);
+    DirectoryManager(TypeManager * typeManager);
 
     //functions to save directories into databases
     bool saveDirectoryLocally(Directory * directory);

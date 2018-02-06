@@ -14,7 +14,7 @@ private:
 
 public:
     //Constructors
-    UserManager(QSqlDatabase &db);
+    UserManager();
 
     //Prototypes of the main functions of this class
     bool insertUser(User user);
@@ -23,14 +23,6 @@ public:
     User * getUser();
     void downloadUser(User * user);
 
-signals:
-    void replyUserReceived(QNetworkReply *);
-    void criticalError();
-    void replyUserDownload(QNetworkReply *);
-
-public slots:
-        //void handleReplyUserRequest(QNetworkReply *);
-        //void handleReplyPingFinished(bool);
 };
 
 #endif // CLASSUSERMANAGER_H

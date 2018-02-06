@@ -1,20 +1,14 @@
 #include "Database\EntityManagers\typemanager.h"
 #include <QException>
 
-/***        Builders        ***/
-TypeManager::TypeManager() : AbstractManager()
-{
-    this->categoryManager =  new CategoryManager();
-}
-
-TypeManager::TypeManager(QSqlDatabase &db, CategoryManager * categoryManager): AbstractManager(db)
+TypeManager::TypeManager(CategoryManager * categoryManager): AbstractManager()
 {
     this->categoryManager = categoryManager;
 }
 /***        Another builder         ***/
-TypeManager::TypeManager(QSqlDatabase &db) : AbstractManager(db)
+TypeManager::TypeManager() : AbstractManager()
 {
-    this->categoryManager = new CategoryManager(db);
+    this->categoryManager = new CategoryManager();
 
     /*
     //query->exec("select idcategory,name from type where id = '"+QString::number(id)+"'");
@@ -37,6 +31,7 @@ TypeManager::TypeManager(QSqlDatabase &db) : AbstractManager(db)
 }
 
 /***        function designed to retrieve a type object from the local database     ***/
+/*
 Type * TypeManager::findTypeById(int id)
 {
     QString request = "select idcategory,name from type where id = "+QString::number(id)+"";
@@ -156,5 +151,5 @@ Type * TypeManager::getDefaultType()
     }
     return NULL;
 }
-
+*/
 

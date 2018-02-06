@@ -3,7 +3,7 @@
 #include <Services/NetworkService.h>
 
 /***    Folder's default constructor    ***/
-DirectoryService::DirectoryService(QObject *parent)
+DirectoryService::DirectoryService()
 {
     fsWatchers = new QList<QFileSystemWatcher>();
 }
@@ -16,7 +16,7 @@ void DirectoryService::start()
 void DirectoryService::watchZeminiFolder()
 {
     // i start going through all files and directories to store and track them
-    QFileInfo currentObject(Parameters::storageDirectory());
+    QFileInfo currentObject(Parameters::storageDirectory);
     QFileInfoList * queue = new QFileInfoList();
     while(true){
         qDebug() << currentObject.absoluteFilePath() << endl;
@@ -42,7 +42,7 @@ bool DirectoryService::makeInitDirectories(QList<Category> * categories)
         return false;
 
     // making the first root directory under which the others will be put
-    QString rootDir = Parameters::storageDirectory();
+    QString rootDir = Parameters::storageDirectory;
     rootDir.replace("\\","/");
     QDir zeminiDirectory(rootDir);
     if (!zeminiDirectory.exists())

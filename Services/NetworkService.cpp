@@ -1,9 +1,8 @@
 #include "NetworkService.h"
 
 /***            Constructors            ***/
-NetworkService::NetworkService(QWidget *parent)
+NetworkService::NetworkService()
 {
-    this->parent = parent;
     networkAccessManager = new QNetworkAccessManager(this);
     QObject::connect(networkAccessManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(handleRequestReply(QNetworkReply*)));
     this->connected = false;
@@ -24,7 +23,7 @@ void NetworkService::getInitialDbData()
 {
     // sending the query to get all data necessary
     requestCode = 3;
-    networkAccessManager->get(QNetworkRequest(QUrl(Parameters::url()+"/"+QString::number(requestCode)+"/categories")));
+    networkAccessManager->get(QNetworkRequest(QUrl(Parameters::url+"/"+QString::number(requestCode)+"/categories")));
 }
 
 void NetworkService::handleRequestReply(QNetworkReply * reply)
@@ -91,7 +90,7 @@ void NetworkService::handleRequestReply(QNetworkReply * reply)
 
 void NetworkService::run()
 {
-    this->timer->start(Parameters::networkTimerFrequency());
+    this->timer->start(Parameters::networkTimerFrequency);
 }
 
 void NetworkService::refreshLocalDb()
@@ -107,7 +106,7 @@ void NetworkService::checkCredentials(QString email, QString password)
 {
     requestCode = 2; // login request code
     connected = false;
-    QString address = Parameters::url()+
+    QString address = Parameters::url+
             "/login/"+QString::number(requestCode)+
             "/"+email+
             "/"+password;

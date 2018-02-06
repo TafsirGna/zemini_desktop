@@ -1,12 +1,6 @@
 #include "Database\EntityManagers\DirectoryManager.h"
 
-/***        Builders        ***/
-DirectoryManager::DirectoryManager() : AbstractManager()
-{
-    this->typeManager = new TypeManager();
-}
-
-DirectoryManager::DirectoryManager(QSqlDatabase &db,TypeManager * typeManager) : AbstractManager(db)
+DirectoryManager::DirectoryManager(TypeManager * typeManager) : AbstractManager()
 {
     /*
     str_Url = Parameters::url()+"/FileDbClasses/TestDirectoryManager.php";
@@ -19,7 +13,7 @@ DirectoryManager::DirectoryManager(QSqlDatabase &db,TypeManager * typeManager) :
     */
 }
 
-DirectoryManager::DirectoryManager(QSqlDatabase &db) : AbstractManager(db)
+DirectoryManager::DirectoryManager() : AbstractManager()
 {
     //str_Url = Parameters::url()+"/FileDbClasses/TestDirectoryManager.php";
     //this->typeManager = new TypeManager(db);
@@ -27,7 +21,7 @@ DirectoryManager::DirectoryManager(QSqlDatabase &db) : AbstractManager(db)
     //connect(this->accessManager, SIGNAL(finished(QNetworkReply*)),
     //        this, SLOT(handleEndofRequest(QNetworkReply*)));
 
-    showDatabaseDirectories();
+    //showDatabaseDirectories();
 }
 
 void DirectoryManager::saveDirectory(Directory *directory)
@@ -63,7 +57,7 @@ bool DirectoryManager::saveDirectoryLocally(Directory * directory)
         max_id++;
     }
 
-    QString requete = "INSERT INTO directory(id,idtype,datecreation, name, size,status, path, iddirectory) VALUES("+QString::number(max_id)+","+QString::number(directory->getType()->getId())+",'"+directory->getDatecreation().toString(Parameters::timeFormat())+"','"+directory->getName()+"',"+QString::number(directory->getSize())+","+QString::number(directory->getStatus())+",'"+directory->getPath()+"',"+((directory->getDirectory() == NULL) ? QString::number(0) : QString::number(directory->getDirectory()->getId()))+")";
+    QString requete = "INSERT INTO directory(id,idtype,datecreation, name, size,status, path, iddirectory) VALUES("+QString::number(max_id)+","+QString::number(directory->getType()->getId())+",'"+directory->getDatecreation().toString(Parameters::timeFormat)+"','"+directory->getName()+"',"+QString::number(directory->getSize())+","+QString::number(directory->getStatus())+",'"+directory->getPath()+"',"+((directory->getDirectory() == NULL) ? QString::number(0) : QString::number(directory->getDirectory()->getId()))+")";
     //qDebug() << requete;
     query->exec(requete);
     if(!query->isActive())
@@ -101,9 +95,11 @@ Directory * DirectoryManager::findDirectoryByPath(QString path)
 
     if (query->next())
     {
+        /*
         Type * type = typeManager->findTypeById(query->value(5).toInt());
         Directory * parentDirectory = findDirectoryById(query->value(6).toInt());
         return new Directory(query->value(0).toInt(),query->value(1).toString(), query->value(2).toDateTime(), query->value(3).toInt(),path,query->value(4).toInt(),type, parentDirectory);
+        */
     }
     else
         return NULL;
@@ -124,9 +120,11 @@ Directory * DirectoryManager::findDirectoryById(int id)
 
     if (query->next())
     {
+        /*
         Type * type = typeManager->findTypeById(query->value(5).toInt());
         Directory * parentDirectory = findDirectoryById(query->value(7).toInt()); ;
         return new Directory(query->value(0).toInt(),query->value(1).toString(), query->value(2).toDateTime(), query->value(3).toInt(),query->value(6).toString(),query->value(4).toInt(),type, parentDirectory);
+        */
     }
     else
         return NULL;
@@ -147,10 +145,12 @@ QList<Directory> DirectoryManager::findDirectoryByIdDirectory(int iddirectory)
     {
         //qDebug() << " --- query->value(5).toInt() : "+ QString::number(query->value(5).toInt());
         //if (typeManager == NULL) qDebug() << "typeManager NULL"; else qDebug() << "typeManager not NULL";
+        /*
         Type * type = typeManager->findTypeById(query->value(5).toInt());
         Directory * parentDirectory = NULL;
         Directory * directory= new Directory(query->value(0).toInt(),query->value(1).toString(), query->value(2).toDateTime(), query->value(3).toInt(),query->value(7).toString(),query->value(4).toInt(),type, parentDirectory);
         dirsList << *directory;
+        */
     }
     return dirsList;
 }
@@ -187,12 +187,13 @@ void DirectoryManager::showDatabaseDirectories()
 
     while (query->next())
     {
-
+        /*
         Type * type = typeManager->findTypeById(query->value(5).toInt());
         //qDebug() << " --- query->value(7).toInt() : " + QString::number(query->value(7).toInt());
         Directory * parentDirectory = NULL;//= findDirectoryById(query->value(7).toInt());
         Directory * directory = new Directory(query->value(0).toInt(),query->value(1).toString(), query->value(2).toDateTime(), query->value(3).toInt(),query->value(6).toString(),query->value(4).toInt(),type, parentDirectory);
         //directory->toString();
+        */
     }
 }
 
@@ -237,23 +238,23 @@ QList<Directory> DirectoryManager::findDirectoryByStatus(int status)
 
     while(query->next())
     {
+        /*
         Type * type = typeManager->findTypeById(query->value(5).toInt());
         Directory * parentDirectory = NULL;
         Directory * directory= new Directory(query->value(0).toInt(),query->value(1).toString(), query->value(2).toDateTime(), query->value(3).toInt(),query->value(7).toString(),query->value(4).toInt(),type, parentDirectory);
         dirsList << *directory;
+        */
     }
     return dirsList;
 }
 
 void DirectoryManager::saveUpdatesToRemoteDB()
 {
-    if (busy) return;
+    //if (busy) return;
 
     QList<Directory> dirsList = findDirectoryByStatus(0);
 
     if (dirsList.size() == 0) return;
-
-    busy = true;
     dirstosave = &dirsList;
 
     saveUpdateToRemoteDB();
@@ -297,8 +298,7 @@ void DirectoryManager::handleEndofRequest(QNetworkReply * reply)
 
     if (dirstosave->size() == 0)
     {
-        busy = false;
-        emit remoteUpdatesDone(3);
+        //emit remoteUpdatesDone(3);
         return;
     }
 
@@ -330,10 +330,12 @@ QList<Directory>  DirectoryManager::getAllDBDirs()
 
     while(query->next())
     {
+        /*
         Type * type = typeManager->findTypeById(query->value(5).toInt());
         Directory * parentDirectory = NULL;
         Directory * directory= new Directory(query->value(0).toInt(),query->value(1).toString(), query->value(2).toDateTime(), query->value(3).toInt(),query->value(7).toString(),query->value(4).toInt(),type, parentDirectory);
         dirsList << *directory;
+        */
     }
     return dirsList;
 }
@@ -342,7 +344,7 @@ Directory * DirectoryManager::findOtherDirectoryOnDisk()
 {
     Directory * dir = NULL;
     // then if there's a directory with these specs, we retrieve the values that we need
-    query->exec("select id,name,datecreation,size,status,idtype,iddirectory,path from directory where iddirectory = 0 and path <> '"+Parameters::storageDirectory()+"'");
+    query->exec("select id,name,datecreation,size,status,idtype,iddirectory,path from directory where iddirectory = 0 and path <> '"+Parameters::storageDirectory+"'");
     if (!query->isActive())
     {
         qDebug()<<"Error when selecting directory : " + query->lastError().text();
@@ -351,9 +353,11 @@ Directory * DirectoryManager::findOtherDirectoryOnDisk()
 
     if (query->next())
     {
+        /*
         Type * type = typeManager->findTypeById(query->value(5).toInt());
         Directory * parentDirectory = NULL;
         dir= new Directory(query->value(0).toInt(),query->value(1).toString(), query->value(2).toDateTime(), query->value(3).toInt(),query->value(7).toString(),query->value(4).toInt(),type, parentDirectory);
+        */
     }
     return dir;
 }
