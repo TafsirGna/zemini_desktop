@@ -6,11 +6,11 @@ Type::Type()
 
 }
 
-Type::Type(int id, QString name, Category *category)
+Type::Type(int id, QString name, QString suffix)
 {
     this->id = id;
     this->name = name;
-    this->category = category;
+    this->suffix = suffix;
 }
 
 //---   Setters
@@ -24,9 +24,9 @@ void Type::setName(QString name)
     this->name = name;
 }
 
-void Type::setCategory(Category *category)
+void Type::setSuffix(QString suffix)
 {
-    this->category = category;
+    this->suffix = suffix;
 }
 
 //---   Getters
@@ -40,7 +40,7 @@ QString Type::getName()
     return this->name;
 }
 
-Category * Type::getCategory()
+QString Type::getSuffix()
 {
-    return this->category;
+    return this->suffix;
 }

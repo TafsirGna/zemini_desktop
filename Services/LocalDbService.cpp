@@ -13,7 +13,6 @@ LocalDBService::LocalDBService()
     categoryManager = NULL;
     typeManager = NULL;
     fileManager = NULL;
-    directoryManager = NULL;
 }
 
 /***        Implementation of run function      ***/
@@ -96,10 +95,6 @@ AbstractManager * LocalDBService::getManager(QString manager)
         return getTypeManager();
     }
 
-    if (manager == LocalDBService::DIR){
-        return getDirectoryManager();
-    }
-
     if (manager == LocalDBService::FILE){
         return getFileManager();
     }
@@ -109,18 +104,22 @@ AbstractManager * LocalDBService::getManager(QString manager)
 
 bool LocalDBService::save(QFileInfo fileInfo)
 {
-    qDebug() << " in localDBservice save function " << endl;
+    //qDebug() << " in localDBservice save function " << endl;
     if (fileInfo.isDir()){
-        Directory dir();
+        //Directory *dir = new Directory();
+        return false;//save(dir);
     }
     else if (fileInfo.isFile()){
-
+        File *file = new File();
+        return save(file);
     }
+    return false;
 }
 
 bool LocalDBService::save(User * user)
 {
     this->userManager->insertUser(*user);
+
 }
 
 UserManager * LocalDBService::getUserManager()
@@ -151,9 +150,27 @@ FileManager * LocalDBService::getFileManager()
     return fileManager;
 }
 
-DirectoryManager * LocalDBService::getDirectoryManager()
+bool LocalDBService::save(File *file)
 {
-    if (directoryManager == NULL)
-        directoryManager = new DirectoryManager();
-    return directoryManager;
+    return getFileManager()->saveFile(file);
+}
+
+void LocalDBService::updateDirContent(QDir dir)
+{
+    getFileManager()->cleanDirFile(dir);
+}
+
+bool LocalDBService::deleteDir(QDir dir)
+{
+    return false;//getDirectoryManager()->deleteDirectory(directory);
+}
+
+void LocalDBService::startBackingUp()
+{
+    // Backing up all files
+    QList<File> notSavedFiles = getFileManager()->getNotSavedFiles();
+    int size = notSavedFiles.size();
+    for(int i = 0; i < size; i++){
+        emit fileToSend(notSavedFiles.at(i));
+    }
 }

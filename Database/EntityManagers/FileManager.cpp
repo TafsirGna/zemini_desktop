@@ -5,19 +5,17 @@
 FileManager::FileManager() : AbstractManager()
 {
     this->typeManager = new TypeManager();
-    this->directoryManager = new DirectoryManager();
     //this->filestosave = new QList<File>();
 }
 
-FileManager::FileManager(TypeManager * typeManager, DirectoryManager * directoryManager): AbstractManager()
+FileManager::FileManager(TypeManager * typeManager): AbstractManager()
 {
     this->typeManager = typeManager;
-    this->directoryManager = directoryManager;
     //this->filestosave = new QList<File>();
 }
 
 /***            This function creates or if you want, saves a given instance of contenu into the database          ***/
-void FileManager::saveFile(File * file)
+bool FileManager::saveFile(File * file)
 {
     /*QUrl params(str_Url+"?action=1"+    //action (1) shows we want to save updates
                 "&filename=" + file->getName() +
@@ -29,6 +27,53 @@ void FileManager::saveFile(File * file)
     //request.setHeader(QNetworkRequest::ContentTypeHeader,"application/x-www-form-urlencoded");
     //this->accessManager->get(QNetworkRequest(params));
 
+}
+
+bool FileManager::cleanDirFile(QDir dir)
+{
+    QString request = "delete from File where iddirectory = (select id from Directory where path = '"+dir.absolutePath()+"')";
+    query->exec(request);
+    if(!query->isActive()){
+        qDebug()<<"Cleaning dir's files : " + query->lastError().text();
+        return false;
+    }
+    return true;
+}
+
+QList<File> FileManager::getAllFiles()
+{
+    QList<File> files;
+    /*
+    query->exec("select id,filename, datecreation, size, saved, idtype, suffix, iddirectory from file where path = '"+path+"' ");
+    if (!query->isActive())
+        qDebug()<<"Error when selecting files : " + query->lastError().text();
+
+    if (query->next())
+    {
+        Type * type = typeManager->findTypeById(query->value(5).toInt());
+        Directory * directory = directoryManager->findDirectoryById(query->value(7).toInt());
+        return new File(query->value(0).toInt(),query->value(1).toString(), query->value(2).toDateTime(), query->value(3).toInt(),path,query->value(4).toInt(),type, query->value(6).toString(), directory);
+    }
+    */
+    return files;
+}
+
+QList<File> FileManager::getNotSavedFiles()
+{
+    QList<File> files;
+    /*
+    query->exec("select id,filename, datecreation, size, saved, idtype, suffix, iddirectory from file where path = '"+path+"' ");
+    if (!query->isActive())
+        qDebug()<<"Error when selecting files : " + query->lastError().text();
+
+    if (query->next())
+    {
+        Type * type = typeManager->findTypeById(query->value(5).toInt());
+        Directory * directory = directoryManager->findDirectoryById(query->value(7).toInt());
+        return new File(query->value(0).toInt(),query->value(1).toString(), query->value(2).toDateTime(), query->value(3).toInt(),path,query->value(4).toInt(),type, query->value(6).toString(), directory);
+    }
+    */
+    return files;
 }
 
 /***            here i wants to save the files into the local database          ***/
@@ -96,176 +141,5 @@ File * FileManager::convertToFile(QFileInfo fileInfo)
     */
 }
 
-/*
-File * FileManager::findFileByPath(QString path)
-{
-    // then if there's a directory with these specs, we retrieve the values that we need
-    query->exec("select id,filename, datecreation, size, status, idtype, suffix, iddirectory from file where file.path = '"+path+"' ");
-    if (!query->isActive())
-    {
-        qDebug()<<"Error when selecting a file : " + query->lastError().text();
-        return NULL;
-    }
 
-    if (query->next())
-    {
-        //qDebug() << query->value(5).toInt();
-        Type * type = typeManager->findTypeById(query->value(5).toInt());
-        Directory * directory = directoryManager->findDirectoryById(query->value(7).toInt());
-        return new File(query->value(0).toInt(),query->value(1).toString(), query->value(2).toDateTime(), query->value(3).toInt(),path,query->value(4).toInt(),type, query->value(6).toString(), directory);
-    }
-    else
-        return NULL;
-}
-
-void FileManager::showDatabaseFiles()
-{
-    // then if there's a directory with these specs, we retrieve the values that we need
-    query->exec("select id,filename, datecreation, size, status, idtype, suffix, iddirectory,path from file");
-    if (!query->isActive())
-    {
-        qDebug()<<"Error when selecting a file : " + query->lastError().text();
-    }
-    //qDebug() << "yes";
-    while (query->next())
-    {
-
-        Type * type = typeManager->findTypeById(query->value(5).toInt());
-        Directory * directory = directoryManager->findDirectoryById(query->value(7).toInt());
-        File * file = new File(query->value(0).toInt(),query->value(1).toString(), query->value(2).toDateTime(), query->value(3).toInt(),query->value(8).toString(),query->value(4).toInt(),type, query->value(6).toString(), directory);
-        file->toString();
-    }
-}
-
-void FileManager::handleEndofRequest(QNetworkReply* reply)
-{
-    if (reply->error() != QNetworkReply::NoError)
-        deleteFileLocally(currentfile);
-
-    filestosave->pop_back();
-
-    if (filestosave->size() == 0)
-    {
-
-        busy = false;
-        emit remoteUpdatesDone(4);
-        return;
-    }
-    saveUpdateToRemoteDB();
-
-}
-
-
-void FileManager::deleteDBIrrelevantFiles()
-{
-    QString request = "delete from file where status = 0";
-    query->exec(request);
-    if (!query->isActive())
-    {
-        qDebug()<<"Error when deleting irrelevant files";
-    }
-}
-
-
-void FileManager::checkFilesIntegrity()
-{
-
-    QList<File> filesList = findFileByIdDirectory(0);
-    //if (filesList == NULL) return;
-    for (int i=0;i<filesList.size();i++)
-    {
-        File file = filesList.at(i);
-        Directory * directory = directoryManager->findDirectoryByPath(Parameters::getParentDirPath(file.getPath()));
-        file.setDirectory(directory);
-        updateFileLocally(&file);
-    }
-
-}
-
-
-QList<File> FileManager::findFileByIdDirectory(int iddirectory)
-{
-    QList<File> filesList;
-    // then if there's a directory with these specs, we retrieve the values that we need
-    query->exec("select id,filename, datecreation, size, status, idtype, suffix, iddirectory,path from file where iddirectory = "+QString::number(iddirectory)+" ");
-    if (!query->isActive())
-    {
-        qDebug()<<"Error when selecting a file : " + query->lastError().text();
-        return filesList;
-    }
-
-    while(query->next())
-    {
-        Type * type = typeManager->findTypeById(query->value(5).toInt());
-        Directory * directory = directoryManager->findDirectoryById(query->value(7).toInt());
-        filesList << *(new File(query->value(0).toInt(),query->value(1).toString(), query->value(2).toDateTime(), query->value(3).toInt(),query->value(8).toString(),query->value(4).toInt(),type, query->value(6).toString(), directory));
-    }
-    return filesList;
-}
-
-QList<File> FileManager::findFileByStatus(int status)
-{
-    QList<File> filesList;
-    // then if there's a directory with these specs, we retrieve the values that we need
-    query->exec("select id,filename, datecreation, size, status, idtype, suffix, iddirectory,path from file where status = "+QString::number(status)+" ");
-    if (!query->isActive())
-    {
-        qDebug()<<"Error when selecting a file : " + query->lastError().text();
-        //return NULL;
-    }
-
-    while(query->next())
-    {
-        Type * type = typeManager->findTypeById(query->value(5).toInt());
-        Directory * directory = directoryManager->findDirectoryById(query->value(7).toInt());
-        filesList << *(new File(query->value(0).toInt(),query->value(1).toString(), query->value(2).toDateTime(), query->value(3).toInt(),query->value(8).toString(),query->value(4).toInt(),type, query->value(6).toString(), directory));
-    }
-    return filesList;
-}
-
-void FileManager::saveUpdatesToRemoteDB()
-{
-    if (busy) return;
-
-    QList<File> filesList = findFileByStatus(0);
-
-    //if (filesList == NULL) return ;
-    if (filesList.size() == 0) return;
-
-
-    this->busy = true;
-
-    filestosave = &filesList;
-
-    saveUpdateToRemoteDB();
-
-}
-
-void FileManager::saveUpdateToRemoteDB()
-{
-    //currentfile = (File *) &filestosave->at(0);
-    currentfile = (File *) &(filestosave->back());
-    saveFile(currentfile);
-}
-
-void FileManager::resetDatabaseFiles()
-{
-    query->exec("update file set status = 0");
-    if(!query->isActive())
-        qDebug()<<"Error when reseting the local database files : " + query->lastError().text();
-}
-
-bool FileManager::deleteFileLocally(File * file)
-{
-    QString request = "delete from file where file.path = '"+file->getPath()+"'";
-    //qDebug() << request;
-    query->exec(request);
-    if(!query->isActive())
-    {
-        qDebug()<<"Error when deleting file : " + query->lastError().text();
-        return false;
-    }
-    return true;
-}
-*/
 

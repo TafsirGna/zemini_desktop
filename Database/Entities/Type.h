@@ -2,7 +2,6 @@
 #define CLASSTYPE_H
 
 #include <QString>
-#include "Database\Entities\Category.h"
 
 class Type
 {
@@ -10,24 +9,24 @@ private:
     //Class' properties
     int id;
     QString name;
-    Category * category;
+    QString suffix;
 
 
 public:
 
     //Builders
     Type();
-    Type(int id, QString name, Category * category);
+    Type(int, QString, QString);
 
     //Getters
     int getId();
     QString getName();
-    Category * getCategory();
+    QString getSuffix();
 
     //Setters
     void setId(int id);
-    void setName(QString name);
-    void setCategory(Category * category);
+    void setName(QString);
+    void setSuffix(QString);
 };
 
 

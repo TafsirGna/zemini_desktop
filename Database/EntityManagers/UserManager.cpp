@@ -51,6 +51,7 @@ bool UserManager::insertUser(User user)
         qDebug()<<"Erreur insertion User: " + query->lastError().text();
         return false;
     }
+    qDebug()<<"Success inserting User: " + query->lastError().text();
     return true;
 }
 
@@ -68,12 +69,9 @@ void UserManager::deleteUser(User user)
 
 User * UserManager::getUser()
 {
-    //if (user != NULL)
-    //    return user;
-    query->exec("select id,familyname, firstname, email, username, password, dateinscription, activated from user where id = 1");
-    if (query->next())
-    {
-        //qDebug() << "a user 's here !";
+    // TODO : Test that the request has been executed as expected
+    query->exec("select id,familyname, firstname, email, username, password, activated from user where id = 1");
+    if (query->next()){
         User * user = new User(query->value(0).toInt(),query->value(1).toString(),
                                query->value(2).toString(),query->value(3).toString(),
                                query->value(4).toString(),query->value(5).toString());

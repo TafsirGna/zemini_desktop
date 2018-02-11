@@ -3,34 +3,57 @@
 
 #include <QString>
 #include <QDateTime>
-#include "Database\Entities\User.h"
-#include "Database\Entities\Type.h"
-#include "Database\Entities\AbstractFile.h"
-#include "Database\Entities\Directory.h"
+#include "Database/Entities/Type.h"
+#include "Database/Entities/Category.h"
 #include <QDebug>
+
 using namespace std;
 
-class File : public AbstractFile
+class File
 {
 private:
-    QString suffix;
-    Directory * directory;
+    int id;
+    QDateTime creationTime;
+    QDateTime updateTime;
+    QString path;
+    QString fileName;
+    int size;
+    bool saved;
+    Type * type;
+    Category * category;
+    File * folder;
 
 public:
     //Constructors
     File();
-    File(QString filename, QDateTime datecreation, int size, QString path, int status, Type * type, QString suffix, Directory * directory);
-    File(int id, QString filename, QDateTime datecreation, int size, QString path, int status, Type * type, QString suffix, Directory *directory);
+    File(int id, QString fileName, QString path, QDateTime creationTime, QDateTime updateTime, int size, bool saved, Type * type, Category * category, File * folder);
     File(const File & file);
     File & operator =(const File & file);
 
     //Getters
-    QString getSuffix();
-    Directory * getDirectory();
+    int getId();
+    QString getPath();
+    QString getFileName();
+    bool isSaved();
+    QDateTime getUpdateTime();
+    QDateTime getCreationTime();
+    Category * getCategory();
+    Type * getType();
+    File * getFolder();
+    int getSize();
 
     //Setters
-    void setSuffix(QString suffix);
-    void setDirectory(Directory * directory);
+    void setId(int id);
+    void setPath(QString path);
+    void setSize(int size);
+    void setCategory(Category * category);
+    void setFolder(File * folder);
+    void setType(Type * type);
+    void setFileName(QString fileName);
+    void setSaved(bool saved);
+    void setCreationTime(QDateTime creationTime);
+    void setUpdateTime(QDateTime updateTime);
+
 
     void toString();
 };

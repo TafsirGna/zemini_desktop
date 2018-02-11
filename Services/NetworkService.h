@@ -18,6 +18,8 @@
 #include <QList>
 #include <Database/Entities/Category.h>
 #include <Services/ZeminiService.h>
+#include <QSslSocket>
+#include "Database/Entities/File.h"
 
 class NetworkService : public ZeminiService
 {
@@ -27,22 +29,30 @@ private:
         QTimer * timer;
         bool connected;
         int requestCode;
+        //QSslSocket * sslSocket;
+
+        //Functions
+
 
 public:
         NetworkService();
         bool isConnected();
         void getInitialDbData();
-        void run();
         void checkCredentials(QString, QString);
 
 public slots:
         void handleRequestReply(QNetworkReply*);
-        void refreshLocalDb();
+        void syncDb();
         void sendUser(User *);
+        void sendFile(File);
+
+private slots:
+        void sslSocketConnected();
 
 signals:
         void credentialsChecked(int, User *);
         void initDataGot(QList<Category> *);
+        void readyToBackUp();
 };
 
 #endif // NETWORKSERVICE_H

@@ -11,6 +11,7 @@
 #include "Config/Parameters.h"
 #include "Services/NetworkService.h"
 #include <QDesktopWidget>
+#include <Services/ServiceContainer.h>
 
 namespace Ui {
     class RegisterForm;
@@ -21,13 +22,14 @@ class RegisterForm : public QWidget
     Q_OBJECT
 
 public:
-    explicit RegisterForm(QWidget *parent = 0, NetworkService * networkService = 0);
+    explicit RegisterForm(QWidget *parent = 0, ServiceContainer * serviceContainer = 0);
     ~RegisterForm();
 
 private:
     Ui::RegisterForm *ui;
     QValidator * emailValidator;
     NetworkService * networkService;
+    ServiceContainer * serviceContainer;
 
 private slots:
     void on_bt_next_clicked();

@@ -28,7 +28,6 @@ ZeminiPreferencesForm::ZeminiPreferencesForm(QList<AbstractManager> * listEntiti
     typeManager = (TypeManager *) &(listEntitiesManager->at(1));
     userManager = (UserManager *) &(listEntitiesManager->at(4));
     //dirManager = (DirectoryManager *) &(listEntitiesManager->at(2));
-    dirManager = new DirectoryManager();
 
     // here's the code that calculates the percentage of each type and shows it under the statistics tab
     /*
@@ -52,10 +51,11 @@ ZeminiPreferencesForm::ZeminiPreferencesForm(QList<AbstractManager> * listEntiti
     /*
     QList<Directory> dirsList = dirManager->findDirectoryByIdDirectory(0);
     Directory * dir = (Directory *) &(dirsList.at(0));
-    */
+
     otherDir = dirManager->findOtherDirectoryOnDisk();
     if (otherDir != NULL)
         ui->le_otherLocation->setText(otherDir->getPath());
+        */
 }
 
 ZeminiPreferencesForm::~ZeminiPreferencesForm()
@@ -92,6 +92,7 @@ void ZeminiPreferencesForm::on_bt_apply_clicked()
             stringList << ol_text+"/Songs";
             stringList << ol_text+"/Softwares";
 
+            /*
             if (otherDir != NULL)
             {
                 if (ol_text != otherDir->getPath())
@@ -104,6 +105,7 @@ void ZeminiPreferencesForm::on_bt_apply_clicked()
                 qDebug() << "Start enumerating";
                 emit setupDirectory(stringList);
             }
+            */
         }
     }
     this->hide();

@@ -6,7 +6,6 @@
 #include "Database\EntityManagers\TypeManager.h"
 #include <QFileDialog>
 #include "Database\EntityManagers\UserManager.h"
-#include "Database\EntityManagers\DirectoryManager.h"
 #include <QFileSystemWatcher>
 
 namespace Ui {
@@ -26,8 +25,6 @@ private:
 
     TypeManager * typeManager;
     UserManager * userManager;
-    DirectoryManager * dirManager;
-    Directory * otherDir;
 
 private slots:
     void on_bt_apply_clicked();

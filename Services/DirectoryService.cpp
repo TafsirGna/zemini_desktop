@@ -1,11 +1,11 @@
 #include "DirectoryService.h"
-#include <Services/LocalDbService.h>
-#include <Services/NetworkService.h>
 
 /***    Folder's default constructor    ***/
 DirectoryService::DirectoryService()
 {
-    fsWatchers = new QList<QFileSystemWatcher>();
+    fsWatchers = new QList<QFileSystemWatcher*>();
+    //updated = false;
+    //fileToFrame();
 }
 
 void DirectoryService::start()
@@ -18,11 +18,19 @@ void DirectoryService::watchZeminiFolder()
     // i start going through all files and directories to store and track them
     QFileInfo currentObject(Parameters::storageDirectory);
     QFileInfoList * queue = new QFileInfoList();
+    fsWatchers->append(new QFileSystemWatcher());
+    connect(fsWatchers->last(), SIGNAL(directoryChanged(QString)), this, SLOT(handleDirChanges(QString)));
     while(true){
-        qDebug() << currentObject.absoluteFilePath() << endl;
-        if (currentObject.isFile())
+        //qDebug() << currentObject.absoluteFilePath() << endl;
+        if (currentObject.isFile()){
             storeInDb(currentObject);
+        }
         else{
+            // store the directory
+            storeInDb(currentObject);
+            // add to a fsWatcher
+            watchFolder(currentObject);
+            // get its children
             QDir currentDirectory(currentObject.absoluteFilePath());
             (*queue) += currentDirectory.entryInfoList(QDir::Files | QDir::NoSymLinks | QDir::AllDirs | QDir::NoDotAndDotDot);
         }
@@ -30,6 +38,16 @@ void DirectoryService::watchZeminiFolder()
             break;
         currentObject = (queue->last());
         queue->removeLast();
+    }
+}
+
+void DirectoryService::watchFolder(QFileInfo fileInfo)
+{
+    bool added = fsWatchers->last()->addPath(fileInfo.absoluteFilePath());
+    if (!added){
+        fsWatchers->append(new QFileSystemWatcher());
+        connect(fsWatchers->last(), SIGNAL(directoryChanged(QString)), this, SLOT(handleDirChanges(QString)));
+        fsWatchers->last()->addPath(fileInfo.absoluteFilePath());
     }
 }
 
@@ -73,6 +91,23 @@ bool DirectoryService::makeInitDirectories(QList<Category> * categories)
 void DirectoryService::storeInDb(QFileInfo fileInfo)
 {
     emit fileInfoToSave(fileInfo);
+}
+
+void DirectoryService::handleDirChanges(QString dirPath)
+{
+    //updated = true;
+    QDir dir(dirPath);
+    if (dir.exists())
+        emit dirContentToUpdate(dir);
+    else
+        emit dirDeleted(dir);
+}
+
+void DirectoryService::fileToFrame()
+{
+    //cv::Mat image = cv::imread("C://Users//Public//Pictures//Sample Pictures//Phare.jpg", 1);
+    //cv::namedWindow("test");
+    //cv::imshow("test", image);
 }
 
 /*

@@ -9,16 +9,24 @@
 #include <QList>
 #include <QFileSystemWatcher>
 #include <Services/ZeminiService.h>
+#include "Config/Functions.h"
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+//#include <opencv2/opencv.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 class DirectoryService : public ZeminiService
 {
     Q_OBJECT
 private:
     // Variables
-    QList<QFileSystemWatcher> * fsWatchers;
+    QList<QFileSystemWatcher*> * fsWatchers;
 
     //Functions
     void storeInDb(QFileInfo );
+    void watchFolder(QFileInfo);
+    void fileToFrame();
+    //bool updated;
 
 protected:
 
@@ -30,6 +38,11 @@ public:
 
 signals:
     void fileInfoToSave(QFileInfo);
+    void dirContentToUpdate(QDir);
+    void dirDeleted(QDir);
+
+private slots:
+    void handleDirChanges(QString);
 
 };
 

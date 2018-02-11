@@ -3,25 +3,26 @@
 
 #include "Database\Entities\File.h"
 #include "Database\EntityManagers\TypeManager.h"
-#include "Database\EntityManagers\DirectoryManager.h"
 
 class FileManager : public AbstractManager
 {
     Q_OBJECT
 private :
     TypeManager * typeManager;
-    DirectoryManager * directoryManager;
 
 protected:
     File * convertToFile(QFileInfo);
 
 public :
     FileManager();
-    FileManager(TypeManager * typeManager, DirectoryManager * directoryManager);
+    FileManager(TypeManager * typeManager);
 
-    void saveFile(File * file);
+    bool saveFile(File * file);
     void updateFile(File * file);
     void deleteFile(File * file);
+    bool cleanDirFile(QDir);
+    QList<File> getAllFiles();
+    QList<File> getNotSavedFiles();
 
     /*
     File * findFileByPath(QString path);    //As the path and the filename are unique, finding a file by its filepath return only one file object

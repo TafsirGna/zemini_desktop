@@ -17,7 +17,6 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
-#include "Database\EntityManagers\DirectoryManager.h"
 #include <QFileSystemWatcher>
 #include "Services/ServiceContainer.h"
 

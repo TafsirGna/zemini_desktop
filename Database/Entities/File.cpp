@@ -1,27 +1,28 @@
 #include "Database\Entities\File.h"
 
-/***            Default constructor         ***/
-File::File() : AbstractFile()
+File::File()
 {
     //Nothing to do for now
 }
 
 /***            A second constructor            ***/
-File::File(QString name, QDateTime datecreation, int size, QString path, int status, Type *type, QString suffix, Directory *directory) : AbstractFile(name,datecreation,size,path,status, type)
+File::File(int id, QString fileName, QString path, QDateTime creationTime, QDateTime updateTime, int size, bool saved, Type *type, Category *category, File * folder)
 {
-    this->suffix = suffix;
-    this->directory = directory;
-}
-
-/***            A second constructor            ***/
-File::File(int id, QString name, QDateTime datecreation, int size, QString path, int status, Type *type, QString suffix, Directory * directory) : AbstractFile(id,name,datecreation,size,path,status, type)
-{
-    this->suffix = suffix;
-    this->directory = directory;
+    this->id = id;
+    this->fileName = fileName;
+    this->path = path;
+    this->size = size;
+    this->saved = saved;
+    this->category = category;
+    this->folder = folder;
+    this->creationTime = creationTime;
+    this->updateTime = updateTime;
+    this->type = type;
 }
 
 File::File(const File &file)
 {
+    /*
     this->id = file.id;
     this->name = file.name;
     this->suffix = file.suffix;
@@ -31,48 +32,204 @@ File::File(const File &file)
     this->type = file.type;
     this->size = file.size;
     this->directory = file.directory;
+    */
 }
 
 File & File::operator =(const File & file)
 {
     this->id = file.id;
-    this->name = file.name;
-    this->suffix = file.suffix;
+    this->fileName = file.fileName;
     this->path = file.path;
-    this->datecreation = file.datecreation;
-    this->status = status;
+    this->creationTime = file.creationTime;
+    this->saved = file.saved;
     this->type = file.type;
     this->size = file.size;
-    this->directory = file.directory;
+    this->folder = file.folder;
+    this->updateTime = file.updateTime;
+    this->category = file.category;
     return *this;
 }
 
-/***            Getters         ***/
-QString File::getSuffix()
+/**
+ * @brief File::getId
+ * @return
+ */
+int File::getId()
 {
-    return this->suffix;
+    return id;
 }
 
-Directory * File::getDirectory()
+/**
+ * @brief File::getFileName
+ * @return
+ */
+QString File::getFileName()
 {
-    return this->directory;
+    return fileName;
 }
 
-/***            Setters         ***/
-void File::setSuffix(QString suffix)
+/**
+ * @brief File::getPath
+ * @return
+ */
+QString File::getPath()
 {
-    this->suffix = suffix;
+    return path;
 }
 
-void File::setDirectory(Directory *directory)
+/**
+ * @brief File::getCreationTime
+ * @return
+ */
+QDateTime File::getCreationTime()
 {
-    this->directory = directory;
+    return creationTime;
+}
+
+/**
+ * @brief File::getUpdateTime
+ * @return
+ */
+QDateTime File::getUpdateTime()
+{
+    return updateTime;
+}
+
+/**
+ * @brief File::getSize
+ * @return
+ */
+int File::getSize()
+{
+    return size;
+}
+
+/**
+ * @brief File::getCategory
+ * @return
+ */
+Category * File::getCategory()
+{
+    return category;
+}
+
+/**
+ * @brief File::getType
+ * @return
+ */
+Type * File::getType()
+{
+    return type;
+}
+
+/**
+ * @brief File::getFolder
+ * @return
+ */
+File * File::getFolder()
+{
+    return folder;
+}
+
+/**
+ * @brief File::isSaved
+ * @return
+ */
+bool File::isSaved()
+{
+    return saved;
+}
+
+/**
+ * @brief File::setId
+ * @param id
+ */
+void File::setId(int id)
+{
+    this->id = id;
+}
+
+/**
+ * @brief File::setCategory
+ * @param category
+ */
+void File::setCategory(Category *category)
+{
+    this->category = category;
+}
+
+/**
+ * @brief File::setType
+ * @param type
+ */
+void File::setType(Type *type)
+{
+    this->type = type;
+}
+
+/**
+ * @brief File::setFileName
+ * @param fileName
+ */
+void File::setFileName(QString fileName)
+{
+    this->fileName = fileName;
+}
+
+/**
+ * @brief File::setFolder
+ * @param folder
+ */
+void File::setFolder(File *folder)
+{
+    this->folder = folder;
+}
+
+/**
+ * @brief File::setUpdateTime
+ * @param updateTime
+ */
+void File::setUpdateTime(QDateTime updateTime)
+{
+    this->updateTime = updateTime;
+}
+
+/**
+ * @brief File::setCreationTime
+ * @param creationTime
+ */
+void File::setCreationTime(QDateTime creationTime)
+{
+    this->creationTime = creationTime;
+}
+
+/**
+ * @brief File::setSize
+ * @param size
+ */
+void File::setSize(int size)
+{
+    this->size = size;
+}
+
+/**
+ * @brief File::setSaved
+ * @param saved
+ */
+void File::setSaved(bool saved)
+{
+    this->saved = saved;
+}
+
+void File::setPath(QString path)
+{
+    this->path = path;
 }
 
 void File::toString()
 {
     qDebug() << "---    File::toString ";
-    qDebug() << "id : "+ QString::number(id) + " - name : "+ name + " - suffix : "+ suffix + " - path : "+ path + " - datecreation : " + datecreation.toString() + " - status : "+ QString::number(status) + " - size : " + QString::number(size) + " - iddirectory : "+ QString::number(directory->getId()) + " - idtype : " + QString::number(type->getId()) ;
+    //qDebug() << "id : "+ QString::number(id) + " - name : "+ name + " - suffix : "+ suffix + " - path : "+ path + " - datecreation : " + datecreation.toString() + " - status : "+ QString::number(status) + " - size : " + QString::number(size) + " - iddirectory : "+ QString::number(directory->getId()) + " - idtype : " + QString::number(type->getId()) ;
 }
 
 

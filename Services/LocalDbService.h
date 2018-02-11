@@ -3,7 +3,6 @@
 
 #include <QDebug>
 #include <QFileInfoList>
-#include "Database\EntityManagers\DirectoryManager.h"
 #include "Database\EntityManagers\UserManager.h"
 #include "Database\EntityManagers\FileManager.h"
 #include <Services/ZeminiService.h>
@@ -13,7 +12,6 @@ class LocalDBService: public ZeminiService
     Q_OBJECT
 private :
     //All entity managers
-    DirectoryManager * directoryManager;
     FileManager * fileManager;
     CategoryManager * categoryManager;
     UserManager * userManager;
@@ -23,7 +21,6 @@ private :
     UserManager * getUserManager();
     CategoryManager * getCategoryManager();
     FileManager * getFileManager();
-    DirectoryManager * getDirectoryManager();
     TypeManager * getTypeManager();
 
 protected:
@@ -43,10 +40,17 @@ public:
     // Getters
     bool isDbEmpty();
     AbstractManager * getManager(QString);
+    bool save(File *);
 
 public slots:
     bool save(User *);
     bool save(QFileInfo);
+    void updateDirContent(QDir);
+    bool deleteDir(QDir);
+    void startBackingUp();
+
+signals:
+    void fileToSend(File);
 
 };
 #endif // LOCALDBSERVICE_H

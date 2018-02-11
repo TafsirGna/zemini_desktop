@@ -1,7 +1,7 @@
 #include "Controllers\RegisterForm.h"
 #include "ui_RegisterForm.h"
 
-RegisterForm::RegisterForm(QWidget *parent, NetworkService * networkService) :
+RegisterForm::RegisterForm(QWidget *parent, ServiceContainer *serviceContainer) :
         QWidget(parent),
         ui(new Ui::RegisterForm)
 {
@@ -41,7 +41,7 @@ RegisterForm::RegisterForm(QWidget *parent, NetworkService * networkService) :
     setMinimumSize(size());
     setMaximumSize(size());
 
-    this->networkService = networkService;
+    this->serviceContainer = serviceContainer;
 }
 
 RegisterForm::~RegisterForm()

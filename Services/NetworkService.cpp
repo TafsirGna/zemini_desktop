@@ -4,12 +4,17 @@
 NetworkService::NetworkService()
 {
     networkAccessManager = new QNetworkAccessManager(this);
-    QObject::connect(networkAccessManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(handleRequestReply(QNetworkReply*)));
     this->connected = false;
-
-    //Setting the timers
     this->timer = new QTimer(this);
-    QWidget::connect(timer, SIGNAL(timeout()),this, SLOT(refreshLocalDb()));
+    //sslSocket = new QSslSocket(this);
+
+    // Setting connectors
+    QWidget::connect(networkAccessManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(handleRequestReply(QNetworkReply*)));
+    QWidget::connect(timer, SIGNAL(timeout()),this, SLOT(syncDb()));
+    //QWidget::connect(sslSocket, SIGNAL(encrypted()), this, SLOT(sslSocketConnected()));
+
+    this->timer->start(Parameters::networkTimerFrequency);
+    //this->sslSocket->connectToHostEncrypted(Parameters::url, 993);
 }
 
 /***    this check the user's network status    ***/
@@ -18,18 +23,23 @@ bool NetworkService::isConnected()
     return connected;
 }
 
+void NetworkService::sslSocketConnected()
+{
+
+}
+
 // this function sends a request to the remote server to get its initial data to get started
 void NetworkService::getInitialDbData()
 {
     // sending the query to get all data necessary
     requestCode = 3;
     networkAccessManager->get(QNetworkRequest(QUrl(Parameters::url+"/"+QString::number(requestCode)+"/categories")));
+    //qDebug() << Parameters::url+"/"+QString::number(requestCode)+"/categories" << endl;
 }
 
 void NetworkService::handleRequestReply(QNetworkReply * reply)
 {
-    //qDebug() << "connected!" << ((connected) ? "ok" : "not ok") << endl;
-    if (reply->error()!=QNetworkReply::NoError){
+    if (reply->error()!= QNetworkReply::NoError){
 
         switch (requestCode) {
         case 1:{
@@ -56,7 +66,6 @@ void NetworkService::handleRequestReply(QNetworkReply * reply)
     }
 
     connected = true;
-
     // Processing the response of the requests sent
     QString response = (QString)reply->readAll();
     QJsonDocument jsonResponse = QJsonDocument::fromJson(response.toUtf8());
@@ -88,14 +97,10 @@ void NetworkService::handleRequestReply(QNetworkReply * reply)
 
 }
 
-void NetworkService::run()
+void NetworkService::syncDb()
 {
-    this->timer->start(Parameters::networkTimerFrequency);
-}
-
-void NetworkService::refreshLocalDb()
-{
-
+    // at this stage, we only backup the database data to a remote db server
+    emit readyToBackUp();
 }
 
 void NetworkService::sendUser(User * user){
@@ -112,4 +117,9 @@ void NetworkService::checkCredentials(QString email, QString password)
             "/"+password;
     qDebug() << "check " << address << endl;
     networkAccessManager->get(QNetworkRequest(QUrl(address)));
+}
+
+void NetworkService::sendFile(File dir)
+{
+
 }

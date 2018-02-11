@@ -36,7 +36,9 @@ public:
 
     const static QRegExp * emailRegExpr;
 
-    static QSqlDatabase localDb;
+    const static QSqlDatabase localDb;
+
+    const static QString refreshingIconLocation;
 
     /*
     static QString getTypeByPath(QString path)

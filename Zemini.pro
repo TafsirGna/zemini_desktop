@@ -15,69 +15,67 @@ QT       += sql
 TARGET = Zemini
 TEMPLATE = app
 
-RC_FILE = Config\zemini.rc
+RC_FILE = Config/zemini.rc
+
+INCLUDEPATH += C:\Users\Tafsir\Documents\opencv\build\include
+
+LIBS += C:\Users\Tafsir\Documents\opencv\build\bin\opencv_ffmpeg340.dll
 
 SOURCES += main.cpp\
     #Controller sources
-    Config\Parameters.cpp \
-    Controllers\MainController.cpp \
-    Controllers\PreferencesForm.cpp \
-    Controllers\RegisterForm.cpp \
-    Controllers\LogInForm.cpp \
-    Controllers\AbstractController.cpp \
+    Config/Parameters.cpp \
+    Controllers/MainController.cpp \
+    Controllers/PreferencesForm.cpp \
+    Controllers/RegisterForm.cpp \
+    Controllers/LogInForm.cpp \
+    Controllers/AbstractController.cpp \
     #Database sources
-    Database\Entities\User.cpp \
-    Database\EntityManagers\UserManager.cpp \
-    Database\EntityManagers\FileManager.cpp \
-    Database\Entities\File.cpp \
-    Database\Entities\Category.cpp \
-    Database\Entities\Type.cpp \
-    Database\EntityManagers\TypeManager.cpp \
-    Database\EntityManagers\CategoryManager.cpp \
-    Database\Entities\AbstractFile.cpp \
-    Database\Entities\Directory.cpp \
-    Database\EntityManagers\DirectoryManager.cpp \
-    Database\DatabaseManager.cpp \
-    Database\EntityManagers\AbstractManager.cpp \
+    Database/Entities/File.cpp \
+    Database/Entities/User.cpp \
+    Database/EntityManagers/UserManager.cpp \
+    Database/EntityManagers/FileManager.cpp \
+    Database/Entities/Category.cpp \
+    Database/Entities/Type.cpp \
+    Database/EntityManagers/TypeManager.cpp \
+    Database/EntityManagers/CategoryManager.cpp \
+    Database/DatabaseManager.cpp \
+    Database/EntityManagers/AbstractManager.cpp \
     # Service sources
-    Services\LocalDbService.cpp \
-    Services\NetworkService.cpp \
-    Services\DirectoryService.cpp \
+    Services/LocalDbService.cpp \
+    Services/NetworkService.cpp \
+    Services/DirectoryService.cpp \
     Tests/TestsManager.cpp \
     Services/ServiceContainer.cpp \
     Services/ZeminiService.cpp
 
 HEADERS  += Config\Parameters.h \
-    Config\Functions.h \
+    Config/Functions.h \
     # Controller headers
-    Controllers\PreferencesForm.h \
-    Controllers\RegisterForm.h \
-    Controllers\LogInForm.h \
-    Controllers\MainController.h \
-    Controllers\AbstractController.h \
+    Controllers/PreferencesForm.h \
+    Controllers/RegisterForm.h \
+    Controllers/LogInForm.h \
+    Controllers/MainController.h \
+    Controllers/AbstractController.h \
     # Database headers
-    Database\Entities\File.h \
-    Database\Entities\Category.h \
-    Database\Entities\Type.h \
-    Database\Entities\Directory.h \
-    Database\Entities\AbstractFile.h \
-    Database\EntityManagers\DirectoryManager.h \
-    Database\EntityManagers\TypeManager.h \
-    Database\EntityManagers\CategoryManager.h \
-    Database\Entities\User.h \
-    Database\EntityManagers\UserManager.h \
-    Database\DatabaseManager.h \
-    Database\EntityManagers\AbstractManager.h \
-    Database\EntityManagers\FileManager.h \
+    Database/Entities/File.h \
+    Database/Entities/Category.h \
+    Database/Entities/Type.h \
+    Database/EntityManagers/TypeManager.h \
+    Database/EntityManagers/CategoryManager.h \
+    Database/Entities/User.h \
+    Database/EntityManagers/UserManager.h \
+    Database/DatabaseManager.h \
+    Database/EntityManagers/AbstractManager.h \
+    Database/EntityManagers/FileManager.h \
     # Service headers
-    Services\DirectoryService.h \
-    Services\NetworkService.h \
-    Services\LocalDbService.h \
+    Services/DirectoryService.h \
+    Services/NetworkService.h \
+    Services/LocalDbService.h \
     Tests/TestsManager.h \
     Services/ServiceContainer.h \
     Services/ZeminiService.h
 
 
 FORMS    += Views\PreferencesForm.ui \
-    Views\LogInForm.ui \
-    Views\RegisterForm.ui
+    Views/LogInForm.ui \
+    Views/RegisterForm.ui

@@ -55,34 +55,25 @@ void DatabaseManager::createTables(const QString &conName)
     QString typeCreateQuery = "CREATE TABLE IF NOT EXISTS Type("
                               "id INT NOT NULL UNIQUE,"
                               "name TEXT NOT NULL,"
+                              "suffix TEXT,"
                               "CONSTRAINT pk_type PRIMARY KEY(id)"
                               ");";
 
-    QString directoryCreateQuery = "CREATE TABLE IF NOT EXISTS Directory("
-                                   "id INT NOT NULL UNIQUE,"
-                                   "iddirectory INT,"
-                                   "idcategory INT,"
-                                   "datecreation TEXT,"
-                                   "name TEXT,"
-                                   "size TEXT,"
-                                   "path TEXT UNIQUE, "
-                                   "CONSTRAINT pk_directory PRIMARY KEY(id),"
-                                   "CONSTRAINT fk_dir_id_category FOREIGN KEY(idcategory) REFERENCES Type(id)"
-                                   ");";
-
     QString fileCreateQuery = "CREATE TABLE IF NOT EXISTS File("
                               "id INT NOT NULL UNIQUE,"
-                              "iddirectory INT,"
-                              "idtype TEXT,"
-                              "datecreation TEXT,"
+                              "iddir INT NULL,"
+                              "idtype TEXT NULL,"
+                              "idcategory TEXT NULL"
+                              "creationtime TEXT,"
+                              "updatetime TEXT,"
                               "filename TEXT,"
                               "path TEXT,"
                               "size TEXT,"
-                              "status INT,"
-                              "suffix TEXT,"
+                              "saved INT,"
                               "CONSTRAINT pk_file PRIMARY KEY(id),"
-                              "CONSTRAINT fk_file_id_directory FOREIGN KEY(iddirectory) REFERENCES directory(id),"
                               "CONSTRAINT fk_file_id_type FOREIGN KEY(idtype) REFERENCES Type(id)"
+                              "CONSTRAINT fk_file_id_file FOREIGN KEY(iddir) REFERENCES Type(id)"
+                              "CONSTRAINT fk_file_id_category FOREIGN KEY(idcategory) REFERENCES Category(id)"
                               ");";
 
     query.exec(userCreateQuery);
@@ -99,11 +90,6 @@ void DatabaseManager::createTables(const QString &conName)
 
     if(!query.isActive())
         qDebug()<<"An error occured while creating table Type: "+query.lastError().text();
-
-    query.exec(directoryCreateQuery);
-
-    if(!query.isActive())
-        qDebug()<<"An error occured while creating table directory: "+query.lastError().text();
 
     query.exec(fileCreateQuery);
 

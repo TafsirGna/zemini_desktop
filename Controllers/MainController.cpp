@@ -9,19 +9,24 @@ MainController::MainController()
     firstLaunch = false;
 
     // Initialization of all the forms
-    registerForm = new RegisterForm(0);
+    registerForm = new RegisterForm(0, this->serviceContainer);
     logInForm = new LogInForm(0, this->serviceContainer);
     trayIcon = new QSystemTrayIcon();
 
     //Setting connections with the child threads
     QWidget::connect(registerForm,SIGNAL(logInLinkActivated()),this,SLOT(showLogInForm()));
+    QWidget::connect(((DirectoryService *)this->serviceContainer->getService(ZeminiService::FileSystem)), SIGNAL(dirContentToUpdate(QDir)), ((LocalDBService *)this->getService(ZeminiService::LocalDatabase)), SLOT(updateDirContent(QDir)));
     //QWidget::connect(logInForm, SIGNAL(onStart(AbstractController * )), this, SLOT(setArgs(AbstractController *)));
     QWidget::connect(logInForm, SIGNAL(signUpLinkActivated()), this, SLOT(showRegisterForm()));
     QWidget::connect(logInForm, SIGNAL(userToSave(User*)), ((LocalDBService *)this->getService(ZeminiService::LocalDatabase)), SLOT(save(User *)));
-    QWidget::connect(this->serviceContainer->getService(ZeminiService::Network), SIGNAL(initDataGot(QList<Category>*)), this, SLOT(insertInitDbData(QList<Category> *)));
+    QWidget::connect(((NetworkService *)this->serviceContainer->getService(ZeminiService::Network)), SIGNAL(initDataGot(QList<Category>*)), this, SLOT(insertInitDbData(QList<Category> *)));
     QWidget::connect(logInForm, SIGNAL(userLoggedIn()), this, SLOT(setUserFolder()));
+    QWidget::connect(((DirectoryService *)this->serviceContainer->getService(ZeminiService::FileSystem)), SIGNAL(dirDeleted(QDir)), ((LocalDBService*)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SLOT(deleteDir(QDir)));
+    //QWidget::connect(((LocalDBService *)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SIGNAL(dirToSend(Directory)), ((NetworkService *)this->serviceContainer->getService(ZeminiService::Network)), SLOT(sendDir(Directory)));
+    QWidget::connect(((LocalDBService *)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SIGNAL(fileToSend(File)), ((NetworkService *)this->serviceContainer->getService(ZeminiService::Network)), SLOT(sendFile(File)));
     QWidget::connect(trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),this, SLOT(manageActivation(QSystemTrayIcon::ActivationReason)));
-    QWidget::connect(this->serviceContainer->getService(ZeminiService::FileSystem), SIGNAL(fileInfoToSave(QFileInfo)), this->serviceContainer->getService(ZeminiService::LocalDatabase), SLOT(save(QFileInfo)));
+    QWidget::connect(((DirectoryService *)this->serviceContainer->getService(ZeminiService::FileSystem)), SIGNAL(fileInfoToSave(QFileInfo)), ((LocalDBService*)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SLOT(save(QFileInfo)));
+    QWidget::connect(((NetworkService *)this->serviceContainer->getService(ZeminiService::Network)), SIGNAL(readyToBackUp()), ((LocalDBService*)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SLOT(startBackingUp()));
     //QWidget::connect(trayIcon, SIGNAL(messageClicked()), this, SLOT(showDirectory()));
 
     /*
@@ -34,6 +39,9 @@ MainController::MainController()
     QWidget::connect(dirManager, SIGNAL(remoteUpdatesDone(int)),this, SLOT(handleManagerEndofProcessing(int)));
     QWidget::connect(fileManager, SIGNAL(remoteUpdatesDone(int)),this, SLOT(handleManagerEndofProcessing(int)));
     */
+
+    // Sending a request to get all initial data
+    ((NetworkService *) this->getService(ZeminiService::Network))->getInitialDbData();
 }
 
 void MainController::start()
@@ -62,6 +70,9 @@ void MainController::start()
             }
         }
         DirectoryService * directoryService = (DirectoryService *)this->getService(ZeminiService::FileSystem);
+
+        // noticing to the user that we're starting watching the root folder
+
         directoryService->start();
     }
     //initializeFSWatcher();
@@ -113,10 +124,6 @@ void MainController::showZeminiWebSite()
 /***            Once, the user installs the sofware, at the first launch he must complete the pocedure by supplying some informations           ***/
 void MainController::completeInstallation()
 {
-    if (!checkInitialDbData())
-        ((NetworkService *) this->getService(ZeminiService::Network))->getInitialDbData();
-
-    ((NetworkService *) this->getService(ZeminiService::Network))->getInitialDbData();
     registerForm->show();
 }
 
@@ -155,7 +162,7 @@ void MainController::insertInitDbData(QList<Category> * categories)
     if (categories != NULL){
         for (int i = 0; i < categories->size(); i++){
             Category category = categories->at(i);
-            if (categoryManager->getByName(category.getName()) != NULL){
+            if (categoryManager->getByName(category.getName()) == NULL){
                 if (!categoryManager->addCategory(categories->at(i)))
                     qDebug() << "category " << category.getName() <<" not inserted : " << endl;
                 else
@@ -187,8 +194,8 @@ bool MainController::displayTrayIcon()
 
     //Setting the context menu to the system tray entrie
     trayIcon->setContextMenu(contextMenu);
-    trayIcon->setIcon(QIcon(Parameters::iconLocation));
-    trayIcon->setToolTip("Zemini "+Parameters::appVersion +" \nConnection...");
+    trayIcon->setIcon(QIcon(Parameters::refreshingIconLocation));
+    trayIcon->setToolTip("Zemini "+Parameters::appVersion +" \nStarting...");
     trayIcon->show();
 }
 
