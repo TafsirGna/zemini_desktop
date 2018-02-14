@@ -232,4 +232,11 @@ void File::toString()
     //qDebug() << "id : "+ QString::number(id) + " - name : "+ name + " - suffix : "+ suffix + " - path : "+ path + " - datecreation : " + datecreation.toString() + " - status : "+ QString::number(status) + " - size : " + QString::number(size) + " - iddirectory : "+ QString::number(directory->getId()) + " - idtype : " + QString::number(type->getId()) ;
 }
 
+File *File::convertToFile(QFileInfo fileInfo)
+{
+    //File * file(0, fileInfo.fileName(), fileInfo.absoluteFilePath(), fileInfo.created(), fileInfo.lastModified(), fileInfo.size(), 0, NULL, NULL, NULL);
+    //return file;
+    return NULL;
+}
+
 

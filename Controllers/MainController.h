@@ -10,10 +10,10 @@
 #include <QDesktopServices>
 #include <QUrl>
 #include <QMenu>
-#include "Controllers\PreferencesForm.h"
-#include "Controllers\RegisterForm.h"
-#include "Database\DatabaseManager.h"
-#include "Controllers\LogInForm.h"
+#include "Controllers/PreferencesForm.h"
+#include "Controllers/RegisterForm.h"
+#include "Database/DatabaseManager.h"
+#include "Controllers/LogInForm.h"
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>

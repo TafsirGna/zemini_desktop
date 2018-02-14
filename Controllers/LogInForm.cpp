@@ -1,4 +1,4 @@
-#include "Controllers\LogInForm.h"
+#include "Controllers/LogInForm.h"
 #include "ui_LogInForm.h"
 
 LogInForm::LogInForm(QWidget *parent, ServiceContainer * serviceContainer) :
@@ -127,7 +127,6 @@ bool LogInForm::areCredentialsOk(int resultCode, User * user)
     // saving the user in the local database
     emit userToSave(user);
 
-    emit userLoggedIn();
     this->hide();
     //TYPE* dynamic_cast<TYPE*>(object);
     return true;

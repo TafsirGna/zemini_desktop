@@ -3,8 +3,8 @@
 
 #include <QWidget>
 #include <QMessageBox>
-#include "Database\Entities\User.h"
-#include "Config\Parameters.h"
+#include "Database/Entities/User.h"
+#include "Config/Parameters.h"
 #include <QPixmap>
 #include <QPainter>
 #include <QBitmap>
@@ -46,7 +46,6 @@ public slots:
 signals:
     void onStart(AbstractController *);
     void userToSave(User *);
-    void userLoggedIn();
     void signUpLinkActivated();
 };
 

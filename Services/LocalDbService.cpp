@@ -105,21 +105,14 @@ AbstractManager * LocalDBService::getManager(QString manager)
 bool LocalDBService::save(QFileInfo fileInfo)
 {
     //qDebug() << " in localDBservice save function " << endl;
-    if (fileInfo.isDir()){
-        //Directory *dir = new Directory();
-        return false;//save(dir);
-    }
-    else if (fileInfo.isFile()){
-        File *file = new File();
-        return save(file);
-    }
-    return false;
+    File *file = File::convertToFile(fileInfo);
+    return save(file);
 }
 
 bool LocalDBService::save(User * user)
 {
     this->userManager->insertUser(*user);
-
+    emit userLoggedIn();
 }
 
 UserManager * LocalDBService::getUserManager()

@@ -1,5 +1,4 @@
-#include "Database\EntityManagers\FileManager.h"
-#include "Services\DirectoryService.h"
+#include "Database/EntityManagers/FileManager.h"
 
 /***            Default constructor         ***/
 FileManager::FileManager() : AbstractManager()
@@ -14,19 +13,56 @@ FileManager::FileManager(TypeManager * typeManager): AbstractManager()
     //this->filestosave = new QList<File>();
 }
 
-/***            This function creates or if you want, saves a given instance of contenu into the database          ***/
+/**
+ * @brief FileManager::saveFile
+ * @param file
+ * @return
+ */
 bool FileManager::saveFile(File * file)
 {
-    /*QUrl params(str_Url+"?action=1"+    //action (1) shows we want to save updates
-                "&filename=" + file->getName() +
-                "&suffix=" + file->getSuffix() +
-                "&size="+ QString::number(file->getSize())+
-                "&datecreation="+ file->getDatecreation().toString(Parameters::timeFormat())
-                );
-    */
-    //request.setHeader(QNetworkRequest::ContentTypeHeader,"application/x-www-form-urlencoded");
-    //this->accessManager->get(QNetworkRequest(params));
+    QString request = "insert into File values (NULL, "
+            +QString::number(file->getFolder()->getId())+", "
+            +file->getType()->getId()+", "
+            +file->getCategory()->getId()+", '"
+            +file->getCreationTime().toString(Parameters::timeFormat)+"', '"+file->getUpdateTime().toString(Parameters::timeFormat)+"', '"+file->getFileName()+"', '"+file->getPath()+"', "+file->getSize()+", "+((file->isSaved()) ? 1 : 0)+")";
+    query->exec(request);
+    if (!query->isActive()){
+        qDebug() << "Failed to save a file " << query->lastError().text() << endl;
+        return false;
+    }
+    return true;
+}
 
+/**
+ * @brief FileManager::updateFile
+ * @param file
+ * @return
+ */
+bool FileManager::updateFile(File *file)
+{
+    QString request = "update File set iddir = "+QString::number(file->getFolder()->getId())+" and idtype = "+file->getType()->getId()+" and idcategory = "+file->getCategory()->getId()+" and creationtime = '"+file->getCreationTime().toString(Parameters::timeFormat)+"' and updatetime = '"+file->getUpdateTime().toString(Parameters::timeFormat)+"' and filename = '"+file->getFileName()+"' and path = '"+file->getPath()+"' and size = "+file->getSize()+" and saved = "+((file->isSaved()) ? 1 : 0)+" where id = "+file->getId();
+    query->exec(request);
+    if (!query->isActive()){
+        qDebug() << "Failed to update a file " << query->lastError().text() << endl;
+        return false;
+    }
+    return true;
+}
+
+/**
+ * @brief FileManager::deleteFile
+ * @param file
+ * @return
+ */
+bool FileManager::deleteFile(File *file)
+{
+    QString request = "delete from File where id = "+file->getId();
+    query->exec(request);
+    if (!query->isActive()){
+        qDebug() << "Failed to delete a file " << query->lastError().text() << endl;
+        return false;
+    }
+    return true;
 }
 
 bool FileManager::cleanDirFile(QDir dir)

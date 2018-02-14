@@ -1,4 +1,4 @@
-#include "Controllers\RegisterForm.h"
+#include "Controllers/RegisterForm.h"
 #include "ui_RegisterForm.h"
 
 RegisterForm::RegisterForm(QWidget *parent, ServiceContainer *serviceContainer) :

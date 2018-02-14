@@ -38,7 +38,7 @@ void DatabaseManager::createTables(const QString &conName)
     QSqlQuery query(db);
 
     QString userCreateQuery = "CREATE TABLE IF NOT EXISTS User("
-                                "id INT PRIMARY KEY NOT NULL,"
+                                "id INT PRIMARY KEY NOT NULL AUTOINCREMENT,"
                                 "familyname TEXT,"
                                 "firstname TEXT,"
                                 "email TEXT,"
@@ -48,26 +48,26 @@ void DatabaseManager::createTables(const QString &conName)
                                 ");";
 
     QString categoryCreateQuery = "CREATE TABLE IF NOT EXISTS Category("
-                                  "id INT PRIMARY KEY NOT NULL,"
+                                  "id INT PRIMARY KEY NOT NULL AUTOINCREMENT,"
                                   "name TEXT NOT NULL UNIQUE"
                                   ");";
 
     QString typeCreateQuery = "CREATE TABLE IF NOT EXISTS Type("
-                              "id INT NOT NULL UNIQUE,"
+                              "id INT NOT NULL UNIQUE AUTOINCREMENT,"
                               "name TEXT NOT NULL,"
                               "suffix TEXT,"
                               "CONSTRAINT pk_type PRIMARY KEY(id)"
                               ");";
 
     QString fileCreateQuery = "CREATE TABLE IF NOT EXISTS File("
-                              "id INT NOT NULL UNIQUE,"
+                              "id INT NOT NULL UNIQUE AUTOINCREMENT,"
                               "iddir INT NULL,"
                               "idtype TEXT NULL,"
                               "idcategory TEXT NULL"
                               "creationtime TEXT,"
                               "updatetime TEXT,"
                               "filename TEXT,"
-                              "path TEXT,"
+                              "path TEXT UNIQUE,"
                               "size TEXT,"
                               "saved INT,"
                               "CONSTRAINT pk_file PRIMARY KEY(id),"

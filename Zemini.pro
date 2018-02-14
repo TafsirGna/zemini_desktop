@@ -17,9 +17,23 @@ TEMPLATE = app
 
 RC_FILE = Config/zemini.rc
 
-INCLUDEPATH += C:\Users\Tafsir\Documents\opencv\build\include
+INCLUDEPATH += C:\OpenCV\OpenCV3.1\build\include
 
-LIBS += C:\Users\Tafsir\Documents\opencv\build\bin\opencv_ffmpeg340.dll
+#CONFIG(release,debug|release){
+LIBS += C:\OpenCV\OpenCV3.1\build\bin\libopencv_core310.dll
+LIBS += C:\OpenCV\OpenCV3.1\build\bin\libopencv_highgui310.dll
+LIBS += C:\OpenCV\OpenCV3.1\build\bin\libopencv_imgproc310.dll
+LIBS += C:\OpenCV\OpenCV3.1\build\bin\libopencv_features2d310.dll
+LIBS += C:\OpenCV\OpenCV3.1\build\bin\libopencv_calib3d310.dll
+LIBS += C:\OpenCV\OpenCV3.1\build\bin\libopencv_imgcodecs310.dll
+#}
+#CONFIG(debug,debug|release){
+#LIBS += C:\OpenCV\OpenCV3.1\build\bin\libopencv_core310d.dll
+#LIBS += C:\OpenCV\OpenCV3.1\build\bin\libopencv_imgproc310d.dll
+#LIBS += C:\OpenCV\OpenCV3.1\build\bin\libopencv_imgcodecs310d.dll
+#}
+
+
 
 SOURCES += main.cpp\
     #Controller sources

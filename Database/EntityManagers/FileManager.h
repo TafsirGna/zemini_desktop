@@ -1,8 +1,8 @@
 #ifndef CLASSFILEMANAGER_H
 #define CLASSFILEMANAGER_H
 
-#include "Database\Entities\File.h"
-#include "Database\EntityManagers\TypeManager.h"
+#include "Database/Entities/File.h"
+#include "Database/EntityManagers/TypeManager.h"
 
 class FileManager : public AbstractManager
 {
@@ -18,8 +18,8 @@ public :
     FileManager(TypeManager * typeManager);
 
     bool saveFile(File * file);
-    void updateFile(File * file);
-    void deleteFile(File * file);
+    bool updateFile(File * file);
+    bool deleteFile(File * file);
     bool cleanDirFile(QDir);
     QList<File> getAllFiles();
     QList<File> getNotSavedFiles();
@@ -35,7 +35,7 @@ public :
     */
 
 public slots:
-    //void handleEndofRequest(QNetworkReply*);
+
 };
 
 #endif // CLASSFILEMANAGER_H

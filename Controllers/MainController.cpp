@@ -1,4 +1,4 @@
-#include "Controllers\MainController.h"
+#include "Controllers/MainController.h"
 
 /*** Default constructor    ***/
 MainController::MainController()
@@ -20,7 +20,7 @@ MainController::MainController()
     QWidget::connect(logInForm, SIGNAL(signUpLinkActivated()), this, SLOT(showRegisterForm()));
     QWidget::connect(logInForm, SIGNAL(userToSave(User*)), ((LocalDBService *)this->getService(ZeminiService::LocalDatabase)), SLOT(save(User *)));
     QWidget::connect(((NetworkService *)this->serviceContainer->getService(ZeminiService::Network)), SIGNAL(initDataGot(QList<Category>*)), this, SLOT(insertInitDbData(QList<Category> *)));
-    QWidget::connect(logInForm, SIGNAL(userLoggedIn()), this, SLOT(setUserFolder()));
+    QWidget::connect(((LocalDBService *)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SIGNAL(userLoggedIn()), this, SLOT(setUserFolder()));
     QWidget::connect(((DirectoryService *)this->serviceContainer->getService(ZeminiService::FileSystem)), SIGNAL(dirDeleted(QDir)), ((LocalDBService*)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SLOT(deleteDir(QDir)));
     //QWidget::connect(((LocalDBService *)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SIGNAL(dirToSend(Directory)), ((NetworkService *)this->serviceContainer->getService(ZeminiService::Network)), SLOT(sendDir(Directory)));
     QWidget::connect(((LocalDBService *)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SIGNAL(fileToSend(File)), ((NetworkService *)this->serviceContainer->getService(ZeminiService::Network)), SLOT(sendFile(File)));
@@ -72,7 +72,6 @@ void MainController::start()
         DirectoryService * directoryService = (DirectoryService *)this->getService(ZeminiService::FileSystem);
 
         // noticing to the user that we're starting watching the root folder
-
         directoryService->start();
     }
     //initializeFSWatcher();
@@ -221,6 +220,7 @@ bool MainController::setUserFolder()
     // making the directories following the categories
     QList<Category> * categories = categoryManager->getAllCategories();
     ((DirectoryService * ) this->getService(ZeminiService::FileSystem))->makeInitDirectories(categories);
+    this->start();
 }
 
 void MainController::setArgs(AbstractController * controller)

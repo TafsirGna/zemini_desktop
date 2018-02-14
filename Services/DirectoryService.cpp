@@ -1,11 +1,13 @@
 #include "DirectoryService.h"
 
+//using namespace cv;
+
 /***    Folder's default constructor    ***/
 DirectoryService::DirectoryService()
 {
     fsWatchers = new QList<QFileSystemWatcher*>();
     //updated = false;
-    //fileToFrame();
+    fileToFrame();
 }
 
 void DirectoryService::start()
@@ -105,9 +107,10 @@ void DirectoryService::handleDirChanges(QString dirPath)
 
 void DirectoryService::fileToFrame()
 {
-    //cv::Mat image = cv::imread("C://Users//Public//Pictures//Sample Pictures//Phare.jpg", 1);
-    //cv::namedWindow("test");
-    //cv::imshow("test", image);
+    const cv::String filename = "C:\\Users\\Public\\Pictures\\Sample Pictures\\Phare.jpg";
+    cv::Mat image = cv::imread(filename);
+    cv::namedWindow("test");
+    cv::imshow("test", image);
 }
 
 /*

@@ -6,6 +6,7 @@
 #include "Database/Entities/Type.h"
 #include "Database/Entities/Category.h"
 #include <QDebug>
+#include <QFileInfo>
 
 using namespace std;
 
@@ -54,8 +55,10 @@ public:
     void setCreationTime(QDateTime creationTime);
     void setUpdateTime(QDateTime updateTime);
 
-
     void toString();
+
+    //static functions
+    static File * convertToFile(QFileInfo);
 };
 
 #endif // CLASSFILE_H

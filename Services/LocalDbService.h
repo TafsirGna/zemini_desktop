@@ -3,8 +3,8 @@
 
 #include <QDebug>
 #include <QFileInfoList>
-#include "Database\EntityManagers\UserManager.h"
-#include "Database\EntityManagers\FileManager.h"
+#include "Database/EntityManagers/UserManager.h"
+#include "Database/EntityManagers/FileManager.h"
 #include <Services/ZeminiService.h>
 
 class LocalDBService: public ZeminiService
@@ -51,6 +51,7 @@ public slots:
 
 signals:
     void fileToSend(File);
+    void userLoggedIn();
 
 };
 #endif // LOCALDBSERVICE_H
