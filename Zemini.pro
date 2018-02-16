@@ -33,6 +33,11 @@ LIBS += C:\OpenCV\OpenCV3.1\build\bin\libopencv_imgcodecs310.dll
 #LIBS += C:\OpenCV\OpenCV3.1\build\bin\libopencv_imgcodecs310d.dll
 #}
 
+INCLUDEPATH += C:\OpenSSL-Win64\include
+
+LIBS += -LC:\OpenSSL-Win64\lib -llibeay32
+LIBS += -LC:\OpenSSL-Win64\lib -lssleay32
+
 
 
 SOURCES += main.cpp\

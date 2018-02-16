@@ -7,7 +7,7 @@ DirectoryService::DirectoryService()
 {
     fsWatchers = new QList<QFileSystemWatcher*>();
     //updated = false;
-    fileToFrame();
+    //fileToFrame();
 }
 
 void DirectoryService::start()

@@ -20,6 +20,7 @@
 #include <Services/ZeminiService.h>
 #include <QSslSocket>
 #include "Database/Entities/File.h"
+#include "openssl/rsa.h"
 
 class NetworkService : public ZeminiService
 {
