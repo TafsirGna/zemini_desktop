@@ -1,33 +1,64 @@
 #include "Database\EntityManagers\typemanager.h"
 #include <QException>
 
-TypeManager::TypeManager(CategoryManager * categoryManager): AbstractManager()
+/**
+ * @brief TypeManager::TypeManager
+ */
+TypeManager::TypeManager(): AbstractManager()
 {
-    this->categoryManager = categoryManager;
-}
-/***        Another builder         ***/
-TypeManager::TypeManager() : AbstractManager()
-{
-    this->categoryManager = new CategoryManager();
 
-    /*
-    //query->exec("select idcategory,name from type where id = '"+QString::number(id)+"'");
-    query->exec("select idcategory,name from type where id = 3");
-    if (!query->isActive())
-    {
+}
+
+/**
+ * @brief TypeManager::getByName
+ * @param name
+ * @return
+ */
+Type * TypeManager::getByName(QString name)
+{
+    query->exec("select id, name, suffix from Type where name = '"+name+"'");
+    if (!query->isActive()){
         qDebug()<<"Error when selecting type : " + query->lastError().text();
         return NULL;
     }
+    if (query->next())
+        return new Type(query->value(0).toInt(),query->value(1).toString(),query->value(2).toString());
 
-    if (query->size() == 0) return NULL;
+    return NULL;
+}
 
-    query->next();
+/**
+ * @brief TypeManager::getBySuffix
+ * @param suffix
+ * @return
+ */
+Type * TypeManager::getBySuffix(QString suffix)
+{
+    query->exec("select id, name, suffix from Type where suffix = '"+suffix+"'");
+    if (!query->isActive()){
+        qDebug()<<"Error when selecting type : " + query->lastError().text();
+        return NULL;
+    }
+    if (query->next())
+        return new Type(query->value(0).toInt(),query->value(1).toString(),query->value(2).toString());
 
-    qDebug() << "type --- 0 "+ query->value(0).toInt();
+    return NULL;
+}
 
-    Category * category = NULL;//categoryManager->findCategoryById(query->value(2).toInt());
-    return new Type(id,query->value(1).toString(),category);
-    */
+/**
+ * @brief TypeManager::insertType
+ * @param type
+ * @return
+ */
+bool TypeManager::insertType(Type * type)
+{
+    QString request = "insert into Type value(NULL, '"+type->getName()+"', '"+type->getSuffix()+"')";
+    query->exec(request);
+    if (!query->isActive()){
+        qDebug() << "Failed in inserting a new type : " << type->getSuffix() << " ? " << query->lastError().text() << endl;
+        return false;
+    }
+    return true;
 }
 
 /***        function designed to retrieve a type object from the local database     ***/
@@ -52,26 +83,6 @@ Type * TypeManager::findTypeById(int id)
     }
     else
         return getDefaultType();
-}
-
-Type * TypeManager::findTypeByName(QString name)
-{
-    query->exec("select type.id,idcategory,type.name from type,category  where category.id = type.idcategory and  category.name = '"+name+"'");
-    if (!query->isActive())
-    {
-        qDebug()<<"Error when selecting type : " + query->lastError().text();
-        return NULL;
-    }
-
-    if (query->next())
-    {
-        Category * category = new Category(query->value(1).toInt(),name);
-        return new Type(query->value(0).toInt(),query->value(2).toString(),category);
-    }
-    else
-    {
-        return getDefaultType();
-    }
 }
 
 int TypeManager::getTypeSize(int idType)

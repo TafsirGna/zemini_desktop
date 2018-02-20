@@ -41,17 +41,20 @@ void UserManager::saveUser(User user)
 }
 */
 
+/**
+ * @brief UserManager::insertUser
+ * @param user
+ * @return
+ */
 bool UserManager::insertUser(User user)
 {
-    //QString request = "INSERT INTO User VALUES("+QString::number(user.getId())+", '"+user.getFamilyname()+"', '"+user.getFirstname()+"', '"+user.getEmail()+"','"+user.getUsername()+"','"+user.getPassword()+"','"+user.getDateInscription().toString(Parameters::timeFormat())+"',"+((user.isActivated()) ? QString::number(1) : QString::number(0))+")";
     QString request = "INSERT INTO User VALUES("+QString::number(user.getId())+", '"+user.getFamilyname()+"', '"+user.getFirstname()+"', '"+user.getEmail()+"','"+user.getUsername()+"','"+user.getPassword()+"',"+((user.isActivated()) ? QString::number(1) : QString::number(0))+")";
-    qDebug() << request << endl;
     query->exec(request);
     if(!query->isActive()){
         qDebug()<<"Erreur insertion User: " + query->lastError().text();
         return false;
     }
-    qDebug()<<"Success inserting User: " + query->lastError().text();
+    qDebug()<<"Success inserting User: " + request << endl;
     return true;
 }
 
@@ -80,39 +83,4 @@ User * UserManager::getUser()
     }
     return NULL;
 }
-
-void UserManager::downloadUser(User *user)
-{
-    //if the user is connected then the data on the user is sent to the server
-
-    //this->action = 4;
-
-    /*QUrl params(str_Url+"?action=4"+
-                "&email=" + user->getEmail() +
-                "&password=" + user->getPassword() +
-                "&familyname="+ user->getFamilyname()+
-                "&firstname="+ user->getFirstname()+
-                "&username=" + user->getUsername()
-                );*/
-
-    //request.setHeader(QNetworkRequest::ContentTypeHeader,"application/x-www-form-urlencoded");
-    //this->accessManager->get(QNetworkRequest(params));
-}
-/*
-void UserManager::showUsersInDb()
-{
-    query->exec("select id,familyname, firstname, email, username, password, dateinscription, activated from user");
-    qDebug() << " --- listing of users";
-    while (query->next())
-    {
-        //qDebug() << "a user 's here !";
-        User * user = new User(query->value(0).toInt(),query->value(1).toString(),
-                               query->value(2).toString(),query->value(3).toString(),
-                               query->value(4).toString(),query->value(5).toString());
-        user->setActivated(((query->value(7).toInt() == 0) ? false : true ));
-        user->toString();
-        //return user;
-    }
-    qDebug() << " --- end of listing ";
-}*/
 

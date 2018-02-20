@@ -3,7 +3,7 @@
 
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
-#include "Config\Parameters.h"
+#include "Config/Parameters.h"
 #include <QWidget>
 #include <QNetworkReply>
 #include <QDebug>
@@ -29,11 +29,18 @@ private:
         QNetworkAccessManager * networkAccessManager;
         QTimer * timer;
         bool connected;
-        int requestCode;
+        //QList<File*> *filesToSave;
         //QSslSocket * sslSocket;
 
         //Functions
+        void handleBadRequestReply(QNetworkReply*);
+        void handleGoodRequestReply(QNetworkReply*);
 
+        // Static constants
+        const static int CODE_REGISTER_USER;
+        const static int CODE_USER_LOGIN;
+        const static int CODE_DB_INIT;
+        const static int CODE_FILE_SAVE;
 
 public:
         NetworkService();
@@ -45,7 +52,7 @@ public slots:
         void handleRequestReply(QNetworkReply*);
         void syncDb();
         void sendUser(User *);
-        void sendFile(File);
+        void sendFile(File file);
 
 private slots:
         void sslSocketConnected();
@@ -54,6 +61,7 @@ signals:
         void credentialsChecked(int, User *);
         void initDataGot(QList<Category> *);
         void readyToBackUp();
+        void fileSaved(int);
 };
 
 #endif // NETWORKSERVICE_H

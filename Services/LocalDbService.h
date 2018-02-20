@@ -48,6 +48,8 @@ public slots:
     void updateDirContent(QDir);
     bool deleteDir(QDir);
     void startBackingUp();
+    void markFileSaved(int);
+    void initDb(QList<Category> *);
 
 signals:
     void fileToSend(File);

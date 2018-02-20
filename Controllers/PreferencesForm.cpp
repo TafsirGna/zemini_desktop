@@ -2,7 +2,7 @@
 #include "ui_preferencesform.h"
 #include <QDesktopWidget>
 
-ZeminiPreferencesForm::ZeminiPreferencesForm(QList<AbstractManager> * listEntitiesManager,QWidget *parent,QSqlDatabase * db) : QWidget(parent), ui(new Ui::ZeminiPreferencesForm)
+PreferencesForm::PreferencesForm(QWidget *parent, ServiceContainer * serviceContainer) : QWidget(parent), ui(new Ui::PreferencesForm)
 {
     ui->setupUi(this);
 
@@ -23,11 +23,6 @@ ZeminiPreferencesForm::ZeminiPreferencesForm(QList<AbstractManager> * listEntiti
 
     connect(ui->tabWidget, SIGNAL(currentChanged(int)),this, SLOT(handle_current_tab_changed(int)));
     ui->tabWidget->setCurrentIndex(0);
-
-    // here, i retrieve all the managers, i've passed as arguments to this object
-    typeManager = (TypeManager *) &(listEntitiesManager->at(1));
-    userManager = (UserManager *) &(listEntitiesManager->at(4));
-    //dirManager = (DirectoryManager *) &(listEntitiesManager->at(2));
 
     // here's the code that calculates the percentage of each type and shows it under the statistics tab
     /*
@@ -58,22 +53,22 @@ ZeminiPreferencesForm::ZeminiPreferencesForm(QList<AbstractManager> * listEntiti
         */
 }
 
-ZeminiPreferencesForm::~ZeminiPreferencesForm()
+PreferencesForm::~PreferencesForm()
 {
     delete ui;
 }
 
-void ZeminiPreferencesForm::on_bt_ok_clicked()
+void PreferencesForm::on_bt_ok_clicked()
 {
     this->hide();
 }
 
-void ZeminiPreferencesForm::on_bt_cancel_clicked()
+void PreferencesForm::on_bt_cancel_clicked()
 {
     this->hide();
 }
 
-void ZeminiPreferencesForm::on_bt_apply_clicked()
+void PreferencesForm::on_bt_apply_clicked()
 {
     int response = QMessageBox::warning(this, "Confirmation" , "Validez-vous les modifications que vous souhaitez appliquer ?", QMessageBox::Yes, QMessageBox::No);
     if (response == QMessageBox::Yes)
@@ -111,7 +106,7 @@ void ZeminiPreferencesForm::on_bt_apply_clicked()
     this->hide();
 }
 
-void ZeminiPreferencesForm::on_bt_otherLocation_clicked()
+void PreferencesForm::on_bt_otherLocation_clicked()
 {
     QString folderName = QFileDialog::getExistingDirectory(this);
     if (!folderName.isEmpty())
@@ -121,7 +116,7 @@ void ZeminiPreferencesForm::on_bt_otherLocation_clicked()
     //QDesktopServices::openUrl(QUrl("file:///"+fileName, QUrl::TolerantMode));
 }
 
-void ZeminiPreferencesForm::on_chkbx_updatecompte_clicked(bool checked)
+void PreferencesForm::on_chkbx_updatecompte_clicked(bool checked)
 {
     if (checked)
     {
@@ -141,7 +136,7 @@ void ZeminiPreferencesForm::on_chkbx_updatecompte_clicked(bool checked)
     }
 }
 
-void ZeminiPreferencesForm::handle_current_tab_changed(int position)
+void PreferencesForm::handle_current_tab_changed(int position)
 {
     switch (position)
     {

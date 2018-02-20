@@ -1,27 +1,28 @@
-#ifndef ZEMINIPREFERENCESFORM_H
-#define ZEMINIPREFERENCESFORM_H
+#ifndef PreferencesForm_H
+#define PreferencesForm_H
 
 #include <QWidget>
-#include "Database\EntityManagers\AbstractManager.h"
-#include "Database\EntityManagers\TypeManager.h"
+#include "Database/EntityManagers/AbstractManager.h"
+#include "Database/EntityManagers/TypeManager.h"
 #include <QFileDialog>
-#include "Database\EntityManagers\UserManager.h"
+#include "Database/EntityManagers/UserManager.h"
 #include <QFileSystemWatcher>
+#include <Services/ServiceContainer.h>
 
 namespace Ui {
-    class ZeminiPreferencesForm;
+    class PreferencesForm;
 }
 
-class ZeminiPreferencesForm : public QWidget
+class PreferencesForm : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit ZeminiPreferencesForm(QList<AbstractManager> * listEntitiesManager,QWidget *parent = 0, QSqlDatabase * db = 0);
-    ~ZeminiPreferencesForm();
+    explicit PreferencesForm(QWidget *parent = 0, ServiceContainer * serviceContainer = 0);
+    ~PreferencesForm();
 
 private:
-    Ui::ZeminiPreferencesForm *ui;
+    Ui::PreferencesForm *ui;
 
     TypeManager * typeManager;
     UserManager * userManager;
@@ -40,4 +41,4 @@ signals:
     void setupDirectory(QStringList);
 };
 
-#endif // ZEMINIPREFERENCESFORM_H
+#endif // PreferencesForm_H

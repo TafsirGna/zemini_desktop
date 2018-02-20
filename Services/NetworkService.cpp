@@ -1,6 +1,14 @@
 #include "NetworkService.h"
 
-/***            Constructors            ***/
+const int NetworkService::CODE_DB_INIT = 0;
+const int  NetworkService::CODE_REGISTER_USER = 1;
+const int NetworkService::CODE_USER_LOGIN = 2;
+const int NetworkService::CODE_FILE_SAVE = 3;
+
+/**
+ * @brief NetworkService::NetworkService
+ * Builder
+ */
 NetworkService::NetworkService()
 {
     networkAccessManager = new QNetworkAccessManager(this);
@@ -31,70 +39,17 @@ void NetworkService::sslSocketConnected()
 // this function sends a request to the remote server to get its initial data to get started
 void NetworkService::getInitialDbData()
 {
-    // sending the query to get all data necessary
-    requestCode = 3;
-    networkAccessManager->get(QNetworkRequest(QUrl(Parameters::url+"/"+QString::number(requestCode)+"/categories")));
-    //qDebug() << Parameters::url+"/"+QString::number(requestCode)+"/categories" << endl;
+    networkAccessManager->get(QNetworkRequest(QUrl(Parameters::URL+"/init_db")));
+    //qDebug() << Parameters::url+"/init_db" << endl;
 }
 
 void NetworkService::handleRequestReply(QNetworkReply * reply)
 {
     if (reply->error()!= QNetworkReply::NoError){
-
-        switch (requestCode) {
-        case 1:{
-
-            break;
-        }
-        case 2:{ // login authentification
-            connected = true;
-            User * user = NULL;
-            int resultCode = 0;
-            emit credentialsChecked(resultCode, user);
-            break;
-
-        }
-        case 3:{
-            connected = false;
-            QList<Category> * categories = NULL;
-            emit initDataGot(categories);
-            break;
-        }
-        }
+        handleBadRequestReply(reply);
         return;
-
     }
-
-    connected = true;
-    // Processing the response of the requests sent
-    QString response = (QString)reply->readAll();
-    QJsonDocument jsonResponse = QJsonDocument::fromJson(response.toUtf8());
-    QJsonObject jsonObject = jsonResponse.object();
-    QVariantMap json_map = jsonObject.toVariantMap();
-
-    int requestCode = json_map["requestCode"].toInt();
-    switch (requestCode) {
-    case 1: // sign up request code
-
-        break;
-    case 2:{ // login request code
-        // building an user object from the data got
-        User * user = NULL;
-        int resultCode = 1;
-        if (json_map["success"].toBool()){
-            user = Functions::fromJsonToUser(json_map);
-        }
-        emit credentialsChecked(resultCode, user);
-        break;
-    }
-    case 3: // getting initial data to get started
-        QList<Category> * categories = Functions::fromJsonToCategories(json_map);
-        emit initDataGot(categories);
-        break;
-    //default:
-    //    break;
-    }
-
+    handleGoodRequestReply(reply);
 }
 
 void NetworkService::syncDb()
@@ -107,19 +62,98 @@ void NetworkService::sendUser(User * user){
 
 }
 
+/**
+ * @brief NetworkService::checkCredentials
+ * @param email
+ * @param password
+ */
 void NetworkService::checkCredentials(QString email, QString password)
 {
-    requestCode = 2; // login request code
     connected = false;
-    QString address = Parameters::url+
-            "/login/"+QString::number(requestCode)+
-            "/"+email+
+    QString address = Parameters::URL+
+            "/login/"+email+
             "/"+password;
     qDebug() << "check " << address << endl;
     networkAccessManager->get(QNetworkRequest(QUrl(address)));
 }
 
-void NetworkService::sendFile(File dir)
+/**
+ * @brief NetworkService::sendFile
+ * Send the file to the remote server in order to be saved
+ * @param dir
+ * @return
+ */
+void NetworkService::sendFile(File file)
 {
+    //this->filesToSave->append(&file);
+    networkAccessManager->get(QNetworkRequest(QUrl(Parameters::URL+"/"+QString::number(NetworkService::CODE_FILE_SAVE)+"/save_file/"+file.serialize())));
+}
 
+/**
+ * @brief NetworkService::handleBadRequestReply
+ * @param reply
+ */
+void NetworkService::handleBadRequestReply(QNetworkReply * reply)
+{
+    int requestCode;
+    switch (requestCode) {
+    case NetworkService::CODE_REGISTER_USER :{
+
+        break;
+    }
+    case NetworkService::CODE_USER_LOGIN:{ // login authentification
+        connected = true;
+        User * user = NULL;
+        int resultCode = 0;
+        emit credentialsChecked(resultCode, user);
+        break;
+
+    }
+    case NetworkService::CODE_DB_INIT:{
+        connected = false;
+        QList<Category> * categories = NULL;
+        emit initDataGot(categories);
+        break;
+    }
+    }
+}
+
+/**
+ * @brief NetworkService::handleGoodRequestReply
+ * @param reply
+ */
+void NetworkService::handleGoodRequestReply(QNetworkReply * reply)
+{
+    connected = true;
+    // Processing the response of the requests sent
+    QString response = (QString)reply->readAll();
+    QJsonDocument jsonResponse = QJsonDocument::fromJson(response.toUtf8());
+    QJsonObject jsonObject = jsonResponse.object();
+    QVariantMap json_map = jsonObject.toVariantMap();
+
+    int requestCode = json_map["requestCode"].toInt();
+    switch (requestCode) {
+    case NetworkService::CODE_REGISTER_USER:{
+
+        break;
+    }
+    case NetworkService::CODE_USER_LOGIN:{
+        User * user = NULL;
+        int resultCode = 1;
+        if (json_map["success"].toBool()){
+            user = Functions::fromJsonToUser(json_map);
+        }
+        emit credentialsChecked(resultCode, user);
+        break;
+    }
+    case NetworkService::CODE_DB_INIT:{
+        QList<Category> * categories = Functions::fromJsonToCategories(json_map);
+        emit initDataGot(categories);
+        break;
+    }
+    case NetworkService::CODE_FILE_SAVE:{
+        int fileId = json_map["success"].toInt();
+        emit fileSaved(fileId);
+    }
+    }
 }

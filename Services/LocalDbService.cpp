@@ -102,19 +102,38 @@ AbstractManager * LocalDBService::getManager(QString manager)
     return NULL;
 }
 
+/**
+ * @brief LocalDBService::save
+ * @param fileInfo
+ * @return
+ */
 bool LocalDBService::save(QFileInfo fileInfo)
 {
-    //qDebug() << " in localDBservice save function " << endl;
-    File *file = File::convertToFile(fileInfo);
+    // Setting necessary arguments to convert the fileInfo to a File object
+    getFileManager()->setCategoryManager(getCategoryManager());
+    qDebug() << " in localDBservice save function 0 " << endl;
+    getFileManager()->setTypeManager(getTypeManager());
+    // Converting ...
+    File *file = getFileManager()->convertToFile(fileInfo);
+    qDebug() << " in localDBservice save function " << endl;
     return save(file);
 }
 
+/**
+ * @brief LocalDBService::save
+ * @param user
+ * @return
+ */
 bool LocalDBService::save(User * user)
 {
     this->userManager->insertUser(*user);
     emit userLoggedIn();
 }
 
+/**
+ * @brief LocalDBService::getUserManager
+ * @return
+ */
 UserManager * LocalDBService::getUserManager()
 {
     if (userManager == NULL)
@@ -122,6 +141,10 @@ UserManager * LocalDBService::getUserManager()
     return userManager;
 }
 
+/**
+ * @brief LocalDBService::getCategoryManager
+ * @return
+ */
 CategoryManager * LocalDBService::getCategoryManager()
 {
     if (categoryManager == NULL)
@@ -129,6 +152,10 @@ CategoryManager * LocalDBService::getCategoryManager()
     return categoryManager;
 }
 
+/**
+ * @brief LocalDBService::getTypeManager
+ * @return
+ */
 TypeManager * LocalDBService::getTypeManager()
 {
     if (typeManager == NULL)
@@ -136,6 +163,10 @@ TypeManager * LocalDBService::getTypeManager()
     return typeManager;
 }
 
+/**
+ * @brief LocalDBService::getFileManager
+ * @return
+ */
 FileManager * LocalDBService::getFileManager()
 {
     if (fileManager == NULL)
@@ -158,6 +189,9 @@ bool LocalDBService::deleteDir(QDir dir)
     return false;//getDirectoryManager()->deleteDirectory(directory);
 }
 
+/**
+ * @brief LocalDBService::startBackingUp
+ */
 void LocalDBService::startBackingUp()
 {
     // Backing up all files
@@ -166,4 +200,32 @@ void LocalDBService::startBackingUp()
     for(int i = 0; i < size; i++){
         emit fileToSend(notSavedFiles.at(i));
     }
+}
+
+/**
+ * @brief LocalDBService::markFileSaved
+ * @param fileId
+ */
+void LocalDBService::markFileSaved(int fileId)
+{
+    getFileManager()->setFileSaved(fileId);
+}
+
+void LocalDBService::initDb(QList<Category> * categories)
+{
+    // inserting the data received from the remote server
+    if (categories != NULL){
+        for (int i = 0; i < categories->size(); i++){
+            Category category = categories->at(i);
+            if (getCategoryManager()->getByName(category.getName()) == NULL){
+                if (!getCategoryManager()->addCategory(categories->at(i)))
+                    qDebug() << "category " << category.getName() <<" not inserted : " << endl;
+                else
+                    qDebug() << "category " << category.getName() <<" inserted : " << endl;
+            }
+        }
+    }
+
+    // inserting other necessary data
+    getTypeManager()->insertType(new Type(0, "directory", ""));
 }

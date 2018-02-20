@@ -27,7 +27,7 @@ class MainController : public QWidget
 private:
     // Variables
     QSystemTrayIcon * trayIcon;
-    ZeminiPreferencesForm * zeminiPreferencesForm;
+    PreferencesForm * preferencesForm;
     RegisterForm * registerForm;
     User * m_user;
     LogInForm * logInForm;
@@ -46,28 +46,12 @@ public:
     MainController();
     void start();
     ZeminiService * getService(QString);
-    /*
-    void handleReplyUserReceived(QNetworkReply *);
-    void handleUserData1(User *);
-    void handleUserData2(User *);
-    void backToWelcomeForm();
-    void handleRecoveryData(User *);
-    void updateLocalDatabase(QFileInfoList *);
-    void updateRemoteDatabase();
-    void handleEndofRequest(QNetworkReply *);
-    void handleDirectoryChanges(QString path);
-    void handleManagerEndofProcessing(int);
-    void addFileSystemWatcher(QFileSystemWatcher *);
-    void addFileSystemWatcher(QStringList);
-    void initializeFSWatcher();
-    */
 
 private slots:
     void showDirectory();
     void showRegisterForm();
     void manageActivation(QSystemTrayIcon::ActivationReason);
     void showLogInForm();
-    void insertInitDbData(QList<Category> * );
     void showPreferences();
     void showZeminiWebSite();
     void setArgs(AbstractController * );

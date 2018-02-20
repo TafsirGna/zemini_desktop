@@ -12,11 +12,11 @@ class Parameters
 {
 public:
 
-    const static QString appVersion;
+    const static QString APP_VERSION;
 
-    const static QString webSite;
+    const static QString WEB_SITE;
 
-    const static QString url;
+    const static QString URL;
 
     const static int networkTimerFrequency;
 
@@ -39,6 +39,10 @@ public:
     const static QSqlDatabase localDb;
 
     const static QString refreshingIconLocation;
+
+    const static QString NET_REQUEST_SEPARATOR;
+
+    const static QString ROOT_DIR_NAME;
 
     /*
     static QString getTypeByPath(QString path)

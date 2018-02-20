@@ -12,12 +12,14 @@ private :
     CategoryManager * categoryManager;
 public:
     TypeManager();
-    TypeManager(CategoryManager * categoryManager);
+    Type * getByName(QString);
+    Type * getBySuffix(QString);
+
+    bool insertType(Type *);
 
     /*
     //functions to retrieve a type object from the local database using a given critera
     Type * findTypeById(int id);
-    Type * findTypeByName(QString name);
     int getTypeSize(int idType);
     int getAllTypesSize();
     int getTypeSize(QString nameType);

@@ -21,7 +21,6 @@ public:
     void updateUser(User user);
     void deleteUser(User user);
     User * getUser();
-    void downloadUser(User * user);
 
 };
 

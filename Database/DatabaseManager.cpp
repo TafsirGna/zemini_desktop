@@ -38,7 +38,7 @@ void DatabaseManager::createTables(const QString &conName)
     QSqlQuery query(db);
 
     QString userCreateQuery = "CREATE TABLE IF NOT EXISTS User("
-                                "id INT PRIMARY KEY NOT NULL AUTOINCREMENT,"
+                                "id INTEGER PRIMARY KEY AUTOINCREMENT,"
                                 "familyname TEXT,"
                                 "firstname TEXT,"
                                 "email TEXT,"
@@ -48,31 +48,29 @@ void DatabaseManager::createTables(const QString &conName)
                                 ");";
 
     QString categoryCreateQuery = "CREATE TABLE IF NOT EXISTS Category("
-                                  "id INT PRIMARY KEY NOT NULL AUTOINCREMENT,"
+                                  "id INTEGER PRIMARY KEY AUTOINCREMENT,"
                                   "name TEXT NOT NULL UNIQUE"
                                   ");";
 
     QString typeCreateQuery = "CREATE TABLE IF NOT EXISTS Type("
-                              "id INT NOT NULL UNIQUE AUTOINCREMENT,"
+                              "id INTEGER PRIMARY KEY AUTOINCREMENT,"
                               "name TEXT NOT NULL,"
-                              "suffix TEXT,"
-                              "CONSTRAINT pk_type PRIMARY KEY(id)"
+                              "suffix TEXT UNIQUE"
                               ");";
 
     QString fileCreateQuery = "CREATE TABLE IF NOT EXISTS File("
-                              "id INT NOT NULL UNIQUE AUTOINCREMENT,"
+                              "id INTEGER PRIMARY KEY AUTOINCREMENT,"
                               "iddir INT NULL,"
                               "idtype TEXT NULL,"
-                              "idcategory TEXT NULL"
-                              "creationtime TEXT,"
-                              "updatetime TEXT,"
+                              "idcategory TEXT NULL,"
+                              "createdat TEXT,"
+                              "updatedat TEXT,"
                               "filename TEXT,"
                               "path TEXT UNIQUE,"
                               "size TEXT,"
                               "saved INT,"
-                              "CONSTRAINT pk_file PRIMARY KEY(id),"
-                              "CONSTRAINT fk_file_id_type FOREIGN KEY(idtype) REFERENCES Type(id)"
-                              "CONSTRAINT fk_file_id_file FOREIGN KEY(iddir) REFERENCES Type(id)"
+                              "CONSTRAINT fk_file_id_type FOREIGN KEY(idtype) REFERENCES Type(id),"
+                              "CONSTRAINT fk_file_id_file FOREIGN KEY(iddir) REFERENCES Type(id),"
                               "CONSTRAINT fk_file_id_category FOREIGN KEY(idcategory) REFERENCES Category(id)"
                               ");";
 
@@ -94,6 +92,6 @@ void DatabaseManager::createTables(const QString &conName)
     query.exec(fileCreateQuery);
 
     if(!query.isActive())
-        qDebug()<<"An error occured while creating table content: "+query.lastError().text();
+        qDebug()<<"An error occured while creating table File: "+query.lastError().text();
 }
 

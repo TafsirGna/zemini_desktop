@@ -9,13 +9,12 @@ class FileManager : public AbstractManager
     Q_OBJECT
 private :
     TypeManager * typeManager;
+    CategoryManager * categoryManager;
 
 protected:
-    File * convertToFile(QFileInfo);
 
 public :
     FileManager();
-    FileManager(TypeManager * typeManager);
 
     bool saveFile(File * file);
     bool updateFile(File * file);
@@ -23,16 +22,16 @@ public :
     bool cleanDirFile(QDir);
     QList<File> getAllFiles();
     QList<File> getNotSavedFiles();
+    bool setFileSaved(int);
+    File * convertToFile(QFileInfo);
+    File * getByFileName(QString);
 
-    /*
-    File * findFileByPath(QString path);    //As the path and the filename are unique, finding a file by its filepath return only one file object
-    void showDatabaseFiles();
-    void checkFilesIntegrity();
-    QList<File> findFileByIdDirectory(int iddirectory);
-    QList<File> findFileByStatus(int status);
-    void saveUpdatesToRemoteDB();
-    void resetDatabaseFiles();
-    */
+    void setCategoryManager(CategoryManager *);
+    void setTypeManager(TypeManager *);
+
+    Category * getCategory(QFileInfo);
+    Type * getType(QFileInfo);
+    File * getFolder(QFileInfo);
 
 public slots:
 

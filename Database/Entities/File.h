@@ -7,6 +7,7 @@
 #include "Database/Entities/Category.h"
 #include <QDebug>
 #include <QFileInfo>
+#include <Config/Parameters.h>
 
 using namespace std;
 
@@ -14,8 +15,8 @@ class File
 {
 private:
     int id;
-    QDateTime creationTime;
-    QDateTime updateTime;
+    QDateTime createdAt;
+    QDateTime updatedAt;
     QString path;
     QString fileName;
     int size;
@@ -27,7 +28,7 @@ private:
 public:
     //Constructors
     File();
-    File(int id, QString fileName, QString path, QDateTime creationTime, QDateTime updateTime, int size, bool saved, Type * type, Category * category, File * folder);
+    File(int id, QString fileName, QString path, QDateTime createdAt, QDateTime updatedAt, int size, bool saved, Type * type, Category * category, File * folder);
     File(const File & file);
     File & operator =(const File & file);
 
@@ -36,8 +37,8 @@ public:
     QString getPath();
     QString getFileName();
     bool isSaved();
-    QDateTime getUpdateTime();
-    QDateTime getCreationTime();
+    QDateTime getUpdatedAt();
+    QDateTime getCreatedAt();
     Category * getCategory();
     Type * getType();
     File * getFolder();
@@ -52,13 +53,15 @@ public:
     void setType(Type * type);
     void setFileName(QString fileName);
     void setSaved(bool saved);
-    void setCreationTime(QDateTime creationTime);
-    void setUpdateTime(QDateTime updateTime);
+    void setCreatedAt(QDateTime);
+    void setUpdatedAt(QDateTime);
 
     void toString();
+    QString serialize();
 
-    //static functions
-    static File * convertToFile(QFileInfo);
+    //static variables
+    const static int FILE_SAVED;
+    const static int FILE_NOT_SAVED;
 };
 
 #endif // CLASSFILE_H

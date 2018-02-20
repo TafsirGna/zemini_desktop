@@ -1,12 +1,15 @@
 #include "Database\Entities\File.h"
 
+const int File::FILE_SAVED = 1;
+const int File::FILE_NOT_SAVED = 0;
+
 File::File()
 {
     //Nothing to do for now
 }
 
 /***            A second constructor            ***/
-File::File(int id, QString fileName, QString path, QDateTime creationTime, QDateTime updateTime, int size, bool saved, Type *type, Category *category, File * folder)
+File::File(int id, QString fileName, QString path, QDateTime createdAt, QDateTime updatedAt, int size, bool saved, Type *type, Category *category, File * folder)
 {
     this->id = id;
     this->fileName = fileName;
@@ -15,8 +18,8 @@ File::File(int id, QString fileName, QString path, QDateTime creationTime, QDate
     this->saved = saved;
     this->category = category;
     this->folder = folder;
-    this->creationTime = creationTime;
-    this->updateTime = updateTime;
+    this->createdAt = createdAt;
+    this->updatedAt = updatedAt;
     this->type = type;
 }
 
@@ -40,12 +43,12 @@ File & File::operator =(const File & file)
     this->id = file.id;
     this->fileName = file.fileName;
     this->path = file.path;
-    this->creationTime = file.creationTime;
+    this->createdAt = file.createdAt;
     this->saved = file.saved;
     this->type = file.type;
     this->size = file.size;
     this->folder = file.folder;
-    this->updateTime = file.updateTime;
+    this->updatedAt = file.updatedAt;
     this->category = file.category;
     return *this;
 }
@@ -81,18 +84,18 @@ QString File::getPath()
  * @brief File::getCreationTime
  * @return
  */
-QDateTime File::getCreationTime()
+QDateTime File::getCreatedAt()
 {
-    return creationTime;
+    return createdAt;
 }
 
 /**
  * @brief File::getUpdateTime
  * @return
  */
-QDateTime File::getUpdateTime()
+QDateTime File::getUpdatedAt()
 {
-    return updateTime;
+    return updatedAt;
 }
 
 /**
@@ -189,18 +192,18 @@ void File::setFolder(File *folder)
  * @brief File::setUpdateTime
  * @param updateTime
  */
-void File::setUpdateTime(QDateTime updateTime)
+void File::setUpdatedAt(QDateTime updatedAt)
 {
-    this->updateTime = updateTime;
+    this->updatedAt = updatedAt;
 }
 
 /**
  * @brief File::setCreationTime
  * @param creationTime
  */
-void File::setCreationTime(QDateTime creationTime)
+void File::setCreatedAt(QDateTime createdAt)
 {
-    this->creationTime = creationTime;
+    this->createdAt = createdAt;
 }
 
 /**
@@ -232,11 +235,14 @@ void File::toString()
     //qDebug() << "id : "+ QString::number(id) + " - name : "+ name + " - suffix : "+ suffix + " - path : "+ path + " - datecreation : " + datecreation.toString() + " - status : "+ QString::number(status) + " - size : " + QString::number(size) + " - iddirectory : "+ QString::number(directory->getId()) + " - idtype : " + QString::number(type->getId()) ;
 }
 
-File *File::convertToFile(QFileInfo fileInfo)
+/**
+ * @brief File::serialize
+ * @return
+ */
+QString File::serialize()
 {
-    //File * file(0, fileInfo.fileName(), fileInfo.absoluteFilePath(), fileInfo.created(), fileInfo.lastModified(), fileInfo.size(), 0, NULL, NULL, NULL);
-    //return file;
-    return NULL;
+    QString res = "";
+    return res;
 }
 
 

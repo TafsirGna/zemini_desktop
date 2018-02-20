@@ -18,12 +18,21 @@ void DirectoryService::start()
 void DirectoryService::watchZeminiFolder()
 {
     // i start going through all files and directories to store and track them
-    QFileInfo currentObject(Parameters::storageDirectory);
+    QDir root_dir(Parameters::storageDirectory);
     QFileInfoList * queue = new QFileInfoList();
-    fsWatchers->append(new QFileSystemWatcher());
-    connect(fsWatchers->last(), SIGNAL(directoryChanged(QString)), this, SLOT(handleDirChanges(QString)));
+    (*queue) += root_dir.entryInfoList(QDir::Files | QDir::NoSymLinks | QDir::AllDirs | QDir::NoDotAndDotDot);
+
+    if (queue->size() == 0){
+        QMessageBox::critical(0, "Zemini error", "Some folders are currently missing in the workplace, preventing the app from working correctly. Please! Try to reinstall Zemini!",QMessageBox::Ok);
+        return;
+    }
+
+    QFileInfo currentObject = (queue->last());
+    //fsWatchers->append(new QFileSystemWatcher());
+    //connect(fsWatchers->last(), SIGNAL(directoryChanged(QString)), this, SLOT(handleDirChanges(QString)));
+    int i(0);
     while(true){
-        //qDebug() << currentObject.absoluteFilePath() << endl;
+        qDebug() << "start watching : " << endl;
         if (currentObject.isFile()){
             storeInDb(currentObject);
         }
@@ -31,7 +40,7 @@ void DirectoryService::watchZeminiFolder()
             // store the directory
             storeInDb(currentObject);
             // add to a fsWatcher
-            watchFolder(currentObject);
+            //watchFolder(currentObject);
             // get its children
             QDir currentDirectory(currentObject.absoluteFilePath());
             (*queue) += currentDirectory.entryInfoList(QDir::Files | QDir::NoSymLinks | QDir::AllDirs | QDir::NoDotAndDotDot);
@@ -40,6 +49,9 @@ void DirectoryService::watchZeminiFolder()
             break;
         currentObject = (queue->last());
         queue->removeLast();
+        qDebug() << "end watching " << endl;
+        if (i++ == 2)
+            break;
     }
 }
 
