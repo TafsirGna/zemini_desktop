@@ -24,25 +24,27 @@ private:
     Type * type;
     Category * category;
     File * folder;
+    QFileInfo * thumbnail;
 
 public:
     //Constructors
     File();
-    File(int id, QString fileName, QString path, QDateTime createdAt, QDateTime updatedAt, int size, bool saved, Type * type, Category * category, File * folder);
+    File(int id, QString fileName, QString path, QDateTime createdAt, QDateTime updatedAt, int size, bool saved, QFileInfo *thumbnail, Type * type, Category * category, File * folder);
     File(const File & file);
     File & operator =(const File & file);
 
     //Getters
-    int getId();
-    QString getPath();
-    QString getFileName();
-    bool isSaved();
-    QDateTime getUpdatedAt();
-    QDateTime getCreatedAt();
-    Category * getCategory();
-    Type * getType();
-    File * getFolder();
-    int getSize();
+    int getId() const;
+    QString getPath() const;
+    QString getFileName() const;
+    bool isSaved() const;
+    QDateTime getUpdatedAt() const;
+    QDateTime getCreatedAt() const;
+    Category * getCategory() const;
+    Type * getType() const;
+    File * getFolder() const;
+    int getSize() const;
+    QFileInfo *getThumbnail() const;
 
     //Setters
     void setId(int id);
@@ -55,6 +57,7 @@ public:
     void setSaved(bool saved);
     void setCreatedAt(QDateTime);
     void setUpdatedAt(QDateTime);
+    void setThumbnail(QFileInfo *value);
 
     void toString();
     QString serialize();

@@ -5,6 +5,7 @@ ServiceContainer::ServiceContainer()
     localDbService = NULL;
     networkService = NULL;
     directoryService = NULL;
+    cypherService = NULL;
 }
 
 ZeminiService * ServiceContainer::getService(QString service)
@@ -25,6 +26,12 @@ ZeminiService * ServiceContainer::getService(QString service)
         if (directoryService == NULL)
             directoryService = new DirectoryService();
         return directoryService;
+    }
+
+    if (service == ZeminiService::Cypher){
+        if (cypherService == NULL)
+            cypherService = new CypherService();
+        return cypherService;
     }
 
     return NULL;

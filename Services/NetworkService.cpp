@@ -1,9 +1,10 @@
 #include "NetworkService.h"
 
 const int NetworkService::CODE_DB_INIT = 0;
-const int  NetworkService::CODE_REGISTER_USER = 1;
+const int NetworkService::CODE_REGISTER_USER = 1;
 const int NetworkService::CODE_USER_LOGIN = 2;
 const int NetworkService::CODE_FILE_SAVE = 3;
+const int NetworkService::CODE_DB_REFRESH = 4;
 
 /**
  * @brief NetworkService::NetworkService
@@ -12,6 +13,7 @@ const int NetworkService::CODE_FILE_SAVE = 3;
 NetworkService::NetworkService()
 {
     networkAccessManager = new QNetworkAccessManager(this);
+    cypherService = new CypherService();
     this->connected = false;
     this->timer = new QTimer(this);
     //sslSocket = new QSslSocket(this);
@@ -83,10 +85,11 @@ void NetworkService::checkCredentials(QString email, QString password)
  * @param dir
  * @return
  */
-void NetworkService::sendFile(File file)
+void NetworkService::sendFile(File *file)
 {
     //this->filesToSave->append(&file);
-    networkAccessManager->get(QNetworkRequest(QUrl(Parameters::URL+"/"+QString::number(NetworkService::CODE_FILE_SAVE)+"/save_file/"+file.serialize())));
+    networkAccessManager->get(QNetworkRequest(QUrl(Parameters::URL+"/save_file/"+user->getEmail()+"/"+user->getPassword()+"/"+file->serialize())));
+    qDebug() << Parameters::URL+"/save_file/"+user->getEmail()+"/"+user->getPassword()+"/"+file->serialize() << endl;
 }
 
 /**
@@ -95,7 +98,7 @@ void NetworkService::sendFile(File file)
  */
 void NetworkService::handleBadRequestReply(QNetworkReply * reply)
 {
-    int requestCode;
+    int requestCode; //= json_map["requestCode"].toInt();
     switch (requestCode) {
     case NetworkService::CODE_REGISTER_USER :{
 
@@ -113,6 +116,9 @@ void NetworkService::handleBadRequestReply(QNetworkReply * reply)
         connected = false;
         QList<Category> * categories = NULL;
         emit initDataGot(categories);
+        break;
+    }
+    case NetworkService::CODE_DB_REFRESH:{
         break;
     }
     }
@@ -152,8 +158,21 @@ void NetworkService::handleGoodRequestReply(QNetworkReply * reply)
         break;
     }
     case NetworkService::CODE_FILE_SAVE:{
-        int fileId = json_map["success"].toInt();
-        emit fileSaved(fileId);
+        //int fileId = json_map["success"].toInt();
+        //emit fileSaved(fileId);
+        qDebug() << "Reply 'file saved' received" << endl;
+        break;
+    }
+    case NetworkService::CODE_DB_REFRESH:{
+        break;
     }
     }
+}
+
+/**
+ * @brief NetworkService::getFreshDbData
+ */
+void NetworkService::getFreshDbData()
+{
+    networkAccessManager->get(QNetworkRequest(QUrl(Parameters::URL+"/refresh_db")));
 }

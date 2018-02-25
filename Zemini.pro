@@ -17,6 +17,7 @@ TEMPLATE = app
 
 RC_FILE = Config/zemini.rc
 
+# OpenCV inclusion
 INCLUDEPATH += C:\OpenCV\OpenCV3.1\build\include
 
 LIBS += C:\OpenCV\OpenCV3.1\build\bin\libopencv_core310.dll
@@ -25,11 +26,15 @@ LIBS += C:\OpenCV\OpenCV3.1\build\bin\libopencv_imgproc310.dll
 LIBS += C:\OpenCV\OpenCV3.1\build\bin\libopencv_features2d310.dll
 LIBS += C:\OpenCV\OpenCV3.1\build\bin\libopencv_calib3d310.dll
 LIBS += C:\OpenCV\OpenCV3.1\build\bin\libopencv_imgcodecs310.dll
+LIBS += C:\OpenCV\OpenCV3.1\build\bin\libopencv_videoio310.dll
 
-INCLUDEPATH += C:\OpenSSL-Win64\include
+# OpenSSL inclusion
+INCLUDEPATH += C:\OpenSSL\OpenSSL-Win64\include
 
-LIBS += -LC:\OpenSSL-Win64\lib -llibeay32
-LIBS += -LC:\OpenSSL-Win64\lib -lssleay32
+LIBS += -LC:\OpenSSL\OpenSSL-Win64\lib -llibeay32
+LIBS += -LC:\OpenSSL\OpenSSL-Win64\lib -lssleay32
+LIBS += -LC:\OpenSSL\OpenSSL-Win32\lib -llibcrypto
+LIBS += -LC:\OpenSSL\OpenSSL-Win64\lib -llibcrypto
 
 SOURCES += main.cpp\
     #Controller sources
@@ -56,7 +61,9 @@ SOURCES += main.cpp\
     Services/DirectoryService.cpp \
     Tests/TestsManager.cpp \
     Services/ServiceContainer.cpp \
-    Services/ZeminiService.cpp
+    Services/ZeminiService.cpp \
+    Config/Functions.cpp \
+    Services/CypherService.cpp
 
 HEADERS  += Config\Parameters.h \
     Config/Functions.h \
@@ -83,7 +90,8 @@ HEADERS  += Config\Parameters.h \
     Services/LocalDbService.h \
     Tests/TestsManager.h \
     Services/ServiceContainer.h \
-    Services/ZeminiService.h
+    Services/ZeminiService.h \
+    Services/CypherService.h
 
 
 FORMS    += Views\PreferencesForm.ui \

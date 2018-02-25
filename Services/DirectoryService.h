@@ -10,10 +10,6 @@
 #include <QFileSystemWatcher>
 #include <Services/ZeminiService.h>
 #include "Config/Functions.h"
-#include <opencv2/opencv.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/core/core.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
 #include <QMessageBox>
 
 class DirectoryService : public ZeminiService
@@ -26,8 +22,6 @@ private:
     //Functions
     void storeInDb(QFileInfo );
     void watchFolder(QFileInfo);
-    void fileToFrame();
-    //bool updated;
 
 protected:
 

@@ -1,13 +1,9 @@
 #include "DirectoryService.h"
 
-//using namespace cv;
-
 /***    Folder's default constructor    ***/
 DirectoryService::DirectoryService()
 {
     fsWatchers = new QList<QFileSystemWatcher*>();
-    //updated = false;
-    //fileToFrame();
 }
 
 void DirectoryService::start()
@@ -18,7 +14,7 @@ void DirectoryService::start()
 void DirectoryService::watchZeminiFolder()
 {
     // i start going through all files and directories to store and track them
-    QDir root_dir(Parameters::storageDirectory);
+    QDir root_dir(Parameters::STORE_DIR);
     QFileInfoList * queue = new QFileInfoList();
     (*queue) += root_dir.entryInfoList(QDir::Files | QDir::NoSymLinks | QDir::AllDirs | QDir::NoDotAndDotDot);
 
@@ -28,30 +24,29 @@ void DirectoryService::watchZeminiFolder()
     }
 
     QFileInfo currentObject = (queue->last());
+    queue->removeLast();
     //fsWatchers->append(new QFileSystemWatcher());
     //connect(fsWatchers->last(), SIGNAL(directoryChanged(QString)), this, SLOT(handleDirChanges(QString)));
-    int i(0);
     while(true){
-        qDebug() << "start watching : " << endl;
+        qDebug() << currentObject.absoluteFilePath() << endl;
         if (currentObject.isFile()){
             storeInDb(currentObject);
         }
         else{
-            // store the directory
-            storeInDb(currentObject);
-            // add to a fsWatcher
-            //watchFolder(currentObject);
-            // get its children
-            QDir currentDirectory(currentObject.absoluteFilePath());
-            (*queue) += currentDirectory.entryInfoList(QDir::Files | QDir::NoSymLinks | QDir::AllDirs | QDir::NoDotAndDotDot);
+            if (currentObject.fileName() != Parameters::THUMBS_DIR){
+                // store the directory
+                storeInDb(currentObject);
+                // add to a fsWatcher
+                //watchFolder(currentObject);
+                // get its children
+                QDir currentDirectory(currentObject.absoluteFilePath());
+                (*queue) += currentDirectory.entryInfoList(QDir::Files | QDir::NoSymLinks | QDir::AllDirs | QDir::NoDotAndDotDot);
+            }
         }
         if (queue->isEmpty())
             break;
         currentObject = (queue->last());
         queue->removeLast();
-        qDebug() << "end watching " << endl;
-        if (i++ == 2)
-            break;
     }
 }
 
@@ -74,7 +69,7 @@ bool DirectoryService::makeInitDirectories(QList<Category> * categories)
         return false;
 
     // making the first root directory under which the others will be put
-    QString rootDir = Parameters::storageDirectory;
+    QString rootDir = Parameters::STORE_DIR;
     rootDir.replace("\\","/");
     QDir zeminiDirectory(rootDir);
     if (!zeminiDirectory.exists())
@@ -96,6 +91,15 @@ bool DirectoryService::makeInitDirectories(QList<Category> * categories)
         }
 
     }
+
+    // then making the dir of the thumbnails
+    QString thumbsDirPath = Parameters::THUMBS_DIR;
+    QDir thumbsDir(thumbsDirPath.replace("\\", "/"));
+    if (!thumbsDir.exists()){
+        if (!thumbsDir.mkdir("."))
+            qDebug()<<"Error when creating the " << Parameters::THUMBS_DIR <<" folder"<<endl;
+    }
+
     // finally make a link to the zemini folder
     Functions::makeLinkToZeminiFolder();
 
@@ -110,19 +114,12 @@ void DirectoryService::storeInDb(QFileInfo fileInfo)
 void DirectoryService::handleDirChanges(QString dirPath)
 {
     //updated = true;
+    qDebug() << "Dir changed " << endl;
     QDir dir(dirPath);
     if (dir.exists())
         emit dirContentToUpdate(dir);
     else
         emit dirDeleted(dir);
-}
-
-void DirectoryService::fileToFrame()
-{
-    const cv::String filename = "C:\\Users\\Public\\Pictures\\Sample Pictures\\Phare.jpg";
-    cv::Mat image = cv::imread(filename);
-    cv::namedWindow("test");
-    cv::imshow("test", image);
 }
 
 /*

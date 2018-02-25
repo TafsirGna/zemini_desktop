@@ -14,8 +14,10 @@ public:
     TypeManager();
     Type * getByName(QString);
     Type * getBySuffix(QString);
-
     bool insertType(Type *);
+    QList<Type *> * getAllTypes();
+    void printTypes(QList<Type *> *);
+    void printAllTypes();
 
     /*
     //functions to retrieve a type object from the local database using a given critera

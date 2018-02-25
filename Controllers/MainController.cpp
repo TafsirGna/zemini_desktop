@@ -22,15 +22,12 @@ MainController::MainController()
     QWidget::connect(((NetworkService *)this->serviceContainer->getService(ZeminiService::Network)), SIGNAL(initDataGot(QList<Category>*)), ((LocalDBService*)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SLOT(initDb(QList<Category> *)));
     QWidget::connect(((LocalDBService *)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SIGNAL(userLoggedIn()), this, SLOT(setUserFolder()));
     QWidget::connect(((DirectoryService *)this->serviceContainer->getService(ZeminiService::FileSystem)), SIGNAL(dirDeleted(QDir)), ((LocalDBService*)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SLOT(deleteDir(QDir)));
-    QWidget::connect(((LocalDBService *)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SIGNAL(fileToSend(File)), ((NetworkService *)this->serviceContainer->getService(ZeminiService::Network)), SLOT(sendFile(File)));
+    QWidget::connect(((LocalDBService *)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SIGNAL(fileToSend(File *)), ((NetworkService *)this->serviceContainer->getService(ZeminiService::Network)), SLOT(sendFile(File *)));
     QWidget::connect(trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),this, SLOT(manageActivation(QSystemTrayIcon::ActivationReason)));
     QWidget::connect(((DirectoryService *)this->serviceContainer->getService(ZeminiService::FileSystem)), SIGNAL(fileInfoToSave(QFileInfo)), ((LocalDBService*)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SLOT(save(QFileInfo)));
     QWidget::connect(((NetworkService *)this->serviceContainer->getService(ZeminiService::Network)), SIGNAL(readyToBackUp()), ((LocalDBService*)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SLOT(startBackingUp()));
     QWidget::connect(((NetworkService *)this->serviceContainer->getService(ZeminiService::Network)), SIGNAL(fileSaved(int)), ((LocalDBService*)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SLOT(markFileSaved(int)));
     //QWidget::connect(trayIcon, SIGNAL(messageClicked()), this, SLOT(showDirectory()));
-
-    // Sending a request to get all initial data
-    ((NetworkService *) this->getService(ZeminiService::Network))->getInitialDbData();
 }
 
 void MainController::start()
@@ -38,6 +35,10 @@ void MainController::start()
     if (!installationCompleted()){
         //complete zemini installation
         firstLaunch = true;
+
+        // Sending a request to get all initial data
+        ((NetworkService *) this->getService(ZeminiService::Network))->getInitialDbData();
+
         completeInstallation();
     }
     else{
@@ -46,7 +47,8 @@ void MainController::start()
         LocalDBService * localDbService = (LocalDBService *) this->getService(ZeminiService::LocalDatabase);
         UserManager * userManager = (UserManager *) localDbService->getManager(LocalDBService::USER);
 
-        if (!userManager->getUser()->isActivated()){
+        User * user = userManager->getUser();
+        if (!user->isActivated()){
             QString title = "Zemini Info";
             QString message = "You've not activated your account yet! We invite you to do so.";
             trayIcon->showMessage(title, message);
@@ -58,8 +60,9 @@ void MainController::start()
                 trayIcon->showMessage(title, message);
             }
         }
+        ((NetworkService *) this->getService(ZeminiService::Network))->setUser(user);
+        ((NetworkService *) this->getService(ZeminiService::Network))->getFreshDbData();
         DirectoryService * directoryService = (DirectoryService *)this->getService(ZeminiService::FileSystem);
-
         // noticing to the user that we're starting watching the root folder
         directoryService->start();
     }
@@ -68,7 +71,7 @@ void MainController::start()
 /***    this opens the windows' explorer on the zemini folder   ***/
 void MainController::showDirectory()
 {
-    QString dirPath = Parameters::storageDirectory;
+    QString dirPath = Parameters::STORE_DIR;
     QDesktopServices::openUrl(QUrl::fromLocalFile(dirPath.replace("\\","/")));
 }
 
@@ -128,7 +131,7 @@ bool MainController::installationCompleted()
         return false;
 
     // Second, the zemini directory status
-    QString dirPath = Parameters::storageDirectory;
+    QString dirPath = Parameters::STORE_DIR;
     if (!QDir(dirPath.replace("\\","/")).exists())
         return false;
 
@@ -146,10 +149,12 @@ bool MainController::displayTrayIcon()
     QWidget::connect(quitZemini, SIGNAL(triggered()), this , SLOT(close()));
     QAction * openZeminiweb = new QAction(QIcon(),"Go to Zemini Web",this);
     QWidget::connect(openZeminiweb, SIGNAL(triggered()), this , SLOT(showZeminiWebSite()));
-
+    QAction * startRecord = new QAction(QIcon(),tr("Start recording"),this);
+    QWidget::connect(startRecord, SIGNAL(triggered()), this , SLOT(startRecording()));
 
     QMenu * contextMenu = new QMenu();
     contextMenu->addAction(openFolder);
+    contextMenu->addAction(startRecord);
     contextMenu->addAction(contextMenu->addSeparator());
     contextMenu->addAction(openPreferences);
     contextMenu->addAction(openZeminiweb);
@@ -177,6 +182,10 @@ bool MainController::checkInitialDbData()
     return true;
 }
 
+/**
+ * @brief MainController::setUserFolder
+ * @return
+ */
 bool MainController::setUserFolder()
 {
     LocalDBService * localDbService = (LocalDBService *) this->getService(ZeminiService::LocalDatabase);
@@ -192,3 +201,10 @@ void MainController::setArgs(AbstractController * controller)
 {
     controller->setServiceContainer(this->serviceContainer);
 }
+
+void MainController::startRecording()
+{
+
+}
+
+

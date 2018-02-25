@@ -2,6 +2,7 @@
 #define CLASSTYPE_H
 
 #include <QString>
+#include <QDebug>
 
 class Type
 {
@@ -27,6 +28,9 @@ public:
     void setId(int id);
     void setName(QString);
     void setSuffix(QString);
+
+    // Other functions
+    void toString();
 };
 
 

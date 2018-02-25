@@ -23,7 +23,7 @@ Type * TypeManager::getByName(QString name)
     }
     if (query->next())
         return new Type(query->value(0).toInt(),query->value(1).toString(),query->value(2).toString());
-
+    qDebug() << "test : " << name <<endl;
     return NULL;
 }
 
@@ -52,13 +52,49 @@ Type * TypeManager::getBySuffix(QString suffix)
  */
 bool TypeManager::insertType(Type * type)
 {
-    QString request = "insert into Type value(NULL, '"+type->getName()+"', '"+type->getSuffix()+"')";
+    QString request = "insert into Type values (NULL, '"+type->getName()+"', '"+type->getSuffix()+"')";
     query->exec(request);
     if (!query->isActive()){
-        qDebug() << "Failed in inserting a new type : " << type->getSuffix() << " ? " << query->lastError().text() << endl;
+        qDebug() << "Failed in inserting a new type : " << type->getName() << " | " << type->getSuffix() << " ? " << query->lastError().text() << endl;
         return false;
     }
     return true;
+}
+
+/**
+ * @brief TypeManager::getAllTypes
+ * @return
+ */
+QList<Type *> * TypeManager::getAllTypes()
+{
+    QList<Type *> * types = new QList<Type *>();
+    QString request = "select id, name, suffix from Type";
+    query->exec(request);
+    if (!query->isActive()){
+        qDebug() << "Failed fetching all types : " << query->lastError().text() << endl;
+        return NULL;
+    }
+    while (query->next()){
+        types->append(new Type(query->value(0).toInt(), query->value(1).toString(), query->value(2).toString()));
+    }
+    return types;
+}
+
+/**
+ * @brief TypeManager::printTypes
+ * @param types
+ */
+void TypeManager::printTypes(QList<Type *> * types)
+{
+    int size = types->size();
+    for (int i = 0; i < size; i++){
+        types->at(i)->toString();
+    }
+}
+
+void TypeManager::printAllTypes()
+{
+    printTypes(getAllTypes());
 }
 
 /***        function designed to retrieve a type object from the local database     ***/

@@ -3,6 +3,7 @@
 
 #include "Database/Entities/File.h"
 #include "Database/EntityManagers/TypeManager.h"
+#include "Config/Functions.h"
 
 class FileManager : public AbstractManager
 {
@@ -19,9 +20,9 @@ public :
     bool saveFile(File * file);
     bool updateFile(File * file);
     bool deleteFile(File * file);
-    bool cleanDirFile(QDir);
+    bool updateDbDir(QDir);
     QList<File> getAllFiles();
-    QList<File> getNotSavedFiles();
+    QList<File *> *getNotSavedFiles();
     bool setFileSaved(int);
     File * convertToFile(QFileInfo);
     File * getByFileName(QString);

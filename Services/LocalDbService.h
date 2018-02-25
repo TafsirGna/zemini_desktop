@@ -50,9 +50,10 @@ public slots:
     void startBackingUp();
     void markFileSaved(int);
     void initDb(QList<Category> *);
+    void refreshDb();
 
 signals:
-    void fileToSend(File);
+    void fileToSend(File*);
     void userLoggedIn();
 
 };

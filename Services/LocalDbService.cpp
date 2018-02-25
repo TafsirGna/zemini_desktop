@@ -18,7 +18,7 @@ LocalDBService::LocalDBService()
 /***        Implementation of run function      ***/
 //void LocalDBService::run()
 //{
-    /*
+/*
     if (fileInfoList->size() == 0)
         return;
 
@@ -84,11 +84,11 @@ bool LocalDBService::isDbEmpty()
 AbstractManager * LocalDBService::getManager(QString manager)
 {
     if (manager == LocalDBService::USER){
-       return getUserManager();
+        return getUserManager();
     }
 
     if (manager == LocalDBService::CATEGORY){
-       return getCategoryManager();
+        return getCategoryManager();
     }
 
     if (manager == LocalDBService::TYPE){
@@ -111,11 +111,9 @@ bool LocalDBService::save(QFileInfo fileInfo)
 {
     // Setting necessary arguments to convert the fileInfo to a File object
     getFileManager()->setCategoryManager(getCategoryManager());
-    qDebug() << " in localDBservice save function 0 " << endl;
     getFileManager()->setTypeManager(getTypeManager());
     // Converting ...
     File *file = getFileManager()->convertToFile(fileInfo);
-    qDebug() << " in localDBservice save function " << endl;
     return save(file);
 }
 
@@ -181,12 +179,12 @@ bool LocalDBService::save(File *file)
 
 void LocalDBService::updateDirContent(QDir dir)
 {
-    getFileManager()->cleanDirFile(dir);
+    getFileManager()->updateDbDir(dir);
 }
 
 bool LocalDBService::deleteDir(QDir dir)
 {
-    return false;//getDirectoryManager()->deleteDirectory(directory);
+    return false;//getDirectoryManager()->delete();
 }
 
 /**
@@ -195,10 +193,10 @@ bool LocalDBService::deleteDir(QDir dir)
 void LocalDBService::startBackingUp()
 {
     // Backing up all files
-    QList<File> notSavedFiles = getFileManager()->getNotSavedFiles();
-    int size = notSavedFiles.size();
+    QList<File*> * notSavedFiles = getFileManager()->getNotSavedFiles();
+    int size = notSavedFiles->size();
     for(int i = 0; i < size; i++){
-        emit fileToSend(notSavedFiles.at(i));
+        emit fileToSend(notSavedFiles->at(i));
     }
 }
 
@@ -217,15 +215,19 @@ void LocalDBService::initDb(QList<Category> * categories)
     if (categories != NULL){
         for (int i = 0; i < categories->size(); i++){
             Category category = categories->at(i);
-            if (getCategoryManager()->getByName(category.getName()) == NULL){
-                if (!getCategoryManager()->addCategory(categories->at(i)))
-                    qDebug() << "category " << category.getName() <<" not inserted : " << endl;
-                else
-                    qDebug() << "category " << category.getName() <<" inserted : " << endl;
-            }
+            if (!getCategoryManager()->addCategory(category))
+                qDebug() << "category " << category.getName() <<" not inserted : " << endl;
         }
     }
 
     // inserting other necessary data
     getTypeManager()->insertType(new Type(0, "directory", ""));
+}
+
+/**
+ * @brief LocalDBService::refreshDb
+ */
+void LocalDBService::refreshDb()
+{
+
 }

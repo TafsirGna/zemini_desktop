@@ -20,7 +20,7 @@
 #include <Services/ZeminiService.h>
 #include <QSslSocket>
 #include "Database/Entities/File.h"
-#include "openssl/rsa.h"
+#include <Services/CypherService.h>
 
 class NetworkService : public ZeminiService
 {
@@ -29,6 +29,7 @@ private:
         QNetworkAccessManager * networkAccessManager;
         QTimer * timer;
         bool connected;
+        CypherService * cypherService;
         //QList<File*> *filesToSave;
         //QSslSocket * sslSocket;
 
@@ -41,18 +42,20 @@ private:
         const static int CODE_USER_LOGIN;
         const static int CODE_DB_INIT;
         const static int CODE_FILE_SAVE;
+        const static int CODE_DB_REFRESH;
 
 public:
         NetworkService();
         bool isConnected();
         void getInitialDbData();
+        void getFreshDbData();
         void checkCredentials(QString, QString);
 
 public slots:
         void handleRequestReply(QNetworkReply*);
         void syncDb();
         void sendUser(User *);
-        void sendFile(File file);
+        void sendFile(File *file);
 
 private slots:
         void sslSocketConnected();

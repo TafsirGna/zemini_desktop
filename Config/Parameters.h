@@ -20,7 +20,7 @@ public:
 
     const static int networkTimerFrequency;
 
-    const static QString storageDirectory;
+    const static QString STORE_DIR;
 
     const static QString setupDirectory;
 
@@ -44,41 +44,11 @@ public:
 
     const static QString ROOT_DIR_NAME;
 
-    /*
-    static QString getTypeByPath(QString path)
-    {
-        QString result = "None";
-        QStringList pathList = path.split('/');
-        for (int i=0;i<pathList.size();i++)
-        {
-            if (pathList.at(i) == "Zemini")
-            {
-                if (i+1<pathList.size())
-                    result = pathList.at(i+1);
-                else
-                    return result;
-            }
-        }
-        //qDebug()<<result;
-        return result;
-    }
+    const static int MIN_CREAT_DELAY;
 
-    static QString getParentDirPath(QString path)
-    {
-        QString result;
-        QStringList pathList = path.split('/');
-        if (pathList.size()>0) pathList.removeLast();
-        result = pathList.join('/');
-        qDebug()<<"--- "+result;
-        return result;
-    }
+    const static QString THUMBS_DIR;
 
-    // this creates the zemini directory if it doesn't exist yet
-    static void make_directories(QString rootDir)
-    {
-
-    }
-    */
+    const static QString FILE_SYS_SEPARATOR;
 };
 
 #endif // ZEMINIPARAMETERS_H

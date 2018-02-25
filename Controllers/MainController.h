@@ -55,10 +55,10 @@ private slots:
     void showPreferences();
     void showZeminiWebSite();
     void setArgs(AbstractController * );
+    void startRecording();
 
 public slots:
     bool setUserFolder();
-
 
 };
 

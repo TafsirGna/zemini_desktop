@@ -3,13 +3,23 @@
 const int File::FILE_SAVED = 1;
 const int File::FILE_NOT_SAVED = 0;
 
+QFileInfo *File::getThumbnail() const
+{
+    return thumbnail;
+}
+
+void File::setThumbnail(QFileInfo *value)
+{
+    thumbnail = value;
+}
+
 File::File()
 {
     //Nothing to do for now
 }
 
 /***            A second constructor            ***/
-File::File(int id, QString fileName, QString path, QDateTime createdAt, QDateTime updatedAt, int size, bool saved, Type *type, Category *category, File * folder)
+File::File(int id, QString fileName, QString path, QDateTime createdAt, QDateTime updatedAt, int size, bool saved, QFileInfo *thumbnail, Type *type, Category *category, File * folder)
 {
     this->id = id;
     this->fileName = fileName;
@@ -21,6 +31,7 @@ File::File(int id, QString fileName, QString path, QDateTime createdAt, QDateTim
     this->createdAt = createdAt;
     this->updatedAt = updatedAt;
     this->type = type;
+    this->thumbnail = thumbnail;
 }
 
 File::File(const File &file)
@@ -50,6 +61,7 @@ File & File::operator =(const File & file)
     this->folder = file.folder;
     this->updatedAt = file.updatedAt;
     this->category = file.category;
+    this->thumbnail = file.thumbnail;
     return *this;
 }
 
@@ -57,7 +69,7 @@ File & File::operator =(const File & file)
  * @brief File::getId
  * @return
  */
-int File::getId()
+int File::getId() const
 {
     return id;
 }
@@ -66,7 +78,7 @@ int File::getId()
  * @brief File::getFileName
  * @return
  */
-QString File::getFileName()
+QString File::getFileName() const
 {
     return fileName;
 }
@@ -75,7 +87,7 @@ QString File::getFileName()
  * @brief File::getPath
  * @return
  */
-QString File::getPath()
+QString File::getPath() const
 {
     return path;
 }
@@ -84,7 +96,7 @@ QString File::getPath()
  * @brief File::getCreationTime
  * @return
  */
-QDateTime File::getCreatedAt()
+QDateTime File::getCreatedAt() const
 {
     return createdAt;
 }
@@ -93,7 +105,7 @@ QDateTime File::getCreatedAt()
  * @brief File::getUpdateTime
  * @return
  */
-QDateTime File::getUpdatedAt()
+QDateTime File::getUpdatedAt() const
 {
     return updatedAt;
 }
@@ -102,7 +114,7 @@ QDateTime File::getUpdatedAt()
  * @brief File::getSize
  * @return
  */
-int File::getSize()
+int File::getSize() const
 {
     return size;
 }
@@ -111,7 +123,7 @@ int File::getSize()
  * @brief File::getCategory
  * @return
  */
-Category * File::getCategory()
+Category * File::getCategory() const
 {
     return category;
 }
@@ -120,7 +132,7 @@ Category * File::getCategory()
  * @brief File::getType
  * @return
  */
-Type * File::getType()
+Type * File::getType() const
 {
     return type;
 }
@@ -129,7 +141,7 @@ Type * File::getType()
  * @brief File::getFolder
  * @return
  */
-File * File::getFolder()
+File * File::getFolder() const
 {
     return folder;
 }
@@ -138,7 +150,7 @@ File * File::getFolder()
  * @brief File::isSaved
  * @return
  */
-bool File::isSaved()
+bool File::isSaved() const
 {
     return saved;
 }
@@ -241,7 +253,11 @@ void File::toString()
  */
 QString File::serialize()
 {
-    QString res = "";
+    QString res = fileName+Parameters::NET_REQUEST_SEPARATOR
+            +path.replace("/", "+")+Parameters::NET_REQUEST_SEPARATOR
+            +QString::number(size)+Parameters::NET_REQUEST_SEPARATOR
+            +createdAt.toString(Parameters::timeFormat)+Parameters::NET_REQUEST_SEPARATOR
+            +updatedAt.toString(Parameters::timeFormat);
     return res;
 }
 
