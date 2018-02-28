@@ -49,6 +49,8 @@ public:
     const static QString THUMBS_DIR;
 
     const static QString FILE_SYS_SEPARATOR;
+
+    const static QString KEYS_DIR;
 };
 
 #endif // ZEMINIPARAMETERS_H

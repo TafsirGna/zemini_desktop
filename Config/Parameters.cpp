@@ -38,3 +38,6 @@ const QString Parameters::FILE_SYS_SEPARATOR = "/";
 
 const QString Parameters::THUMBS_DIR = Parameters::STORE_DIR
         +Parameters::FILE_SYS_SEPARATOR+".thumbs";
+
+const QString Parameters::KEYS_DIR = Parameters::setupDirectory
+        +Parameters::FILE_SYS_SEPARATOR+".keystore";

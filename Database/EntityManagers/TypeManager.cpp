@@ -52,7 +52,7 @@ Type * TypeManager::getBySuffix(QString suffix)
  */
 bool TypeManager::insertType(Type * type)
 {
-    QString request = "insert into Type values (NULL, '"+type->getName()+"', '"+type->getSuffix()+"')";
+    QString request = "insert into Type(id, name, suffix) select NULL, '"+type->getName()+"', '"+type->getSuffix()+"' where not exists (select 1 from Type where suffix = '"+type->getSuffix()+"') ";
     query->exec(request);
     if (!query->isActive()){
         qDebug() << "Failed in inserting a new type : " << type->getName() << " | " << type->getSuffix() << " ? " << query->lastError().text() << endl;

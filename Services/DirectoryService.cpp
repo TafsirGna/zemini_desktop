@@ -93,11 +93,11 @@ bool DirectoryService::makeInitDirectories(QList<Category> * categories)
     }
 
     // then making the dir of the thumbnails
-    QString thumbsDirPath = Parameters::THUMBS_DIR;
-    QDir thumbsDir(thumbsDirPath.replace("\\", "/"));
-    if (!thumbsDir.exists()){
-        if (!thumbsDir.mkdir("."))
-            qDebug()<<"Error when creating the " << Parameters::THUMBS_DIR <<" folder"<<endl;
+    QString keysDirPath = Parameters::KEYS_DIR;
+    QDir keysDir(keysDirPath.replace("\\", "/"));
+    if (!keysDir.exists()){
+        if (!keysDir.mkdir("."))
+            qDebug()<<"Error when creating the " << Parameters::KEYS_DIR <<" folder"<<endl;
     }
 
     // finally make a link to the zemini folder

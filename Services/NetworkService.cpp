@@ -16,6 +16,15 @@ NetworkService::NetworkService()
     cypherService = new CypherService();
     this->connected = false;
     this->timer = new QTimer(this);
+
+    CypherService::init();
+    //keys = CypherService::genRSAKeys();
+    //this->private_key = CypherService::getPrivateKey();
+    //qDebug() << private_key << endl;
+    //this->public_key = CypherService::getPublicKey();
+    //qDebug() << CypherService::decryptRSA(keys,CypherService::encryptRSA(keys, "hello")) << endl;
+
+
     //sslSocket = new QSslSocket(this);
 
     // Setting connectors

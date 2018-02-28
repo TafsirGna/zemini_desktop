@@ -75,24 +75,29 @@ void DatabaseManager::createTables(const QString &conName)
                               "CONSTRAINT fk_file_id_category FOREIGN KEY(idcategory) REFERENCES Category(id)"
                               ");";
 
-    query.exec(userCreateQuery);
+    QString appDataCreateQuery = "CREATE TABLE IF NOT EXISTS Appdata("
+                                 "key TEXT PRIMARY KEY,"
+                                 "value TEXT NOT NULL"
+                                 ");";
 
+    query.exec(userCreateQuery);
     if(!query.isActive())
         qDebug()<<"An error occured while creating table user: "+query.lastError().text();
 
     query.exec(categoryCreateQuery);
-
     if(!query.isActive())
         qDebug()<<"An error occured while creating table Category : "+query.lastError().text();
 
     query.exec(typeCreateQuery);
-
     if(!query.isActive())
         qDebug()<<"An error occured while creating table Type: "+query.lastError().text();
 
     query.exec(fileCreateQuery);
-
     if(!query.isActive())
         qDebug()<<"An error occured while creating table File: "+query.lastError().text();
+
+    query.exec(appDataCreateQuery);
+    if(!query.isActive())
+        qDebug()<<"An error occured while creating table Appdata: "+query.lastError().text();
 }
 

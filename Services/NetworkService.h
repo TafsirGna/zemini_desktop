@@ -30,6 +30,9 @@ private:
         QTimer * timer;
         bool connected;
         CypherService * cypherService;
+        QString private_key;
+        QString public_key;
+        RSA * keys;
         //QList<File*> *filesToSave;
         //QSslSocket * sslSocket;
 

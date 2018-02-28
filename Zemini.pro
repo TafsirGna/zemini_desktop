@@ -34,7 +34,6 @@ INCLUDEPATH += C:\OpenSSL\OpenSSL-Win64\include
 LIBS += -LC:\OpenSSL\OpenSSL-Win64\lib -llibeay32
 LIBS += -LC:\OpenSSL\OpenSSL-Win64\lib -lssleay32
 LIBS += -LC:\OpenSSL\OpenSSL-Win32\lib -llibcrypto
-LIBS += -LC:\OpenSSL\OpenSSL-Win64\lib -llibcrypto
 
 SOURCES += main.cpp\
     #Controller sources
@@ -63,7 +62,11 @@ SOURCES += main.cpp\
     Services/ServiceContainer.cpp \
     Services/ZeminiService.cpp \
     Config/Functions.cpp \
-    Services/CypherService.cpp
+    Services/CypherService.cpp \
+    Database/Entities/AppData.cpp \
+    Database/EntityManagers/AppDataManager.cpp \
+    Vendor/OpenSSL_Wrapper/base64.cpp \
+    Vendor/OpenSSL_Wrapper/Crypto.cpp
 
 HEADERS  += Config\Parameters.h \
     Config/Functions.h \
@@ -91,7 +94,11 @@ HEADERS  += Config\Parameters.h \
     Tests/TestsManager.h \
     Services/ServiceContainer.h \
     Services/ZeminiService.h \
-    Services/CypherService.h
+    Services/CypherService.h \
+    Database/Entities/AppData.h \
+    Database/EntityManagers/AppDataManager.h \
+    Vendor/OpenSSL_Wrapper/base64.h \
+    Vendor/OpenSSL_Wrapper/Crypto.h
 
 
 FORMS    += Views\PreferencesForm.ui \
