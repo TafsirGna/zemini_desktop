@@ -51,6 +51,8 @@ public:
     const static QString FILE_SYS_SEPARATOR;
 
     const static QString KEYS_DIR;
+
+    const static bool USE_OPENSSL;
 };
 
 #endif // ZEMINIPARAMETERS_H

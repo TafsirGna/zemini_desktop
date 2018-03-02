@@ -7,7 +7,6 @@
 #include "openssl/conf.h"
 #include "openssl/evp.h"
 #include "openssl/rand.h"
-//#include "openssl/aes.h"
 #include "openssl/err.h"
 #include <QByteArray>
 #include <QFile>
@@ -18,16 +17,14 @@
 #include <QIODevice>
 #include <QTextStream>
 #include <QFile>
-#include <Vendor/OpenSSL_Wrapper/Crypto.h>
-#include <Vendor/OpenSSL_Wrapper/base64.h>
-//#include <fstream>
-//#include <iostream>
+//#include <Vendor/OpenSSL_Wrapper/Crypto.h>
+//#include <Vendor/OpenSSL_Wrapper/base64.h>
+#include <cstdio>
 
-//#define PADDING RSA_PKCS1_PADDING
-//#define IVSIZE 32
-//#define BLOCKSIZE 256
-//#define KEYSIZE 32
-//#define SALTSIZE 8
+#define KEY_LENGTH  2048
+#define PUB_EXP     3
+#define PRINT_KEYS
+#define WRITE_TO_FILE
 
 class CypherService: public ZeminiService
 {
@@ -36,22 +33,13 @@ private:
 public:
     CypherService();
     ~CypherService();
-    static void init();
 
     static QString readFile(QString);
     static void writeFile(QString, QString);
+    static void genRsaKeys();
 
-    static RSA *genRSAKeys();
-    static QString getPrivateKey();
-    static QString getPublicKey();
-
-    static QString encryptRSA(RSA *key, QString data);
-    static QString decryptRSA(RSA *key, QString data);
-
-    static void encryptRsa(Crypto *crypto);
-    static void encryptAes(Crypto *crypto);
-    static void printKeys(Crypto *crypto);
-    static std::string getMessage(const char *prompt);
+    static QString encryptRsa(string message);
+    static QString decryptRsa(string message);
 };
 
 #endif // CYPHERSERVICE_H

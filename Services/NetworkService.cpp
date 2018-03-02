@@ -17,13 +17,8 @@ NetworkService::NetworkService()
     this->connected = false;
     this->timer = new QTimer(this);
 
-    CypherService::init();
-    //keys = CypherService::genRSAKeys();
-    //this->private_key = CypherService::getPrivateKey();
-    //qDebug() << private_key << endl;
-    //this->public_key = CypherService::getPublicKey();
-    //qDebug() << CypherService::decryptRSA(keys,CypherService::encryptRSA(keys, "hello")) << endl;
-
+    CypherService::encryptRsa("ok");
+    //qDebug() << "end testing encryption " << endl;
 
     //sslSocket = new QSslSocket(this);
 
@@ -142,6 +137,12 @@ void NetworkService::handleGoodRequestReply(QNetworkReply * reply)
     connected = true;
     // Processing the response of the requests sent
     QString response = (QString)reply->readAll();
+
+    // if encryption is used then we decrypt
+    if (Parameters::USE_OPENSSL){
+
+    }
+
     QJsonDocument jsonResponse = QJsonDocument::fromJson(response.toUtf8());
     QJsonObject jsonObject = jsonResponse.object();
     QVariantMap json_map = jsonObject.toVariantMap();

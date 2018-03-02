@@ -41,3 +41,5 @@ const QString Parameters::THUMBS_DIR = Parameters::STORE_DIR
 
 const QString Parameters::KEYS_DIR = Parameters::setupDirectory
         +Parameters::FILE_SYS_SEPARATOR+".keystore";
+
+const bool Parameters::USE_OPENSSL = true;

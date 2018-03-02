@@ -33,6 +33,7 @@ private:
         QString private_key;
         QString public_key;
         RSA * keys;
+        //Crypto crypto;
         //QList<File*> *filesToSave;
         //QSslSocket * sslSocket;
 

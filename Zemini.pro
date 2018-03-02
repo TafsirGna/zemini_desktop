@@ -65,8 +65,8 @@ SOURCES += main.cpp\
     Services/CypherService.cpp \
     Database/Entities/AppData.cpp \
     Database/EntityManagers/AppDataManager.cpp \
-    Vendor/OpenSSL_Wrapper/base64.cpp \
-    Vendor/OpenSSL_Wrapper/Crypto.cpp
+    #Vendor/OpenSSL_Wrapper/base64.cpp \
+    #Vendor/OpenSSL_Wrapper/Crypto.cpp
 
 HEADERS  += Config\Parameters.h \
     Config/Functions.h \
@@ -97,8 +97,8 @@ HEADERS  += Config\Parameters.h \
     Services/CypherService.h \
     Database/Entities/AppData.h \
     Database/EntityManagers/AppDataManager.h \
-    Vendor/OpenSSL_Wrapper/base64.h \
-    Vendor/OpenSSL_Wrapper/Crypto.h
+    #Vendor/OpenSSL_Wrapper/base64.h \
+    #Vendor/OpenSSL_Wrapper/Crypto.h
 
 
 FORMS    += Views\PreferencesForm.ui \
