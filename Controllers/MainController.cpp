@@ -15,15 +15,15 @@ MainController::MainController()
 
     //Setting connections with the child threads
     QWidget::connect(registerForm,SIGNAL(logInLinkActivated()),this,SLOT(showLogInForm()));
-    QWidget::connect(((DirectoryService *)this->serviceContainer->getService(ZeminiService::FileSystem)), SIGNAL(dirContentToUpdate(QFileInfo)), ((LocalDBService *)this->getService(ZeminiService::LocalDatabase)), SLOT(updateDirContent(QFileInfo)));
-    QWidget::connect(((DirectoryService *)this->serviceContainer->getService(ZeminiService::FileSystem)), SIGNAL(fileUpdated(QFileInfo)), ((LocalDBService *)this->getService(ZeminiService::LocalDatabase)), SLOT(updateFile(QFileInfo)));
-    QWidget::connect(((DirectoryService *)this->serviceContainer->getService(ZeminiService::FileSystem)), SIGNAL(fileDeleted(QFileInfo)), ((LocalDBService *)this->getService(ZeminiService::LocalDatabase)), SLOT(deleteFile(QFileInfo)));
+    QWidget::connect(((DirectoryService *)this->serviceContainer->getService(ZeminiService::FileSystem)), SIGNAL(dirContentToUpdate(QFileInfo)), ((LocalDBService *)this->getService(ZeminiService::LocalDatabase)), SLOT(saveDirChange(QFileInfo)));
+    QWidget::connect(((DirectoryService *)this->serviceContainer->getService(ZeminiService::FileSystem)), SIGNAL(fileUpdated(QFileInfo)), ((LocalDBService *)this->getService(ZeminiService::LocalDatabase)), SLOT(saveFileChange(QFileInfo)));
+    QWidget::connect(((DirectoryService *)this->serviceContainer->getService(ZeminiService::FileSystem)), SIGNAL(fileDeleted(QFileInfo)), ((LocalDBService *)this->getService(ZeminiService::LocalDatabase)), SLOT(saveFileDeletion(QFileInfo)));
     //QWidget::connect(logInForm, SIGNAL(onStart(AbstractController * )), this, SLOT(setArgs(AbstractController *)));
     QWidget::connect(logInForm, SIGNAL(signUpLinkActivated()), this, SLOT(showRegisterForm()));
     QWidget::connect(logInForm, SIGNAL(userToSave(User*)), ((LocalDBService *)this->getService(ZeminiService::LocalDatabase)), SLOT(save(User *)));
     QWidget::connect(((NetworkService *)this->serviceContainer->getService(ZeminiService::Network)), SIGNAL(initDataGot(QList<Category>*)), ((LocalDBService*)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SLOT(initDb(QList<Category> *)));
     QWidget::connect(((LocalDBService *)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SIGNAL(userLoggedIn()), this, SLOT(setUserFolder()));
-    QWidget::connect(((DirectoryService *)this->serviceContainer->getService(ZeminiService::FileSystem)), SIGNAL(dirDeleted(QFileInfo)), ((LocalDBService*)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SLOT(deleteDir(QFileInfo)));
+    QWidget::connect(((DirectoryService *)this->serviceContainer->getService(ZeminiService::FileSystem)), SIGNAL(dirDeleted(QFileInfo)), ((LocalDBService*)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SLOT(saveDirDeletion(QFileInfo)));
     QWidget::connect(((LocalDBService *)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SIGNAL(fileToSend(File *)), ((NetworkService *)this->serviceContainer->getService(ZeminiService::Network)), SLOT(sendFile(File *)));
     QWidget::connect((FileManager*)((LocalDBService *)this->serviceContainer->getService(ZeminiService::LocalDatabase))->getManager(LocalDBService::FILE), SIGNAL(fileSaved(QFileInfo)), ((DirectoryService *)this->serviceContainer->getService(ZeminiService::FileSystem)), SLOT(watchFile(QFileInfo)));
     QWidget::connect((FileManager*)((LocalDBService *)this->serviceContainer->getService(ZeminiService::LocalDatabase))->getManager(LocalDBService::FILE), SIGNAL(fileSaved(File*)), ((NetworkService *)this->serviceContainer->getService(ZeminiService::Network)), SLOT(sendFile(File*)));

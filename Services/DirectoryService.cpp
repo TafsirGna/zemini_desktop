@@ -44,7 +44,7 @@ void DirectoryService::watchZeminiFolder()
             watchFile(currentObject);
         }
         else{
-            if (currentObject.fileName() != Parameters::THUMBS_DIR){
+            if (currentObject.absoluteFilePath() != Parameters::THUMBS_DIR){
                 // store the directory
                 storeInDb(currentObject);
                 // add to a fsWatcher
@@ -140,13 +140,32 @@ void DirectoryService::storeInDb(QFileInfo fileInfo)
 void DirectoryService::handleDirChanges(QString dirPath)
 {
     //updated = true;
-    qDebug() << "Dir changed " << endl;
-
     QFileInfo fileInfo(dirPath);
-    if (fileInfo.exists())
+    if (fileInfo.exists()){
+        qDebug() << "Dir changed " << endl;
         emit dirContentToUpdate(fileInfo);
-    else
+    }
+    else{
+        qDebug() << "Dir deleted " << endl;
+        // removing the watch over this folder
+        removeWatchOver(fileInfo);
         emit dirDeleted(fileInfo);
+    }
+}
+
+/**
+ * @brief DirectoryService::removeWatchOver
+ * @param fileInfo
+ * @return
+ */
+bool DirectoryService::removeWatchOver(QFileInfo fileInfo)
+{
+    int size = fsWatchers->size();
+    for (int i(0); i < size; i++){
+        if (fsWatchers->at(i)->removePath(fileInfo.absoluteFilePath()))
+            return true;
+    }
+    return false;
 }
 
 /**

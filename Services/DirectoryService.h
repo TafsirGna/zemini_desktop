@@ -21,6 +21,7 @@ private:
 
     //Functions
     void storeInDb(QFileInfo );
+    bool removeWatchOver(QFileInfo);
 
 protected:
 

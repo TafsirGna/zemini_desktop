@@ -49,14 +49,14 @@ public:
 public slots:
     bool save(User *);
     bool save(QFileInfo);
-    void updateDirContent(QFileInfo);
-    bool deleteDir(QFileInfo);
+    void saveDirChange(QFileInfo);
+    bool saveFileDeletion(QFileInfo);
     void startBackingUp();
     void markFileSaved(int);
     void initDb(QList<Category> *);
     void refreshDb();
-    bool deleteFile(QFileInfo);
-    bool updateFile(QFileInfo);
+    bool saveDirDeletion(QFileInfo);
+    bool saveFileChange(QFileInfo);
 
 signals:
     void fileToSend(File*);

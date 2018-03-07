@@ -20,7 +20,7 @@ public :
     bool saveFile(File * file);
     bool updateFile(File * file);
     bool deleteFile(File * file);
-    bool updateDbDir(QDir);
+    bool updateDirContent(QDir);
     QList<File *> *getAllFiles();
     QList<File *> *getNotSavedFiles();
     bool setFileSaved(int);
@@ -34,7 +34,7 @@ public :
     Category * getCategory(QFileInfo);
     Type * getType(QFileInfo);
     File * getFolder(QFileInfo);
-    int getFileID(QFileInfo);
+    File * getFileAt(QFileInfo);
 
 public slots:
 

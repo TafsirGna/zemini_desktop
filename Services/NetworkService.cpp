@@ -25,10 +25,10 @@ NetworkService::NetworkService()
 
     // Setting connectors
     QWidget::connect(networkAccessManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(handleRequestReply(QNetworkReply*)));
-    QWidget::connect(timer, SIGNAL(timeout()),this, SLOT(syncDb()));
+    //QWidget::connect(timer, SIGNAL(timeout()),this, SLOT(syncDb()));
     //QWidget::connect(sslSocket, SIGNAL(encrypted()), this, SLOT(sslSocketConnected()));
 
-    this->timer->start(Parameters::networkTimerFrequency);
+    //this->timer->start(Parameters::networkTimerFrequency);
     //this->sslSocket->connectToHostEncrypted(Parameters::url, 993);
 }
 
@@ -92,12 +92,13 @@ void NetworkService::checkCredentials(QString email, QString password)
  */
 void NetworkService::sendFile(File *file)
 {
-    //this->filesToSave->append(&file);
+    //if (connected){
     networkAccessManager->get(QNetworkRequest(QUrl(Parameters::URL+"/save_file/"+user->getEmail()
                                                    +Parameters::NET_REQUEST_SEPARATOR
                                                    +user->getPassword()+Parameters::NET_REQUEST_SEPARATOR
                                                    +file->serialize())));
     qDebug() << Parameters::URL+"/save_file/"+user->getEmail()+"/"+user->getPassword()+"/"+file->serialize() << endl;
+    //}
 }
 
 /**
@@ -172,11 +173,13 @@ void NetworkService::handleGoodRequestReply(QNetworkReply * reply)
         break;
     }
     case NetworkService::CODE_FILE_SAVE:{
+        /*
         qDebug() << "Reply 'file saved' received" << endl;
         if (json_map["success"].toBool()){
             int fileID = json_map["fileID"].toInt();
             emit fileSaved(fileID);
         }
+        */
         break;
     }
     case NetworkService::CODE_DB_REFRESH:{

@@ -14,6 +14,8 @@ LocalDBService::LocalDBService()
     typeManager = NULL;
     fileManager = NULL;
     appDataManager = NULL;
+
+    //getFileManager()->printAllFiles();
 }
 
 /***        Implementation of run function      ***/
@@ -194,22 +196,27 @@ bool LocalDBService::update(AppData* appData)
     return getAppDataManager()->updateAppData(appData);
 }
 
-void LocalDBService::updateDirContent(QFileInfo fileInfo)
+/**
+ * @brief LocalDBService::saveDirChange
+ * @param fileInfo
+ */
+void LocalDBService::saveDirChange(QFileInfo fileInfo)
 {
+    qDebug() << "saving dir'change !" << endl;
     QDir dir(fileInfo.absoluteFilePath());
-    getFileManager()->updateDbDir(dir);
+    getFileManager()->updateDirContent(dir);
+    getFileManager()->updateFile(getFileManager()->convertToFile(fileInfo));
 }
 
-bool LocalDBService::deleteDir(QFileInfo dir)
+bool LocalDBService::saveDirDeletion(QFileInfo dir)
 {
     File * file = getFileManager()->convertToFile(dir);
-    if (!getFileManager()->deleteFile(file)){
-        qDebug() << "Failed to delete the directory ! " << endl;
-        return false;
-    }
     QFileInfo parentDir(dir.absolutePath());
-    this->updateDirContent(parentDir);
-    return true;
+    if (getFileManager()->deleteFile(file) && getFileManager()->updateFile(getFileManager()->convertToFile(parentDir))){
+        emit fileToSend(file);
+        return true;
+    }
+    return false;
 }
 
 /**
@@ -264,18 +271,30 @@ void LocalDBService::refreshDb()
  * @brief LocalDBService::deleteFile
  * @return
  */
-bool LocalDBService::deleteFile(QFileInfo fileInfo)
+bool LocalDBService::saveFileDeletion(QFileInfo fileInfo)
 {
     File * file = getFileManager()->convertToFile(fileInfo);
-    return getFileManager()->deleteFile(file);
+    File * parentDir = getFileManager()->convertToFile(QFileInfo(fileInfo.absolutePath()));
+    if (getFileManager()->deleteFile(file) && getFileManager()->updateFile(parentDir)){
+        emit fileToSend(file);
+        return true;
+    }
+    return false;
 }
 
 /**
  * @brief LocalDBService::updateFile
  * @return
  */
-bool LocalDBService::updateFile(QFileInfo fileInfo)
+bool LocalDBService::saveFileChange(QFileInfo fileInfo)
 {
     File * file = getFileManager()->convertToFile(fileInfo);
-    return getFileManager()->updateFile(file);
+    File * parentDir = getFileManager()->convertToFile(QFileInfo(fileInfo.absolutePath()));
+    //qDebug() << "File updated in test! " << endl;
+    //qDebug() << "File updated in db! " << parentDir->toString() << endl;
+    if (getFileManager()->updateFile(file) && getFileManager()->updateFile(parentDir)){
+        emit fileToSend(file);
+        return true;
+    }
+    return false;
 }
