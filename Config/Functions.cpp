@@ -81,6 +81,9 @@ QString Functions::getRelativePath(QString path)
  */
 QFileInfo *Functions::generateThumbnails(QFileInfo fileInfo)
 {
+    if (!isVideoFile(fileInfo))
+        return NULL;
+
     VideoCapture vcap(cv::String(fileInfo.absoluteFilePath().toStdString()));
     if (!vcap.isOpened()){
         qDebug() << "Failed in opening the video file" << endl;
@@ -97,4 +100,16 @@ QFileInfo *Functions::generateThumbnails(QFileInfo fileInfo)
         return new QFileInfo(thumbPath);
 
     return NULL;
+}
+
+/**
+ * @brief Functions::isVideoFile Check if a file is a video file
+ * @param fileInfo
+ * @return
+ */
+bool Functions::isVideoFile(QFileInfo fileInfo)
+{
+    if (Parameters::VIDEO_FORMATS.contains(fileInfo.suffix()))
+        return true;
+    return false;
 }

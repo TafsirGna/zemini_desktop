@@ -21,7 +21,6 @@ private:
 
     //Functions
     void storeInDb(QFileInfo );
-    void watchFolder(QFileInfo);
 
 protected:
 
@@ -33,11 +32,17 @@ public:
 
 signals:
     void fileInfoToSave(QFileInfo);
-    void dirContentToUpdate(QDir);
-    void dirDeleted(QDir);
+    void dirContentToUpdate(QFileInfo);
+    void dirDeleted(QFileInfo);
+    void fileDeleted(QFileInfo);
+    void fileUpdated(QFileInfo);
 
 private slots:
     void handleDirChanges(QString);
+    void handleFileChanges(QString);
+
+public slots:
+    void watchFile(QFileInfo);
 
 };
 

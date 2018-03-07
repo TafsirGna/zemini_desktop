@@ -17,6 +17,9 @@ public:
     void setValue(const QString &value);
     QString getKey() const;
     void setKey(const QString &value);
+
+    // static properties
+    const static QString LAST_EXIT;
 };
 
 #endif // APPDATA_H

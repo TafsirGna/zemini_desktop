@@ -241,10 +241,10 @@ void File::setPath(QString path)
     this->path = path;
 }
 
-void File::toString()
+QString File::toString()
 {
-    qDebug() << "---    File::toString ";
-    //qDebug() << "id : "+ QString::number(id) + " - name : "+ name + " - suffix : "+ suffix + " - path : "+ path + " - datecreation : " + datecreation.toString() + " - status : "+ QString::number(status) + " - size : " + QString::number(size) + " - iddirectory : "+ QString::number(directory->getId()) + " - idtype : " + QString::number(type->getId()) ;
+    QString toString = "id : "+ QString::number(id) + " - filename : "+ fileName + " - path : "+ path + " - createdat : " + createdAt.toString(Parameters::timeFormat) + " - updatedat : " + updatedAt.toString(Parameters::timeFormat) + " - saved : "+ QString::number(((saved) ? 1 : 0)) + " - size : " + QString::number(size) ;//+ " - parent folder : "+ QString::number(folder->getId()) + " - type : " + QString::number(type->getId()) + " - category : " + QString::number(category->getId());
+    return toString;
 }
 
 /**
@@ -253,7 +253,8 @@ void File::toString()
  */
 QString File::serialize()
 {
-    QString res = fileName+Parameters::NET_REQUEST_SEPARATOR
+    QString res = QString::number(id)+Parameters::NET_REQUEST_SEPARATOR
+            +fileName+Parameters::NET_REQUEST_SEPARATOR
             +path.replace("/", "+")+Parameters::NET_REQUEST_SEPARATOR
             +QString::number(size)+Parameters::NET_REQUEST_SEPARATOR
             +createdAt.toString(Parameters::timeFormat)+Parameters::NET_REQUEST_SEPARATOR

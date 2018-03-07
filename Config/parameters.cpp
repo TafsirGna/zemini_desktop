@@ -32,7 +32,7 @@ const QString Parameters::refreshingIconLocation = Parameters::setupDirectory+"/
 
 const QString Parameters::NET_REQUEST_SEPARATOR = "/";
 
-const int Parameters::MIN_CREAT_DELAY = 2;
+const int Parameters::MIN_CREAT_DELAY = 1;
 
 const QString Parameters::FILE_SYS_SEPARATOR = "/";
 
@@ -43,3 +43,5 @@ const QString Parameters::KEYS_DIR = Parameters::setupDirectory
         +Parameters::FILE_SYS_SEPARATOR+".keystore";
 
 const bool Parameters::USE_OPENSSL = true;
+
+const QStringList Parameters::VIDEO_FORMATS = (QStringList() << "avi" << "wmv");

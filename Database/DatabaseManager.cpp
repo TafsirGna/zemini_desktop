@@ -71,7 +71,7 @@ void DatabaseManager::createTables(const QString &conName)
                               "saved INT,"
                               "thumbnail TEXT,"
                               "CONSTRAINT fk_file_id_type FOREIGN KEY(idtype) REFERENCES Type(id),"
-                              "CONSTRAINT fk_file_id_file FOREIGN KEY(iddir) REFERENCES Type(id),"
+                              "CONSTRAINT fk_file_id_file FOREIGN KEY(iddir) REFERENCES Type(id) on delete cascade,"
                               "CONSTRAINT fk_file_id_category FOREIGN KEY(idcategory) REFERENCES Category(id)"
                               ");";
 

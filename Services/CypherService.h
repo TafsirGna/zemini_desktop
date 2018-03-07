@@ -17,6 +17,8 @@
 #include <QIODevice>
 #include <QTextStream>
 #include <QFile>
+//#include <openssl/applink.c>
+
 //#include <Vendor/OpenSSL_Wrapper/Crypto.h>
 //#include <Vendor/OpenSSL_Wrapper/base64.h>
 #include <cstdio>
@@ -29,17 +31,29 @@
 class CypherService: public ZeminiService
 {
 private:
+    //char   *msg;//[KEY_LENGTH/8];  // Message to encrypt
+    char   *encrypt = NULL;    // Encrypted message
+    char   *err;               // Buffer for any error messages
+    RSA *keypair;
+    RSA *rsaPrivKey;
+    RSA *rsaPubKey;
+    int encrypt_len;
+    RSA* serverPubKey;
+    AppDataManager *appDataManager;
 
 public:
     CypherService();
     ~CypherService();
 
-    static QString readFile(QString);
-    static void writeFile(QString, QString);
-    static void genRsaKeys();
+    QString readFile(QString);
+    void writeFile(QString, QString);
+    void genRsaKeys();
 
-    static QString encryptRsa(string message);
-    static QString decryptRsa(string message);
+    QByteArray encryptRsa(string message);
+    QByteArray decryptRsa(QByteArray message);
+
+    RSA *getPublicKey();
+    RSA* getPrivateKey();
 };
 
 #endif // CYPHERSERVICE_H

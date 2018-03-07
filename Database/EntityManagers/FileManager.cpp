@@ -24,13 +24,14 @@ bool FileManager::saveFile(File * file)
             +"', '"+file->getFileName()+"', '"+file->getPath()
             +"', "+QString::number(file->getSize())+", "+QString::number(((file->isSaved()) ? 1 : 0))
             +", "+ ((file->getThumbnail() == NULL) ? "NULL": "'"+Functions::getRelativePath(file->getThumbnail()->absoluteFilePath())+"'")
-            +" where not exists (select 1 from File where path = '"+file->getPath()+"/"+file->getFileName()+"');";
+            +" where not exists (select 1 from File where path = '"+file->getPath()+"' and filename = '"+file->getFileName()+"');";
     qDebug() << request << endl;
     query->exec(request);
     if (!query->isActive()){
         qDebug() << "Failed to save a file " << query->lastError().text() << endl;
         return false;
     }
+    printAllFiles();
     return true;
 }
 
@@ -57,55 +58,57 @@ bool FileManager::updateFile(File *file)
  */
 bool FileManager::deleteFile(File *file)
 {
-    QString request = "delete from File where id = "+file->getId();
+    QString request = "delete from File where id = "+QString::number(file->getId());
+    qDebug() << "deleting : " << request << endl;
     query->exec(request);
     if (!query->isActive()){
         qDebug() << "Failed to delete a file " << query->lastError().text() << endl;
         return false;
     }
+    printAllFiles();
     return true;
 }
 
 bool FileManager::updateDbDir(QDir dir)
 {
-    QFileInfoList children_dirs = dir.entryInfoList(QDir::Files | QDir::NoSymLinks | QDir::NoDotAndDotDot);
+    QFileInfoList children_dirs = dir.entryInfoList(QDir::AllDirs | QDir::Files | QDir::NoSymLinks | QDir::NoDotAndDotDot);
     int size(children_dirs.size());
-    QStringList targetSet, childrenSet;
     for (int i(0); i < size ; i ++){
-        childrenSet.append("'"+children_dirs.at(i).fileName()+"'");
-        QDateTime createdAt = children_dirs.at(i).created(), updatedAt = children_dirs.at(i).lastModified(),
+        QFileInfo child = children_dirs.at(i);
+
+        // i get all the recently updated or created files
+        QDateTime createdAt = child.created(),
+                updatedAt = child.lastModified(),
                 currentDateTime = QDateTime::currentDateTime();
-        if (createdAt.date() == currentDateTime.date() and createdAt.time().hour() == currentDateTime.time().hour() and (currentDateTime.time().minute() - createdAt.time().minute()) < Parameters::MIN_CREAT_DELAY)
-            targetSet.append("'"+children_dirs.at(i).fileName()+"'");
-
-        if (updatedAt.date() == currentDateTime.date() and updatedAt.time().hour() == currentDateTime.time().hour() and (currentDateTime.time().minute() - updatedAt.time().minute()) < Parameters::MIN_CREAT_DELAY)
-            targetSet.append("'"+children_dirs.at(i).fileName()+"'");
-    }
-
-    QString request = "delete from File where filename not in ("+childrenSet.join(",")+") and path = '"+Functions::getRelativePath(dir.path())+"'";
-    query->exec(request);
-    if(!query->isActive()){
-        qDebug()<<"Cleaning dir's files : " + query->lastError().text();
-        return false;
+        if (createdAt.date() == currentDateTime.date() and createdAt.time().hour() == currentDateTime.time().hour() and (currentDateTime.time().minute() - createdAt.time().minute()) < Parameters::MIN_CREAT_DELAY){
+            if (saveFile(convertToFile(child))){
+                emit fileSaved(child);
+                emit fileSaved(convertToFile(child));
+            }
+            else
+                return false;
+        }
     }
     return true;
 }
 
-QList<File> FileManager::getAllFiles()
+QList<File*>* FileManager::getAllFiles()
 {
-    QList<File> files;
-    /*
-    query->exec("select id,filename, createdat, size, saved, idtype, suffix, iddirectory from file where path = '"+path+"' ");
-    if (!query->isActive())
-        qDebug()<<"Error when selecting files : " + query->lastError().text();
+    QList<File*> *files = new QList<File *>();
 
-    if (query->next())
-    {
-        Type * type = typeManager->findTypeById(query->value(5).toInt());
-        Directory * directory = directoryManager->findDirectoryById(query->value(7).toInt());
-        return new File(query->value(0).toInt(),query->value(1).toString(), query->value(2).toDateTime(), query->value(3).toInt(),path,query->value(4).toInt(),type, query->value(6).toString(), directory);
+    query->exec("select id, iddir, idtype, idcategory, createdat, updatedat, filename, path, size, saved, thumbnail from File");
+    if (!query->isActive()){
+        qDebug()<<"Error when selecting not saved files : " + query->lastError().text();
+        return NULL;
     }
-    */
+    if (query->next()){
+        File * file = new File(query->value(0).toInt(),query->value(6).toString(), query->value(7).toString(), query->value(4).toDateTime(),query->value(5).toDateTime(), query->value(8).toInt(), query->value(9).toBool(), new QFileInfo(query->value(10).toString()),NULL, NULL, NULL);
+        QFileInfo fileInfo(QDir().homePath()+"/"+file->getPath()+"/"+file->getFileName());
+        file->setFolder(getFolder(fileInfo));
+        file->setCategory(getCategory(fileInfo));
+        file->setType(getType(fileInfo));
+        files->append(file);
+    }
     return files;
 }
 
@@ -171,6 +174,25 @@ File * FileManager::getFolder(QFileInfo fileInfo)
 }
 
 /**
+ * @brief FileManager::getFileID
+ * @return
+ */
+int FileManager::getFileID(QFileInfo fileInfo)
+{
+    QString request = "select id from File where path = '"+Functions::getRelativePath(fileInfo.absolutePath())+"' and filename = '"+fileInfo.fileName()+"'";
+    query->exec(request);
+    if (!query->isActive()){
+        qDebug() << "Failed to get the file's id : " << fileInfo.fileName() << endl;
+        return -1;
+    }
+
+    if (query->next())
+        return query->value(0).toInt();
+
+    return -1;
+}
+
+/**
  * @brief FileManager::getType
  * @param file
  * @return
@@ -193,7 +215,8 @@ Type * FileManager::getType(QFileInfo fileInfo)
  */
 File *FileManager::convertToFile(QFileInfo fileInfo)
 {
-    File * file = new File(0, fileInfo.fileName(), Functions::getRelativePath(fileInfo.absolutePath()), fileInfo.created(), fileInfo.lastModified(), fileInfo.size(), 0, ((fileInfo.isDir()) ? NULL : Functions::generateThumbnails(fileInfo)), NULL, NULL, NULL);
+    int fileID = getFileID(fileInfo);
+    File * file = new File(fileID, fileInfo.fileName(), Functions::getRelativePath(fileInfo.absolutePath()), fileInfo.created(), fileInfo.lastModified(), fileInfo.size(), 0, ((fileInfo.isDir()) ? NULL : Functions::generateThumbnails(fileInfo)), NULL, NULL, NULL);
     file->setCategory(getCategory(fileInfo));
     file->setType(getType(fileInfo));
     file->setFolder(getFolder(fileInfo));
@@ -210,6 +233,11 @@ void FileManager::setCategoryManager(CategoryManager * categoryManager)
     this->categoryManager = categoryManager;
 }
 
+/**
+ * @brief FileManager::getByFileName
+ * @param fileName
+ * @return
+ */
 File * FileManager::getByFileName(QString fileName)
 {
     QString request = "select id, filename, path, createdat, updatedat, size, saved, thumbnail from File where filename = '"+fileName+"'";
@@ -221,6 +249,18 @@ File * FileManager::getByFileName(QString fileName)
     if (query->next())
         return new File(query->value(0).toInt(), query->value(1).toString(), query->value(2).toString(), query->value(3).toDateTime(), query->value(4).toDateTime(), query->value(5).toInt(), query->value(6).toBool(), new QFileInfo(query->value(7).toString()), NULL, NULL, NULL);
     return NULL;
+}
+
+/**
+ * @brief FileManager::printAllFiles
+ */
+void FileManager::printAllFiles()
+{
+    QList<File *> * files = getAllFiles();
+    int size = files->size();
+    for (int i(0); i < size; i++){
+        qDebug() << files->at(i)->toString() << endl;
+    }
 }
 
 

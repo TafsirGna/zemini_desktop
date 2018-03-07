@@ -26,6 +26,8 @@ public:
     static QString getRelativePath(QString);
 
     static QFileInfo * generateThumbnails(QFileInfo);
+
+    static bool isVideoFile(QFileInfo);
 };
 
 #endif // FUNCTIONS_H

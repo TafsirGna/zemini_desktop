@@ -1,5 +1,7 @@
 #include "AppData.h"
 
+const QString AppData::LAST_EXIT = "lastAppExit";
+
 QString AppData::getValue() const
 {
     return value;

@@ -13,12 +13,13 @@ const int NetworkService::CODE_DB_REFRESH = 4;
 NetworkService::NetworkService()
 {
     networkAccessManager = new QNetworkAccessManager(this);
-    cypherService = new CypherService();
+    //cypherService = new CypherService();
     this->connected = false;
     this->timer = new QTimer(this);
 
-    CypherService::encryptRsa("ok");
-    //qDebug() << "end testing encryption " << endl;
+    //cypherService->encryptRsa("test");
+    //cypherService->decryptRsa("ok");
+    //cypherService->decryptRsa(cypherService->encryptRsa("test"));
 
     //sslSocket = new QSslSocket(this);
 
@@ -46,7 +47,7 @@ void NetworkService::sslSocketConnected()
 void NetworkService::getInitialDbData()
 {
     networkAccessManager->get(QNetworkRequest(QUrl(Parameters::URL+"/init_db")));
-    //qDebug() << Parameters::url+"/init_db" << endl;
+    //qDebug() << Parameters::URL+"/init_db" << endl;
 }
 
 void NetworkService::handleRequestReply(QNetworkReply * reply)
@@ -92,7 +93,10 @@ void NetworkService::checkCredentials(QString email, QString password)
 void NetworkService::sendFile(File *file)
 {
     //this->filesToSave->append(&file);
-    networkAccessManager->get(QNetworkRequest(QUrl(Parameters::URL+"/save_file/"+user->getEmail()+"/"+user->getPassword()+"/"+file->serialize())));
+    networkAccessManager->get(QNetworkRequest(QUrl(Parameters::URL+"/save_file/"+user->getEmail()
+                                                   +Parameters::NET_REQUEST_SEPARATOR
+                                                   +user->getPassword()+Parameters::NET_REQUEST_SEPARATOR
+                                                   +file->serialize())));
     qDebug() << Parameters::URL+"/save_file/"+user->getEmail()+"/"+user->getPassword()+"/"+file->serialize() << endl;
 }
 
@@ -168,9 +172,11 @@ void NetworkService::handleGoodRequestReply(QNetworkReply * reply)
         break;
     }
     case NetworkService::CODE_FILE_SAVE:{
-        //int fileId = json_map["success"].toInt();
-        //emit fileSaved(fileId);
         qDebug() << "Reply 'file saved' received" << endl;
+        if (json_map["success"].toBool()){
+            int fileID = json_map["fileID"].toInt();
+            emit fileSaved(fileID);
+        }
         break;
     }
     case NetworkService::CODE_DB_REFRESH:{

@@ -1,16 +1,25 @@
 #include "DirectoryService.h"
 
 /***    Folder's default constructor    ***/
+/**
+ * @brief DirectoryService::DirectoryService
+ */
 DirectoryService::DirectoryService()
 {
     fsWatchers = new QList<QFileSystemWatcher*>();
 }
 
+/**
+ * @brief DirectoryService::start
+ */
 void DirectoryService::start()
 {
     watchZeminiFolder();
 }
 
+/**
+ * @brief DirectoryService::watchZeminiFolder
+ */
 void DirectoryService::watchZeminiFolder()
 {
     // i start going through all files and directories to store and track them
@@ -25,19 +34,21 @@ void DirectoryService::watchZeminiFolder()
 
     QFileInfo currentObject = (queue->last());
     queue->removeLast();
-    //fsWatchers->append(new QFileSystemWatcher());
-    //connect(fsWatchers->last(), SIGNAL(directoryChanged(QString)), this, SLOT(handleDirChanges(QString)));
+    fsWatchers->append(new QFileSystemWatcher());
+    connect(fsWatchers->last(), SIGNAL(directoryChanged(QString)), this, SLOT(handleDirChanges(QString)));
+    connect(fsWatchers->last(), SIGNAL(fileChanged(QString)), this, SLOT(handleFileChanges(QString)));
     while(true){
-        qDebug() << currentObject.absoluteFilePath() << endl;
+        //qDebug() << currentObject.absoluteFilePath() << endl;
         if (currentObject.isFile()){
             storeInDb(currentObject);
+            watchFile(currentObject);
         }
         else{
             if (currentObject.fileName() != Parameters::THUMBS_DIR){
                 // store the directory
                 storeInDb(currentObject);
                 // add to a fsWatcher
-                //watchFolder(currentObject);
+                watchFile(currentObject);
                 // get its children
                 QDir currentDirectory(currentObject.absoluteFilePath());
                 (*queue) += currentDirectory.entryInfoList(QDir::Files | QDir::NoSymLinks | QDir::AllDirs | QDir::NoDotAndDotDot);
@@ -50,19 +61,31 @@ void DirectoryService::watchZeminiFolder()
     }
 }
 
-void DirectoryService::watchFolder(QFileInfo fileInfo)
+/**
+ * @brief DirectoryService::watchFile
+ * @param fileInfo
+ */
+void DirectoryService::watchFile(QFileInfo fileInfo)
 {
+    qDebug() << "watching "+fileInfo.fileName() << endl;
     bool added = fsWatchers->last()->addPath(fileInfo.absoluteFilePath());
     if (!added){
         fsWatchers->append(new QFileSystemWatcher());
         connect(fsWatchers->last(), SIGNAL(directoryChanged(QString)), this, SLOT(handleDirChanges(QString)));
+        connect(fsWatchers->last(), SIGNAL(fileChanged(QString)), this, SLOT(handleFileChanges(QString)));
         fsWatchers->last()->addPath(fileInfo.absoluteFilePath());
     }
+    qDebug() << "Added successfully" << endl;
 }
 
 // building all the structure of the user storage directory
 // this function just buildind folders corresponding to categories for now
 // it's gonna be extend in the future to handle other kind of data
+/**
+ * @brief DirectoryService::makeInitDirectories
+ * @param categories
+ * @return
+ */
 bool DirectoryService::makeInitDirectories(QList<Category> * categories)
 {
     if (categories == NULL)
@@ -110,16 +133,38 @@ void DirectoryService::storeInDb(QFileInfo fileInfo)
 {
     emit fileInfoToSave(fileInfo);
 }
-
+/**
+ * @brief DirectoryService::handleDirChanges
+ * @param dirPath
+ */
 void DirectoryService::handleDirChanges(QString dirPath)
 {
     //updated = true;
     qDebug() << "Dir changed " << endl;
-    QDir dir(dirPath);
-    if (dir.exists())
-        emit dirContentToUpdate(dir);
+
+    QFileInfo fileInfo(dirPath);
+    if (fileInfo.exists())
+        emit dirContentToUpdate(fileInfo);
     else
-        emit dirDeleted(dir);
+        emit dirDeleted(fileInfo);
+}
+
+/**
+ * @brief DirectoryService::handleFileChanges
+ * @param filePath
+ */
+void DirectoryService::handleFileChanges(QString filePath)
+{
+    //updated = true;
+    QFileInfo fileInfo(filePath);
+    if (fileInfo.exists()){
+        qDebug() << "file updated " << endl;
+        emit fileUpdated(fileInfo);
+    }
+    else{
+        qDebug() << "file deleted " << endl;
+        emit fileDeleted(fileInfo);
+    }
 }
 
 /*

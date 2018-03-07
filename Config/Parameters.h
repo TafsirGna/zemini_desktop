@@ -53,6 +53,8 @@ public:
     const static QString KEYS_DIR;
 
     const static bool USE_OPENSSL;
+
+    const static QStringList VIDEO_FORMATS;
 };
 
 #endif // ZEMINIPARAMETERS_H

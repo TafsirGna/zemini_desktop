@@ -21,11 +21,12 @@ public :
     bool updateFile(File * file);
     bool deleteFile(File * file);
     bool updateDbDir(QDir);
-    QList<File> getAllFiles();
+    QList<File *> *getAllFiles();
     QList<File *> *getNotSavedFiles();
     bool setFileSaved(int);
     File * convertToFile(QFileInfo);
     File * getByFileName(QString);
+    void printAllFiles();
 
     void setCategoryManager(CategoryManager *);
     void setTypeManager(TypeManager *);
@@ -33,8 +34,13 @@ public :
     Category * getCategory(QFileInfo);
     Type * getType(QFileInfo);
     File * getFolder(QFileInfo);
+    int getFileID(QFileInfo);
 
 public slots:
+
+signals:
+    void fileSaved(QFileInfo);
+    void fileSaved(File *);
 
 };
 

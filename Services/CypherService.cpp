@@ -2,6 +2,35 @@
 
 CypherService::CypherService()
 {
+    // Loading the public key of the server
+    QByteArray byteServerKey = readFile(Parameters::KEYS_DIR+Parameters::FILE_SYS_SEPARATOR+"server_public_key.pem").toUtf8();
+
+    //qDebug() << "Public key test ! " <<endl;
+    //qDebug() << byteServerKey <<endl;
+
+    const char* str = byteServerKey.constData();
+    BIO * bio = BIO_new_mem_buf((void*) str, -1);
+    BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL);
+    serverPubKey = PEM_read_bio_RSA_PUBKEY(bio, NULL, NULL, NULL);
+    if (serverPubKey == NULL){
+        qDebug() << "Failed to load the server public key " << endl;
+    }
+    else{
+        qDebug() << "succeed in loading the server public key " << endl;
+    }
+
+    // checking if the keys already exist
+    appDataManager = new AppDataManager();
+    AppData *pubKeyData = appDataManager->getByKey("PublicKey");
+    AppData *privKeyData = appDataManager->getByKey("PrivateKey");
+
+    if (pubKeyData == NULL || privKeyData == NULL){
+        qDebug() << "not existing files" << endl;
+        genRsaKeys();
+    }
+    //genRsaKeys();
+    rsaPrivKey = getPrivateKey();
+    rsaPubKey = getPublicKey();
 }
 
 CypherService::~CypherService()
@@ -11,24 +40,15 @@ CypherService::~CypherService()
 
 void CypherService::genRsaKeys()
 {
-
-}
-
-QString CypherService::encryptRsa(string message) {
-
-    size_t pri_len;            // Length of private key
-    size_t pub_len;            // Length of public key
+    // Generate key pair
     char   *pri_key;           // Private key
     char   *pub_key;           // Public key
-    char   *msg;//[KEY_LENGTH/8];  // Message to encrypt
-    char   *encrypt = NULL;    // Encrypted message
-    char   *decrypt = NULL;    // Decrypted message
-    char   *err;               // Buffer for any error messages
+    size_t pri_len;            // Length of private key
+    size_t pub_len;            // Length of public key
 
-    // Generate key pair
     printf("Generating RSA (%d bits) keypair...", KEY_LENGTH);
     fflush(stdout);
-    RSA *keypair = RSA_generate_key(KEY_LENGTH, PUB_EXP, NULL, NULL);
+    keypair = RSA_generate_key(KEY_LENGTH, PUB_EXP, NULL, NULL);
 
     // To get the C-string PEM form:
     BIO *pri = BIO_new(BIO_s_mem());
@@ -49,62 +69,77 @@ QString CypherService::encryptRsa(string message) {
     pri_key[pri_len] = '\0';
     pub_key[pub_len] = '\0';
 
-    qDebug() << endl;
-    qDebug() << pri_key << endl;
-
 #ifdef PRINT_KEYS
-    printf("\n%s\n%s\n", pri_key, pub_key);
+    //printf("\n%s\n%s\n", pri_key, pub_key);
 #endif
     printf("done.\n");
 
+    // After generating the Rsa keys, i store them in files
+    QString privKeyFilePath = Parameters::KEYS_DIR+Parameters::FILE_SYS_SEPARATOR+"private_key.pem";
+    QString privKeyStr = QString(pri_key);
+    writeFile(privKeyFilePath, privKeyStr);
+
+    QString pubKeyFilePath = Parameters::KEYS_DIR+Parameters::FILE_SYS_SEPARATOR+"public_key.pem";
+    QString pubKeyStr = QString(pub_key);
+    writeFile(pubKeyFilePath, pubKeyStr);
+
+    // And then, i save that in the db
+    appDataManager->addAppData(new AppData("PublicKey", pubKeyFilePath));
+    appDataManager->addAppData(new AppData("PrivateKey", privKeyFilePath));
+}
+
+QByteArray CypherService::encryptRsa(string message) {
+
     // Get the message to encrypt
-    printf("Message to encrypt: ");
+    printf("Message to encrypt: ", "test");
     //fgets(msg, KEY_LENGTH-1, stdin);
-    std::string test = "test";
-    msg = (char*)(test.c_str());
+    std::string test = message;
+    char * msg = (char*)(test.c_str());
     msg[strlen((const char*)msg)] = '\0';
 
     // Encrypt the message
-    encrypt = (char*)malloc(RSA_size(keypair));
-    int encrypt_len;
+    encrypt = (char*)malloc(RSA_size(serverPubKey));
     err = (char*)malloc(130);
     if((encrypt_len = RSA_public_encrypt(strlen((const char*)msg)+1, (unsigned char*)msg, (unsigned char*)encrypt,
-                                         keypair, RSA_PKCS1_OAEP_PADDING)) == -1) {
+                                         serverPubKey, RSA_PKCS1_OAEP_PADDING)) == -1) {
         //ERR_load_crypto_strings();
         //ERR_error_string(ERR_get_error(), err);
         fprintf(stderr, "Error encrypting message: %s\n", err);
         //goto free_stuff;
     }
 
+
 #ifdef WRITE_TO_FILE
+
     // Write the encrypted message to a file
     FILE *out = fopen("out.bin", "w");
-    fwrite(encrypt, sizeof(*encrypt),  RSA_size(keypair), out);
+    fwrite(encrypt, sizeof(*encrypt),  RSA_size(serverPubKey), out);
     fclose(out);
-    printf("Encrypted message written to file.\n");
-    free(encrypt);
-    encrypt = NULL;
+    /*
+    QByteArray encr(encrypt);
+    qDebug() << encrypt << endl;
+    qDebug() << encr << endl;
+    encr = encr.toBase64();
+    qDebug() << encr << endl;
+    encr = QByteArray::fromBase64(encr);
+    qDebug() << encr << endl;
+    */
 
-    // Read it back
-    printf("Reading back encrypted message and attempting decryption...\n");
-    encrypt = (char*)malloc(RSA_size(keypair));
+    printf("Encrypted message written to file.\n");
+    //free(encrypt);
+    //encrypt = NULL;
+
+    //encrypt = (char*)malloc(RSA_size(rsaPubKey));
     out = fopen("out.bin", "r");
-    fread(encrypt, sizeof(*encrypt), RSA_size(keypair), out);
-    fclose(out);
+    fread(encrypt, sizeof(*encrypt), RSA_size(serverPubKey), out);
+    //qDebug() << encrypt << endl;
+    //fclose(out);
+
 #endif
 
-    // Decrypt it
-    decrypt = (char*)malloc(encrypt_len);
-    if(RSA_private_decrypt(encrypt_len, (unsigned char*)encrypt, (unsigned char*)decrypt,
-                           keypair, RSA_PKCS1_OAEP_PADDING) == -1) {
-        //ERR_load_crypto_strings();
-        //ERR_error_string(ERR_get_error(), err);
-        fprintf(stderr, "Error decrypting message: %s\n", err);
-        //goto free_stuff;
-    }
-    qDebug() << "Decrypted message: " << decrypt << endl;
 
-//free_stuff:
+    //free_stuff:
+    /*
     RSA_free(keypair);
     BIO_free_all(pub);
     BIO_free_all(pri);
@@ -113,13 +148,29 @@ QString CypherService::encryptRsa(string message) {
     free(encrypt);
     free(decrypt);
     free(err);
+    */
 
-    return "";
+    QByteArray result(encrypt);
+    return result;
 }
 
-QString CypherService::decryptRsa(string message)
+QByteArray CypherService::decryptRsa(QByteArray message)
 {
-    return "";
+    // Decrypt it
+    char   *decrypt = NULL;    // Decrypted message
+    decrypt = (char*)malloc(RSA_size(rsaPubKey));
+    if(RSA_private_decrypt(RSA_size(rsaPubKey), (unsigned char*) encrypt, (unsigned char*)decrypt,
+                           rsaPrivKey, RSA_PKCS1_OAEP_PADDING) == -1) {
+        //ERR_load_crypto_strings();
+        //ERR_error_string(ERR_get_error(), err);
+        qDebug() << "Error decrypting message: " << err <<endl;
+        //goto free_stuff;
+        return "";
+    }
+    qDebug() << "Decrypted message: " << decrypt << endl;
+
+    QByteArray result(decrypt);
+    return result;
 }
 
 void CypherService::writeFile(QString filename, QString data)
@@ -134,18 +185,50 @@ void CypherService::writeFile(QString filename, QString data)
 
 QString CypherService::readFile(QString filename)
 {
-    QString data = "";
     QFile file(filename);
+    QString data = "";
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
         return data;
 
-    //    QTextStream in(&file);
-    //    while (!in.atEnd()) {
-    //        QString line = in.readLine();
-    //        data += line;
-    //    }
+    QTextStream in(&file);
+    while (!in.atEnd()) {
+        QString line = in.readLine()+"\n";
+        data += line;
+    }
+    return data;
+}
 
-    //data = QString::QString(file.readAll());
+RSA* CypherService::getPrivateKey()
+{
+    // reading the file for the key
+    QString str_key(readFile(Parameters::KEYS_DIR+Parameters::FILE_SYS_SEPARATOR+"private_key.pem"));
+    //qDebug() << "Private key test ! " <<endl;
+    //qDebug() << str_key.toUtf8() << endl;
+
+    const char* str = str_key.toUtf8().constData();
+    BIO * bio = BIO_new_mem_buf((void*) str, -1);
+    BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL);
+    RSA *rsaPrivKey = PEM_read_bio_RSAPrivateKey(bio, NULL, NULL, NULL);
+    if (rsaPrivKey == NULL){
+        qDebug() << "Failed to load the private key " << endl;
+        return NULL;
+    }
+    return rsaPrivKey;
+}
+
+RSA* CypherService::getPublicKey()
+{
+    QByteArray byteKey = readFile(Parameters::KEYS_DIR+Parameters::FILE_SYS_SEPARATOR+"public_key.pem").toUtf8();
+
+    const char* str = byteKey.constData();
+    BIO * bio = BIO_new_mem_buf((void*) str, -1);
+    BIO_set_flags(bio, BIO_FLAGS_BASE64_NO_NL);
+    RSA *rsaPubKey = PEM_read_bio_RSA_PUBKEY(bio, NULL, NULL, NULL);
+    if (rsaPubKey == NULL){
+        qDebug() << "Failed to load the public key " << endl;
+    }
+
+    return rsaPubKey;
 }
 
 

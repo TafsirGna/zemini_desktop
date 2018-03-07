@@ -29,10 +29,10 @@ private:
         QNetworkAccessManager * networkAccessManager;
         QTimer * timer;
         bool connected;
-        CypherService * cypherService;
         QString private_key;
         QString public_key;
         RSA * keys;
+        CypherService * cypherService;
         //Crypto crypto;
         //QList<File*> *filesToSave;
         //QSslSocket * sslSocket;

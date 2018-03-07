@@ -59,7 +59,7 @@ public:
     void setUpdatedAt(QDateTime);
     void setThumbnail(QFileInfo *value);
 
-    void toString();
+    QString toString();
     QString serialize();
 
     //static variables

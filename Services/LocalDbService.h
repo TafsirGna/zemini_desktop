@@ -6,6 +6,7 @@
 #include "Database/EntityManagers/UserManager.h"
 #include "Database/EntityManagers/FileManager.h"
 #include <Services/ZeminiService.h>
+#include <Database/EntityManagers/AppDataManager.h>
 
 class LocalDBService: public ZeminiService
 {
@@ -16,12 +17,14 @@ private :
     CategoryManager * categoryManager;
     UserManager * userManager;
     TypeManager * typeManager;
+    AppDataManager * appDataManager;
 
     // Some getters
     UserManager * getUserManager();
     CategoryManager * getCategoryManager();
     FileManager * getFileManager();
     TypeManager * getTypeManager();
+    AppDataManager * getAppDataManager();
 
 protected:
 
@@ -32,7 +35,7 @@ public:
     const static QString CATEGORY;
     const static QString TYPE;
     const static QString FILE;
-    const static QString DIR;
+    const static QString APP_DATA;
 
     //Builder
     LocalDBService();
@@ -41,16 +44,19 @@ public:
     bool isDbEmpty();
     AbstractManager * getManager(QString);
     bool save(File *);
+    bool update(AppData * );
 
 public slots:
     bool save(User *);
     bool save(QFileInfo);
-    void updateDirContent(QDir);
-    bool deleteDir(QDir);
+    void updateDirContent(QFileInfo);
+    bool deleteDir(QFileInfo);
     void startBackingUp();
     void markFileSaved(int);
     void initDb(QList<Category> *);
     void refreshDb();
+    bool deleteFile(QFileInfo);
+    bool updateFile(QFileInfo);
 
 signals:
     void fileToSend(File*);

@@ -2,9 +2,9 @@
 
 const QString LocalDBService::USER = "user";
 const QString LocalDBService::CATEGORY = "category";
-const QString LocalDBService::DIR = "directory";
 const QString LocalDBService::FILE = "file";
 const QString LocalDBService::TYPE = "type";
+const QString LocalDBService::APP_DATA = "app_data";
 
 /***        Builders        ***/
 LocalDBService::LocalDBService()
@@ -13,6 +13,7 @@ LocalDBService::LocalDBService()
     categoryManager = NULL;
     typeManager = NULL;
     fileManager = NULL;
+    appDataManager = NULL;
 }
 
 /***        Implementation of run function      ***/
@@ -99,6 +100,10 @@ AbstractManager * LocalDBService::getManager(QString manager)
         return getFileManager();
     }
 
+    if (manager == LocalDBService::APP_DATA){
+        return getAppDataManager();
+    }
+
     return NULL;
 }
 
@@ -139,6 +144,13 @@ UserManager * LocalDBService::getUserManager()
     return userManager;
 }
 
+AppDataManager * LocalDBService::getAppDataManager()
+{
+    if (appDataManager == NULL)
+        appDataManager = new AppDataManager();
+    return appDataManager;
+}
+
 /**
  * @brief LocalDBService::getCategoryManager
  * @return
@@ -177,14 +189,27 @@ bool LocalDBService::save(File *file)
     return getFileManager()->saveFile(file);
 }
 
-void LocalDBService::updateDirContent(QDir dir)
+bool LocalDBService::update(AppData* appData)
 {
+    return getAppDataManager()->updateAppData(appData);
+}
+
+void LocalDBService::updateDirContent(QFileInfo fileInfo)
+{
+    QDir dir(fileInfo.absoluteFilePath());
     getFileManager()->updateDbDir(dir);
 }
 
-bool LocalDBService::deleteDir(QDir dir)
+bool LocalDBService::deleteDir(QFileInfo dir)
 {
-    return false;//getDirectoryManager()->delete();
+    File * file = getFileManager()->convertToFile(dir);
+    if (!getFileManager()->deleteFile(file)){
+        qDebug() << "Failed to delete the directory ! " << endl;
+        return false;
+    }
+    QFileInfo parentDir(dir.absolutePath());
+    this->updateDirContent(parentDir);
+    return true;
 }
 
 /**
@@ -222,6 +247,9 @@ void LocalDBService::initDb(QList<Category> * categories)
 
     // inserting other necessary data
     getTypeManager()->insertType(new Type(0, "directory", ""));
+
+    // initializing the datetime of the last exit from the app
+    getAppDataManager()->addAppData(new AppData(AppData::LAST_EXIT, "0000-00-00 00:00:00"));
 }
 
 /**
@@ -230,4 +258,24 @@ void LocalDBService::initDb(QList<Category> * categories)
 void LocalDBService::refreshDb()
 {
 
+}
+
+/**
+ * @brief LocalDBService::deleteFile
+ * @return
+ */
+bool LocalDBService::deleteFile(QFileInfo fileInfo)
+{
+    File * file = getFileManager()->convertToFile(fileInfo);
+    return getFileManager()->deleteFile(file);
+}
+
+/**
+ * @brief LocalDBService::updateFile
+ * @return
+ */
+bool LocalDBService::updateFile(QFileInfo fileInfo)
+{
+    File * file = getFileManager()->convertToFile(fileInfo);
+    return getFileManager()->updateFile(file);
 }
