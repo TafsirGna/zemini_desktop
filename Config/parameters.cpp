@@ -6,7 +6,9 @@ const QString Parameters::WEB_SITE = "http://192.168.56.1/Symfony/web";
 
 const QString Parameters::URL = Parameters::WEB_SITE+"/desktop";
 
-const int Parameters::networkTimerFrequency = 30000;
+const int Parameters::networkTimer1Frequency = 30000;
+
+const int Parameters::networkTimer2Frequency = 20000;
 
 const QString Parameters::ROOT_DIR_NAME = "Zemini";
 
@@ -21,6 +23,10 @@ const QString Parameters::devAppFolder = "C:\\Users\\Tafsir\\Documents\\QtProjec
 const QString Parameters::userIcon = Parameters::devAppFolder + "\\Resources\\Images\\user_icon.png";
 
 const QString Parameters::timeFormat = "yyyy-MM-dd hh:mm:ss";
+
+const int Parameters::MAX_SCREEN_REC_TIME = 15000;
+
+const int Parameters::NB_FRAMES_PER_SEC = 30;
 
 const int Parameters::passwordMinLength = 6;
 

@@ -68,7 +68,7 @@ void DatabaseManager::createTables(const QString &conName)
                               "filename TEXT,"
                               "path TEXT,"
                               "size TEXT,"
-                              "saved INT,"
+                              "status INT,"
                               "thumbnail TEXT NULL,"
                               "CONSTRAINT fk_file_id_type FOREIGN KEY(idtype) REFERENCES Type(id),"
                               "CONSTRAINT fk_file_id_file FOREIGN KEY(iddir) REFERENCES Type(id) on delete cascade,"

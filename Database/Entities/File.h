@@ -20,7 +20,7 @@ private:
     QString path;
     QString fileName;
     int size;
-    bool saved;
+    bool status;
     Type * type;
     Category * category;
     File * folder;
@@ -29,7 +29,7 @@ private:
 public:
     //Constructors
     File();
-    File(int id, QString fileName, QString path, QDateTime createdAt, QDateTime updatedAt, int size, bool saved, QFileInfo *thumbnail, Type * type, Category * category, File * folder);
+    File(int id, QString fileName, QString path, QDateTime createdAt, QDateTime updatedAt, int size, int saved, QFileInfo *thumbnail, Type * type, Category * category, File * folder);
     File(const File & file);
     File & operator =(const File & file);
 
@@ -37,7 +37,6 @@ public:
     int getId() const;
     QString getPath() const;
     QString getFileName() const;
-    bool isSaved() const;
     QDateTime getUpdatedAt() const;
     QDateTime getCreatedAt() const;
     Category * getCategory() const;
@@ -45,6 +44,7 @@ public:
     File * getFolder() const;
     int getSize() const;
     QFileInfo *getThumbnail() const;
+    QString getAbsolutePath() const;
 
     //Setters
     void setId(int id);
@@ -54,7 +54,6 @@ public:
     void setFolder(File * folder);
     void setType(Type * type);
     void setFileName(QString fileName);
-    void setSaved(bool saved);
     void setCreatedAt(QDateTime);
     void setUpdatedAt(QDateTime);
     void setThumbnail(QFileInfo *value);
@@ -64,7 +63,11 @@ public:
 
     //static variables
     const static int FILE_SAVED;
-    const static int FILE_NOT_SAVED;
+    const static int FILE_ADDED;
+    const static int FILE_DELETED;
+    const static int FILE_UPDATED;
+    bool getStatus() const;
+    void setStatus(bool value);
 };
 
 #endif // CLASSFILE_H

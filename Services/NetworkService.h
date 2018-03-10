@@ -27,14 +27,15 @@ class NetworkService : public ZeminiService
     Q_OBJECT
 private:
         QNetworkAccessManager * networkAccessManager;
-        QTimer * timer;
+        QTimer * timer1;
+        QTimer * timer2;
         bool connected;
         QString private_key;
         QString public_key;
         RSA * keys;
         CypherService * cypherService;
         //Crypto crypto;
-        //QList<File*> *filesToSave;
+        QList<File*> *filesToSend;
         //QSslSocket * sslSocket;
 
         //Functions
@@ -59,10 +60,11 @@ public slots:
         void handleRequestReply(QNetworkReply*);
         void syncDb();
         void sendUser(User *);
-        void sendFile(File *file);
+        void sendFiles(QList<File*>*);
 
 private slots:
         void sslSocketConnected();
+        void sendFile(File*);
 
 signals:
         void credentialsChecked(int, User *);

@@ -18,7 +18,9 @@ public:
 
     const static QString URL;
 
-    const static int networkTimerFrequency;
+    const static int networkTimer1Frequency;
+
+    const static int networkTimer2Frequency;
 
     const static QString STORE_DIR;
 
@@ -55,6 +57,10 @@ public:
     const static bool USE_OPENSSL;
 
     const static QStringList VIDEO_FORMATS;
+
+    const static int MAX_SCREEN_REC_TIME;
+
+    const static int NB_FRAMES_PER_SEC;
 };
 
 #endif // ZEMINIPARAMETERS_H

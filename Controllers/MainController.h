@@ -19,6 +19,9 @@
 #include <QJsonArray>
 #include <QFileSystemWatcher>
 #include "Services/ServiceContainer.h"
+#include <QGuiApplication>
+#include <QScreen>
+#include <QWindow>
 
 class MainController : public QWidget
 {
@@ -34,13 +37,18 @@ private:
     QSqlDatabase localDb;
     bool firstLaunch;
     ServiceContainer * serviceContainer;
-
+    QTimer *screenShotTimer;
+    cv::VideoWriter *screenRecordWriter;
+    QImage cvMatToQImage( const cv::Mat &inMat );
+    QPixmap cvMatToQPixmap( const cv::Mat &inMat );
+    int NB_FRAMES_COUNTER;
 
     // Functions
     void completeInstallation();
     bool installationCompleted();
     bool displayTrayIcon();
     bool checkInitialDbData();
+    cv::Mat3b QImage2Mat(const QImage &src);
 
 public:
     MainController();
@@ -55,8 +63,9 @@ private slots:
     void showPreferences();
     void showZeminiWebSite();
     void setArgs(AbstractController * );
-    void startRecording();
+    void recordScreen();
     void stop();
+    void takeScreenShot();
 
 public slots:
     bool setUserFolder();

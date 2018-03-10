@@ -20,7 +20,6 @@ private:
     QList<QFileSystemWatcher*> * fsWatchers;
 
     //Functions
-    void storeInDb(QFileInfo );
     bool removeWatchOver(QFileInfo);
 
 protected:
@@ -32,8 +31,8 @@ public:
     void start();
 
 signals:
-    void fileInfoToSave(QFileInfo);
-    void dirContentToUpdate(QFileInfo);
+    void storeInDb(QFileInfo );
+    void dirUpdated(QFileInfo);
     void dirDeleted(QFileInfo);
     void fileDeleted(QFileInfo);
     void fileUpdated(QFileInfo);

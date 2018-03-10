@@ -1,16 +1,34 @@
 #include "Database\Entities\File.h"
 
-const int File::FILE_SAVED = 1;
-const int File::FILE_NOT_SAVED = 0;
+const int File::FILE_SAVED = 2;
+const int File::FILE_UPDATED = 0;
+const int File::FILE_DELETED = -1;
+const int File::FILE_ADDED = 1;
 
 QFileInfo *File::getThumbnail() const
 {
     return thumbnail;
 }
 
+QString File::getAbsolutePath() const
+{
+    return QDir().homePath()
+            +path+Parameters::FILE_SYS_SEPARATOR+fileName;
+}
+
 void File::setThumbnail(QFileInfo *value)
 {
     thumbnail = value;
+}
+
+bool File::getStatus() const
+{
+    return status;
+}
+
+void File::setStatus(bool value)
+{
+    status = value;
 }
 
 File::File()
@@ -19,13 +37,13 @@ File::File()
 }
 
 /***            A second constructor            ***/
-File::File(int id, QString fileName, QString path, QDateTime createdAt, QDateTime updatedAt, int size, bool saved, QFileInfo *thumbnail, Type *type, Category *category, File * folder)
+File::File(int id, QString fileName, QString path, QDateTime createdAt, QDateTime updatedAt, int size, int status, QFileInfo *thumbnail, Type *type, Category *category, File * folder)
 {
     this->id = id;
     this->fileName = fileName;
     this->path = path;
     this->size = size;
-    this->saved = saved;
+    this->status = status;
     this->category = category;
     this->folder = folder;
     this->createdAt = createdAt;
@@ -55,7 +73,7 @@ File & File::operator =(const File & file)
     this->fileName = file.fileName;
     this->path = file.path;
     this->createdAt = file.createdAt;
-    this->saved = file.saved;
+    this->status = file.status;
     this->type = file.type;
     this->size = file.size;
     this->folder = file.folder;
@@ -147,15 +165,6 @@ File * File::getFolder() const
 }
 
 /**
- * @brief File::isSaved
- * @return
- */
-bool File::isSaved() const
-{
-    return saved;
-}
-
-/**
  * @brief File::setId
  * @param id
  */
@@ -227,15 +236,6 @@ void File::setSize(int size)
     this->size = size;
 }
 
-/**
- * @brief File::setSaved
- * @param saved
- */
-void File::setSaved(bool saved)
-{
-    this->saved = saved;
-}
-
 void File::setPath(QString path)
 {
     this->path = path;
@@ -243,7 +243,7 @@ void File::setPath(QString path)
 
 QString File::toString()
 {
-    QString toString = "id : "+ QString::number(id) + " - filename : "+ fileName + " - path : "+ path + " - createdat : " + createdAt.toString(Parameters::timeFormat) + " - updatedat : " + updatedAt.toString(Parameters::timeFormat) + " - saved : "+ QString::number(((saved) ? 1 : 0)) + " - size : " + QString::number(size) ;//+ " - parent folder : "+ QString::number(folder->getId()) + " - type : " + QString::number(type->getId()) + " - category : " + QString::number(category->getId());
+    QString toString = "id : "+ QString::number(id) + " - filename : "+ fileName + " - path : "+ path + " - createdat : " + createdAt.toString(Parameters::timeFormat) + " - updatedat : " + updatedAt.toString(Parameters::timeFormat) + " - status : "+ QString::number(((status) ? 1 : 0)) + " - size : " + QString::number(size) ;//+ " - parent folder : "+ QString::number(folder->getId()) + " - type : " + QString::number(type->getId()) + " - category : " + QString::number(category->getId());
     return toString;
 }
 
@@ -253,12 +253,18 @@ QString File::toString()
  */
 QString File::serialize()
 {
-    QString res = QString::number(id)+Parameters::NET_REQUEST_SEPARATOR
+    QString res = QString::number(status)+Parameters::NET_REQUEST_SEPARATOR
+            +QString::number(id)+Parameters::NET_REQUEST_SEPARATOR
             +fileName+Parameters::NET_REQUEST_SEPARATOR
             +path.replace("/", "+")+Parameters::NET_REQUEST_SEPARATOR
             +QString::number(size)+Parameters::NET_REQUEST_SEPARATOR
             +createdAt.toString(Parameters::timeFormat)+Parameters::NET_REQUEST_SEPARATOR
-            +updatedAt.toString(Parameters::timeFormat);
+            +updatedAt.toString(Parameters::timeFormat)+Parameters::NET_REQUEST_SEPARATOR
+            +folder->getFileName()+Parameters::NET_REQUEST_SEPARATOR
+            +folder->getPath().replace("/", "+")+Parameters::NET_REQUEST_SEPARATOR
+            +type->getName()+Parameters::NET_REQUEST_SEPARATOR
+            +type->getSuffix()+Parameters::NET_REQUEST_SEPARATOR
+            +category->getName();
     return res;
 }
 

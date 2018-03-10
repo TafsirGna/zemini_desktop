@@ -17,9 +17,11 @@ protected:
 public :
     FileManager();
 
+    bool saveFile(QFileInfo);
     bool saveFile(File * file);
     bool updateFile(File * file);
-    bool deleteFile(File * file);
+    bool symDeleteFile(File * file);
+    bool hardDeleteFile(File * file);
     bool updateDirContent(QDir);
     QList<File *> *getAllFiles();
     QList<File *> *getNotSavedFiles();
@@ -41,6 +43,8 @@ public slots:
 signals:
     void fileSaved(QFileInfo);
     void fileSaved(File *);
+    void fileDeleted(File *);
+    void fileUpdated(File *);
 
 };
 
