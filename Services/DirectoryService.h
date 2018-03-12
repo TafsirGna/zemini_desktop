@@ -44,6 +44,9 @@ private slots:
 public slots:
     void watchFile(QFileInfo);
 
+signals:
+    void rootFolderOnWatching();
+
 };
 
 #endif // DIRECTORYSERVICE_H

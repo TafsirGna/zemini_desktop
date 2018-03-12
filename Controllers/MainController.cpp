@@ -17,9 +17,9 @@ MainController::MainController()
     //Setting connections with the child threads
     QWidget::connect(registerForm,SIGNAL(logInLinkActivated()),this,SLOT(showLogInForm()));
     QWidget::connect(((DirectoryService *)this->serviceContainer->getService(ZeminiService::FileSystem)), SIGNAL(dirUpdated(QFileInfo)), ((LocalDBService *)this->getService(ZeminiService::LocalDatabase)), SLOT(saveFileUpdate(QFileInfo)));
+    QWidget::connect(((DirectoryService *)this->serviceContainer->getService(ZeminiService::FileSystem)), SIGNAL(rootFolderOnWatching()), ((LocalDBService *)this->getService(ZeminiService::LocalDatabase)), SLOT(startBackingUp()));
     QWidget::connect(((DirectoryService *)this->serviceContainer->getService(ZeminiService::FileSystem)), SIGNAL(fileUpdated(QFileInfo)), ((LocalDBService *)this->getService(ZeminiService::LocalDatabase)), SLOT(saveFileUpdate(QFileInfo)));
     QWidget::connect(((DirectoryService *)this->serviceContainer->getService(ZeminiService::FileSystem)), SIGNAL(fileDeleted(QFileInfo)), ((LocalDBService *)this->getService(ZeminiService::LocalDatabase)), SLOT(saveFileDeletion(QFileInfo)));
-    //QWidget::connect(logInForm, SIGNAL(onStart(AbstractController * )), this, SLOT(setArgs(AbstractController *)));
     QWidget::connect(logInForm, SIGNAL(signUpLinkActivated()), this, SLOT(showRegisterForm()));
     QWidget::connect(logInForm, SIGNAL(userToSave(User*)), ((LocalDBService *)this->getService(ZeminiService::LocalDatabase)), SLOT(save(User *)));
     QWidget::connect(((NetworkService *)this->serviceContainer->getService(ZeminiService::Network)), SIGNAL(initDataGot(QList<Category>*)), ((LocalDBService*)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SLOT(initDb(QList<Category> *)));
@@ -27,7 +27,6 @@ MainController::MainController()
     QWidget::connect(((DirectoryService *)this->serviceContainer->getService(ZeminiService::FileSystem)), SIGNAL(dirDeleted(QFileInfo)), ((LocalDBService*)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SLOT(saveFileDeletion(QFileInfo)));
     QWidget::connect(((LocalDBService *)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SIGNAL(filesToSend(QList<File *>*)), ((NetworkService *)this->serviceContainer->getService(ZeminiService::Network)), SLOT(sendFiles(QList<File*>*)));
     QWidget::connect((FileManager*)((LocalDBService *)this->serviceContainer->getService(ZeminiService::LocalDatabase))->getManager(LocalDBService::FILE), SIGNAL(fileSaved(QFileInfo)), ((DirectoryService *)this->serviceContainer->getService(ZeminiService::FileSystem)), SLOT(watchFile(QFileInfo)));
-    //QWidget::connect((FileManager*)((LocalDBService *)this->serviceContainer->getService(ZeminiService::LocalDatabase))->getManager(LocalDBService::FILE), SIGNAL(fileSaved(File*)), ((NetworkService *)this->serviceContainer->getService(ZeminiService::Network)), SLOT(sendFile(File*)));
     QWidget::connect(trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),this, SLOT(manageActivation(QSystemTrayIcon::ActivationReason)));
     QWidget::connect(((DirectoryService *)this->serviceContainer->getService(ZeminiService::FileSystem)), SIGNAL(storeInDb(QFileInfo)), ((LocalDBService*)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SLOT(save(QFileInfo)));
     QWidget::connect(((NetworkService *)this->serviceContainer->getService(ZeminiService::Network)), SIGNAL(readyToBackUp()), ((LocalDBService*)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SLOT(startBackingUp()));
@@ -226,13 +225,24 @@ void MainController::setArgs(AbstractController * controller)
  */
 void MainController::recordScreen()
 {
+    // we take a first a first screenshot that's gonna be usefull for defining the video features
+    QScreen *screen = QGuiApplication::primaryScreen();
+    if (const QWindow *window = windowHandle())
+        screen = window->screen();
+    if (!screen)
+        return;
+    QPixmap pix = screen->grabWindow(0);
+    cv::Mat frame = (cv::Mat) QImage2Mat(pix.toImage());
+
+    // then, i go on defining the videowriter
     screenRecordWriter = new cv::VideoWriter();
-    screenRecordWriter->open(cv::String("test.avi"), -1, 30, cv::Size(1024,768), true);
+    int codec = CV_FOURCC('M', 'J', 'P', 'G');
+    screenRecordWriter->open(cv::String("test.avi"), codec, 30, frame.size(), true);
     if (!screenRecordWriter->isOpened()) {
         qDebug() << "Failed to open the output file " << endl;
         return;
     }
-    //qDebug() << "succeed in opening the output file " << endl;
+    qDebug() << "Succeed in opening the output file " << endl;
     this->NB_FRAMES_COUNTER = ((Parameters::MAX_SCREEN_REC_TIME * Parameters::NB_FRAMES_PER_SEC) / 1000);
     screenShotTimer->start(1000/Parameters::NB_FRAMES_PER_SEC);
 }
@@ -248,6 +258,7 @@ void MainController::takeScreenShot()
         QString title = "Zemini Info";
         QString message = "File saved";
         trayIcon->showMessage(title, message);
+        delete(screenRecordWriter);
         return;
     }
     // First, i start taking screenshot
@@ -256,6 +267,7 @@ void MainController::takeScreenShot()
         screen = window->screen();
     if (!screen)
         return;
+
     QPixmap pix = screen->grabWindow(0);
     // i save the pixmap object in the file system
     //if (!pix.save(QDir().homePath()+"/test.png"))
@@ -263,15 +275,12 @@ void MainController::takeScreenShot()
 
     cv::Mat frame = (cv::Mat) QImage2Mat(pix.toImage());
 
-    (*screenRecordWriter) << frame;
-
+    screenRecordWriter->write(frame);
     NB_FRAMES_COUNTER--;
-    /*
+    qDebug() << NB_FRAMES_COUNTER << endl;
+
     if (!cv::imwrite("test.png", frame))
         qDebug() << "Failed to save the screenshot!" << endl;
-    else
-        qDebug() << "Succeed in saving the screenshot!" << endl;
-    */
 }
 
 QImage  MainController::cvMatToQImage( const cv::Mat &inMat )

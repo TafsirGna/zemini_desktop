@@ -243,7 +243,7 @@ void File::setPath(QString path)
 
 QString File::toString()
 {
-    QString toString = "id : "+ QString::number(id) + " - filename : "+ fileName + " - path : "+ path + " - createdat : " + createdAt.toString(Parameters::timeFormat) + " - updatedat : " + updatedAt.toString(Parameters::timeFormat) + " - status : "+ QString::number(((status) ? 1 : 0)) + " - size : " + QString::number(size) ;//+ " - parent folder : "+ QString::number(folder->getId()) + " - type : " + QString::number(type->getId()) + " - category : " + QString::number(category->getId());
+    QString toString = "id : "+ QString::number(id) + " - filename : "+ fileName + " - path : "+ path + " - createdat : " + createdAt.toString(Parameters::timeFormat) + " - updatedat : " + updatedAt.toString(Parameters::timeFormat) + " - status : "+ QString::number(status) + " - size : " + QString::number(size)  ;//+ " - parent folder : "+ QString::number(folder->getId()) + " - type : " + QString::number(type->getId()) + " - category : " + QString::number(category->getId());
     return toString;
 }
 
@@ -260,10 +260,10 @@ QString File::serialize()
             +QString::number(size)+Parameters::NET_REQUEST_SEPARATOR
             +createdAt.toString(Parameters::timeFormat)+Parameters::NET_REQUEST_SEPARATOR
             +updatedAt.toString(Parameters::timeFormat)+Parameters::NET_REQUEST_SEPARATOR
-            +folder->getFileName()+Parameters::NET_REQUEST_SEPARATOR
-            +folder->getPath().replace("/", "+")+Parameters::NET_REQUEST_SEPARATOR
+            +((folder != NULL) ? folder->getFileName() : "NULL")+Parameters::NET_REQUEST_SEPARATOR
+            +((folder != NULL) ? folder->getPath().replace("/", "+") : "NULL")+Parameters::NET_REQUEST_SEPARATOR
             +type->getName()+Parameters::NET_REQUEST_SEPARATOR
-            +type->getSuffix()+Parameters::NET_REQUEST_SEPARATOR
+            +((type == NULL || type->getName()== "directory") ? "NULL" : type->getSuffix())+Parameters::NET_REQUEST_SEPARATOR
             +category->getName();
     return res;
 }

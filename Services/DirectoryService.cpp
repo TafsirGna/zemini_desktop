@@ -51,6 +51,7 @@ void DirectoryService::watchZeminiFolder()
         currentObject = (queue->last());
         queue->removeLast();
     }
+    emit rootFolderOnWatching();
 }
 
 /**

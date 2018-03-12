@@ -90,8 +90,16 @@ QFileInfo *Functions::generateThumbnails(QFileInfo fileInfo)
         return NULL;
     }
     // Everything's ok then
+    int frameIndex = (int) vcap.get(CV_CAP_PROP_FRAME_COUNT);
+    frameIndex /= Parameters::FRAME_COUNT_DIVIDER;
+
     Mat frame;
-    vcap >> frame;
+    int i(0);
+    while(i < frameIndex){
+        vcap >> frame;
+        i++;
+    }
+
     QString thumbName = fileInfo.baseName()+".png";
     QString thumbPath = Parameters::THUMBS_DIR+"/"+thumbName;
 

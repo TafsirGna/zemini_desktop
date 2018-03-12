@@ -61,6 +61,8 @@ public:
     const static int MAX_SCREEN_REC_TIME;
 
     const static int NB_FRAMES_PER_SEC;
+
+    const static int FRAME_COUNT_DIVIDER;
 };
 
 #endif // ZEMINIPARAMETERS_H

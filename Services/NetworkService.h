@@ -36,11 +36,13 @@ private:
         CypherService * cypherService;
         //Crypto crypto;
         QList<File*> *filesToSend;
+        bool firstBackup;
         //QSslSocket * sslSocket;
 
         //Functions
         void handleBadRequestReply(QNetworkReply*);
         void handleGoodRequestReply(QNetworkReply*);
+        //void pingServer();
 
         // Static constants
         const static int CODE_REGISTER_USER;
@@ -48,6 +50,7 @@ private:
         const static int CODE_DB_INIT;
         const static int CODE_FILE_SAVE;
         const static int CODE_DB_REFRESH;
+        const static int CODE_PING_SERVER;
 
 public:
         NetworkService();

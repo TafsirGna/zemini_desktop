@@ -20,7 +20,7 @@ private:
     QString path;
     QString fileName;
     int size;
-    bool status;
+    int status;
     Type * type;
     Category * category;
     File * folder;
@@ -29,7 +29,7 @@ private:
 public:
     //Constructors
     File();
-    File(int id, QString fileName, QString path, QDateTime createdAt, QDateTime updatedAt, int size, int saved, QFileInfo *thumbnail, Type * type, Category * category, File * folder);
+    File(int id, QString fileName, QString path, QDateTime createdAt, QDateTime updatedAt, int size, int status, QFileInfo *thumbnail, Type * type, Category * category, File * folder);
     File(const File & file);
     File & operator =(const File & file);
 

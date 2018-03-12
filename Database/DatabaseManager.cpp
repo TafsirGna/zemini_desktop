@@ -70,6 +70,7 @@ void DatabaseManager::createTables(const QString &conName)
                               "size TEXT,"
                               "status INT,"
                               "thumbnail TEXT NULL,"
+                              "unique(filename, path) on conflict replace,"
                               "CONSTRAINT fk_file_id_type FOREIGN KEY(idtype) REFERENCES Type(id),"
                               "CONSTRAINT fk_file_id_file FOREIGN KEY(iddir) REFERENCES Type(id) on delete cascade,"
                               "CONSTRAINT fk_file_id_category FOREIGN KEY(idcategory) REFERENCES Category(id)"
