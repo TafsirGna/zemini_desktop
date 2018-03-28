@@ -2,10 +2,11 @@
 #define APPDATA_H
 
 #include <QString>
+#include <Database/Entities/DbEntity.h>
 /**
  * @brief The AppData class : Class corresponding to AppData Table in the database
  */
-class AppData
+class AppData: public DbEntity
 {
 private:
     QString key;

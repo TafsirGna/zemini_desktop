@@ -34,3 +34,8 @@ void Category::setName(QString name)
 {
     this->name = name;
 }
+
+QString Category::toString()
+{
+    return "Category : id = "+QString::number(id)+", name = "+name;
+}

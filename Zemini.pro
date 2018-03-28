@@ -49,8 +49,8 @@ SOURCES += main.cpp\
     Database/EntityManagers/UserManager.cpp \
     Database/EntityManagers/FileManager.cpp \
     Database/Entities/Category.cpp \
-    Database/Entities/Type.cpp \
-    Database/EntityManagers/TypeManager.cpp \
+    Database/Entities/FileType.cpp \
+    Database/EntityManagers/FileTypeManager.cpp \
     Database/EntityManagers/CategoryManager.cpp \
     Database/DatabaseManager.cpp \
     Database/EntityManagers/AbstractManager.cpp \
@@ -67,6 +67,11 @@ SOURCES += main.cpp\
     Database/EntityManagers/AppDataManager.cpp \
     #Vendor/OpenSSL_Wrapper/base64.cpp \
     #Vendor/OpenSSL_Wrapper/Crypto.cpp
+    Database/Entities/DriveType.cpp \
+    Database/EntityManagers/DriveTypeManager.cpp \
+    Database/Entities/Drive.cpp \
+    Database/EntityManagers/DriveManager.cpp \
+    Database/Entities/DbEntity.cpp
 
 HEADERS  += Config\Parameters.h \
     Config/Functions.h \
@@ -79,8 +84,8 @@ HEADERS  += Config\Parameters.h \
     # Database headers
     Database/Entities/File.h \
     Database/Entities/Category.h \
-    Database/Entities/Type.h \
-    Database/EntityManagers/TypeManager.h \
+    Database/Entities/FileType.h \
+    Database/EntityManagers/FileTypeManager.h \
     Database/EntityManagers/CategoryManager.h \
     Database/Entities/User.h \
     Database/EntityManagers/UserManager.h \
@@ -99,6 +104,11 @@ HEADERS  += Config\Parameters.h \
     Database/EntityManagers/AppDataManager.h \
     #Vendor/OpenSSL_Wrapper/base64.h \
     #Vendor/OpenSSL_Wrapper/Crypto.h
+    Database/Entities/DriveType.h \
+    Database/EntityManagers/DriveTypeManager.h \
+    Database/Entities/Drive.h \
+    Database/EntityManagers/DriveManager.h \
+    Database/Entities/DbEntity.h
 
 
 FORMS    += Views\PreferencesForm.ui \

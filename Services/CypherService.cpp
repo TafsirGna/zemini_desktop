@@ -84,8 +84,8 @@ void CypherService::genRsaKeys()
     writeFile(pubKeyFilePath, pubKeyStr);
 
     // And then, i save that in the db
-    appDataManager->addAppData(new AppData("PublicKey", pubKeyFilePath));
-    appDataManager->addAppData(new AppData("PrivateKey", privKeyFilePath));
+    appDataManager->add(new AppData("PublicKey", pubKeyFilePath));
+    appDataManager->add(new AppData("PrivateKey", privKeyFilePath));
 }
 
 QByteArray CypherService::encryptRsa(string message) {

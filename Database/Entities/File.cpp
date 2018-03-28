@@ -31,13 +31,23 @@ void File::setStatus(bool value)
     status = value;
 }
 
+Drive *File::getDrive() const
+{
+    return drive;
+}
+
+void File::setDrive(Drive *value)
+{
+    drive = value;
+}
+
 File::File()
 {
     //Nothing to do for now
 }
 
 /***            A second constructor            ***/
-File::File(int id, QString fileName, QString path, QDateTime createdAt, QDateTime updatedAt, int size, int status, QFileInfo *thumbnail, Type *type, Category *category, File * folder)
+File::File(int id, QString fileName, QString path, QDateTime createdAt, QDateTime updatedAt, int size, int status, QFileInfo *thumbnail, FileType *type, Category *category, File * folder, Drive * drive)
 {
     this->id = id;
     this->fileName = fileName;
@@ -50,6 +60,7 @@ File::File(int id, QString fileName, QString path, QDateTime createdAt, QDateTim
     this->updatedAt = updatedAt;
     this->type = type;
     this->thumbnail = thumbnail;
+    this->drive =  drive;
 }
 
 File::File(const File &file)
@@ -80,6 +91,7 @@ File & File::operator =(const File & file)
     this->updatedAt = file.updatedAt;
     this->category = file.category;
     this->thumbnail = file.thumbnail;
+    this->drive =  file.drive;
     return *this;
 }
 
@@ -150,7 +162,7 @@ Category * File::getCategory() const
  * @brief File::getType
  * @return
  */
-Type * File::getType() const
+FileType *File::getType() const
 {
     return type;
 }
@@ -186,9 +198,9 @@ void File::setCategory(Category *category)
  * @brief File::setType
  * @param type
  */
-void File::setType(Type *type)
+void File::setType(FileType *fileType)
 {
-    this->type = type;
+    this->type = fileType;
 }
 
 /**
@@ -243,7 +255,7 @@ void File::setPath(QString path)
 
 QString File::toString()
 {
-    QString toString = "id : "+ QString::number(id) + " - filename : "+ fileName + " - path : "+ path + " - createdat : " + createdAt.toString(Parameters::timeFormat) + " - updatedat : " + updatedAt.toString(Parameters::timeFormat) + " - status : "+ QString::number(status) + " - size : " + QString::number(size)  ;//+ " - parent folder : "+ QString::number(folder->getId()) + " - type : " + QString::number(type->getId()) + " - category : " + QString::number(category->getId());
+    QString toString = "id : "+ QString::number(id) + " - filename : "+ fileName + " - path : "+ path + " - createdat : " + createdAt.toString(Parameters::timeFormat) + " - updatedat : " + updatedAt.toString(Parameters::timeFormat) + " - status : "+ QString::number(status) + " - size : " + QString::number(size) + " - parent folder : "+ ((folder != NULL) ? folder->getFileName() : "NULL") + " - type : " + ((type != NULL) ? type->getName() : "NULL" ) + " - category : " + ((category != NULL) ? category->getName() : "NULL") + " - drive : " + drive->getAbsolutepath();
     return toString;
 }
 
@@ -253,7 +265,8 @@ QString File::toString()
  */
 QString File::serialize()
 {
-    QString res = QString::number(status)+Parameters::NET_REQUEST_SEPARATOR
+    QString res = drive->serialize()+Parameters::NET_REQUEST_SEPARATOR
+            +QString::number(status)+Parameters::NET_REQUEST_SEPARATOR
             +QString::number(id)+Parameters::NET_REQUEST_SEPARATOR
             +fileName+Parameters::NET_REQUEST_SEPARATOR
             +path.replace("/", "+")+Parameters::NET_REQUEST_SEPARATOR

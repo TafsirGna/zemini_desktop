@@ -40,11 +40,9 @@ void DirectoryService::watchZeminiFolder()
     while(true){
         //qDebug() << currentObject.absoluteFilePath() << endl;
         emit storeInDb(currentObject);
-        if (currentObject.isDir()){
-            if (currentObject.absoluteFilePath() != Parameters::THUMBS_DIR){
-                // get its children
-                (*queue) += QDir(currentObject.absoluteFilePath()).entryInfoList(QDir::Files | QDir::NoSymLinks | QDir::AllDirs | QDir::NoDotAndDotDot);
-            }
+        if (currentObject.isDir() && currentObject.absoluteFilePath() != Parameters::THUMBS_DIR){
+            // get its children
+            (*queue) += QDir(currentObject.absoluteFilePath()).entryInfoList(QDir::Files | QDir::NoSymLinks | QDir::AllDirs | QDir::NoDotAndDotDot);
         }
         if (queue->isEmpty())
             break;

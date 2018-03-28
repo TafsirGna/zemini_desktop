@@ -12,14 +12,19 @@ private:
 
 public:
     CategoryManager();
-    CategoryManager(QSqlDatabase &db);
-    Category *getByName(QString);
     bool isEmpty();
 
-    bool addCategory(Category category);
-    QList<Category> * getAllCategories();
-    //functions used to retrieve a category object from the local database following some given critera;
-    Category * findCategoryById(int id);
+    static Category *add(Category);
+    static Category *add(Category *);
+
+    static Category * update(Category category);
+    bool remove(Category category);
+    static Category* getCategory(QFileInfo fileInfo);
+
+    static QList<Category> * getAll();
+    static Category * getOneBy(QMap<QString, QString>);
+    static void printAll();
+    static void print(QList<Category> *);
 };
 
 

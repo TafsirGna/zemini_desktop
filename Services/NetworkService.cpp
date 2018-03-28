@@ -19,6 +19,7 @@ NetworkService::NetworkService()
     this->connected = true;
     this->timer1 = new QTimer(this);
     this->timer2 = new QTimer(this);
+    initDataList = LocalDBService::INIT_DATA_LIST;
     filesToSend = new QList<File*>();
 
     //cypherService->encryptRsa("test");
@@ -29,7 +30,8 @@ NetworkService::NetworkService()
 
     // Setting connectors
     QWidget::connect(networkAccessManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(handleRequestReply(QNetworkReply*)));
-    QWidget::connect(timer1, SIGNAL(timeout()),this, SLOT(syncDb()));
+    //QWidget::connect(timer1, SIGNAL(timeout()),this, SLOT(syncDb()));
+
     //QWidget::connect(timer2, SIGNAL(timeout()),this, SLOT(pingServer()));
     //QWidget::connect(sslSocket, SIGNAL(encrypted()), this, SLOT(sslSocketConnected()));
 
@@ -52,9 +54,11 @@ void NetworkService::sslSocketConnected()
 // this function sends a request to the remote server to get its initial data to get started
 void NetworkService::getInitialDbData()
 {
-    connected = false;
-    networkAccessManager->get(QNetworkRequest(QUrl(Parameters::URL+"/init_db")));
-    //qDebug() << Parameters::URL+"/init_db" << endl;
+    if (!initDataList.isEmpty()){
+        connected = false;
+        networkAccessManager->get(QNetworkRequest(QUrl(Parameters::URL+"/init_db"+Parameters::NET_REQUEST_SEPARATOR+initDataList.first())));
+        //qDebug() << Parameters::URL+"/init_db"+Parameters::NET_REQUEST_SEPARATOR+initDataList.first() << endl;
+    }
 }
 
 void NetworkService::handleRequestReply(QNetworkReply * reply)
@@ -96,6 +100,16 @@ void NetworkService::checkCredentials(QString email, QString password)
 
 void NetworkService::sendFiles(QList<File*>* files)
 {
+    /*
+    //turning the list to a json data
+    QNetworkRequest networkRequest(QUrl(Parameters::URL+Parameters::NET_REQUEST_SEPARATOR+
+                                        "manage_files"+Parameters::NET_REQUEST_SEPARATOR));
+    networkRequest.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+    QJsonObject jsonObject;
+    jsonObject.insert()
+            */
+
     (*filesToSend) += (*files);
     //if (connected)
     if (!filesToSend->isEmpty())
@@ -103,6 +117,7 @@ void NetworkService::sendFiles(QList<File*>* files)
     else
         if (firstBackup){
             firstBackup = false;
+            emit firstBackUpDone();
             this->timer1->start(Parameters::networkTimer1Frequency);
         }
 }
@@ -146,8 +161,8 @@ void NetworkService::handleBadRequestReply(QNetworkReply * reply)
 
     }
     case NetworkService::CODE_DB_INIT:{
-        QList<Category> * categories = NULL;
-        emit initDataGot(categories);
+        //QList<Category> * categories = NULL;
+        //emit initDataGot(categories, LocalD);
         break;
     }
     case NetworkService::CODE_DB_REFRESH:{
@@ -192,8 +207,14 @@ void NetworkService::handleGoodRequestReply(QNetworkReply * reply)
         break;
     }
     case NetworkService::CODE_DB_INIT:{
-        QList<Category> * categories = Functions::fromJsonToCategories(json_map);
-        emit initDataGot(categories);
+        if (!initDataList.isEmpty()){
+            if (initDataList.first() == LocalDBService::CATEGORY){
+                QList<Category> * categories  = Functions::fromJsonToCategories(json_map);
+                emit initDataGot((QList<DbEntity>*)categories, LocalDBService::CATEGORY);
+            }
+            initDataList.removeFirst();
+            getInitialDbData();
+        }
         break;
     }
     case NetworkService::CODE_FILE_SAVE:{
@@ -207,6 +228,7 @@ void NetworkService::handleGoodRequestReply(QNetworkReply * reply)
             else
                 if (firstBackup){
                     firstBackup = false;
+                    emit firstBackUpDone();
                     this->timer1->start(Parameters::networkTimer1Frequency);
                 }
             emit fileSaved(fileID);

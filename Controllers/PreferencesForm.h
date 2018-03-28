@@ -3,7 +3,7 @@
 
 #include <QWidget>
 #include "Database/EntityManagers/AbstractManager.h"
-#include "Database/EntityManagers/TypeManager.h"
+#include "Database/EntityManagers/FileTypeManager.h"
 #include <QFileDialog>
 #include "Database/EntityManagers/UserManager.h"
 #include <QFileSystemWatcher>
@@ -24,7 +24,7 @@ public:
 private:
     Ui::PreferencesForm *ui;
 
-    TypeManager * typeManager;
+    FileTypeManager * fileTypeManager;
     UserManager * userManager;
 
 private slots:

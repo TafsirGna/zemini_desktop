@@ -5,9 +5,10 @@
 #include <QDateTime>
 #include <QList>
 #include <QDebug>
+#include <Database/Entities/DbEntity.h>
 
 using namespace std;
-class User
+class User : public DbEntity
 {
 private:
         int id;

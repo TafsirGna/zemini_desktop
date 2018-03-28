@@ -121,3 +121,8 @@ bool Functions::isVideoFile(QFileInfo fileInfo)
         return true;
     return false;
 }
+
+QString Functions::getDriveAbsPath(QString fileInfoAbsPath)
+{
+    return fileInfoAbsPath.remove(fileInfoAbsPath.indexOf("/"+Parameters::ROOT_DIR_NAME), fileInfoAbsPath.length());
+}

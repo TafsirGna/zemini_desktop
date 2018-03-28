@@ -28,6 +28,8 @@ public:
     static QFileInfo * generateThumbnails(QFileInfo);
 
     static bool isVideoFile(QFileInfo);
+
+    static QString getDriveAbsPath(QString);
 };
 
 #endif // FUNCTIONS_H

@@ -66,6 +66,7 @@ private slots:
     void recordScreen();
     void stop();
     void takeScreenShot();
+    void handleFirstBackUpDone();
 
 public slots:
     bool setUserFolder();

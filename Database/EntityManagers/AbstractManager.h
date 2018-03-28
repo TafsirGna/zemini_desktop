@@ -17,7 +17,7 @@ class AbstractManager : public QObject
     Q_OBJECT
 protected:
         //  Properties
-        QSqlQuery * query;
+        //QSqlQuery * query;
 
         //  Functions
         void saveUpdateToRemoteDB();

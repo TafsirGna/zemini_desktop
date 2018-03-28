@@ -2,41 +2,43 @@
 #define CLASSFILEMANAGER_H
 
 #include "Database/Entities/File.h"
-#include "Database/EntityManagers/TypeManager.h"
+#include "Database/EntityManagers/FileTypeManager.h"
 #include "Config/Functions.h"
+#include "Database/EntityManagers/DriveManager.h"
 
 class FileManager : public AbstractManager
 {
     Q_OBJECT
 private :
-    TypeManager * typeManager;
-    CategoryManager * categoryManager;
+    //FileTypeManager * fileTypeManager;
+    //CategoryManager * categoryManager;
 
 protected:
 
 public :
     FileManager();
 
-    bool saveFile(QFileInfo);
-    bool saveFile(File * file);
-    bool updateFile(File * file);
-    bool symDeleteFile(File * file);
-    bool hardDeleteFile(File * file);
+    File* add(QFileInfo);
+    File* add(File * file);
+    File* update(File * file);
+    bool symDelete(File * file);
+    bool hardDelete(File * file);
     bool updateDirContent(QDir);
-    QList<File *> *getAllFiles();
-    QList<File *> *getNotSavedFiles();
+    QList<File *> *getAll();
+    static QList<File *> *getNotSavedFiles();
     bool setFileSaved(int);
-    File * convertToFile(QFileInfo);
-    File * getByFileName(QString);
-    void printAllFiles();
+    static File * convertToFile(QFileInfo);
+    static File *getOneBy(QMap<QString, QString>);
+    void printAll();
 
-    void setCategoryManager(CategoryManager *);
-    void setTypeManager(TypeManager *);
+    //void setCategoryManager(CategoryManager *);
+    //void setFileTypeManager(FileTypeManager *);
 
-    Category * getCategory(QFileInfo);
-    Type * getType(QFileInfo);
-    File * getFolder(QFileInfo);
-    File * getFileAt(QFileInfo);
+    static Category * getCategory(QFileInfo);
+    static FileType * getType(QFileInfo);
+    static File * getFolder(QFileInfo);
+    static File * getFileAt(QFileInfo);
+    Drive *getDrive();
 
 public slots:
 

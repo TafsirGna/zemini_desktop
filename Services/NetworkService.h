@@ -21,6 +21,7 @@
 #include <QSslSocket>
 #include "Database/Entities/File.h"
 #include <Services/CypherService.h>
+#include <Services/LocalDbService.h>
 
 class NetworkService : public ZeminiService
 {
@@ -37,6 +38,7 @@ private:
         //Crypto crypto;
         QList<File*> *filesToSend;
         bool firstBackup;
+        QStringList initDataList;
         //QSslSocket * sslSocket;
 
         //Functions
@@ -71,9 +73,10 @@ private slots:
 
 signals:
         void credentialsChecked(int, User *);
-        void initDataGot(QList<Category> *);
+        void initDataGot(QList<DbEntity> *, QString);
         void readyToBackUp();
         void fileSaved(int);
+        void firstBackUpDone();
 };
 
 #endif // NETWORKSERVICE_H

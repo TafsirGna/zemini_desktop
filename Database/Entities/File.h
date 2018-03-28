@@ -3,15 +3,17 @@
 
 #include <QString>
 #include <QDateTime>
-#include "Database/Entities/Type.h"
+#include "Database/Entities/FileType.h"
 #include "Database/Entities/Category.h"
+#include "Database/Entities/Drive.h"
 #include <QDebug>
 #include <QFileInfo>
 #include <Config/Parameters.h>
+#include <Database/Entities/DbEntity.h>
 
 using namespace std;
 
-class File
+class File : public DbEntity
 {
 private:
     int id;
@@ -21,15 +23,16 @@ private:
     QString fileName;
     int size;
     int status;
-    Type * type;
+    FileType * type;
     Category * category;
     File * folder;
     QFileInfo * thumbnail;
+    Drive * drive;
 
 public:
     //Constructors
     File();
-    File(int id, QString fileName, QString path, QDateTime createdAt, QDateTime updatedAt, int size, int status, QFileInfo *thumbnail, Type * type, Category * category, File * folder);
+    File(int id, QString fileName, QString path, QDateTime createdAt, QDateTime updatedAt, int size, int status, QFileInfo *thumbnail, FileType * type, Category * category, File * folder, Drive * drive);
     File(const File & file);
     File & operator =(const File & file);
 
@@ -40,7 +43,7 @@ public:
     QDateTime getUpdatedAt() const;
     QDateTime getCreatedAt() const;
     Category * getCategory() const;
-    Type * getType() const;
+    FileType * getType() const;
     File * getFolder() const;
     int getSize() const;
     QFileInfo *getThumbnail() const;
@@ -52,7 +55,7 @@ public:
     void setSize(int size);
     void setCategory(Category * category);
     void setFolder(File * folder);
-    void setType(Type * type);
+    void setType(FileType * fileType);
     void setFileName(QString fileName);
     void setCreatedAt(QDateTime);
     void setUpdatedAt(QDateTime);
@@ -68,6 +71,8 @@ public:
     const static int FILE_UPDATED;
     bool getStatus() const;
     void setStatus(bool value);
+    Drive *getDrive() const;
+    void setDrive(Drive *value);
 };
 
 #endif // CLASSFILE_H

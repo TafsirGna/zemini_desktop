@@ -46,26 +46,27 @@ void UserManager::saveUser(User user)
  * @param user
  * @return
  */
-bool UserManager::insertUser(User user)
+User * UserManager::add(User user)
 {
     QString request = "INSERT INTO User VALUES("+QString::number(user.getId())+", '"+user.getFamilyname()+"', '"+user.getFirstname()+"', '"+user.getEmail()+"','"+user.getUsername()+"','"+user.getPassword()+"',"+((user.isActivated()) ? QString::number(1) : QString::number(0))+")";
-    query->exec(request);
-    if(!query->isActive()){
-        qDebug()<<"Erreur insertion User: " + query->lastError().text();
-        return false;
+    QSqlQuery sqlQuery(Parameters::localDb);
+    sqlQuery.exec(request);
+    if(!sqlQuery.isActive()){
+        qDebug()<<"Erreur insertion User: " + sqlQuery.lastError().text();
+        return NULL;
     }
     qDebug()<<"Success inserting User: " + request << endl;
-    return true;
+    return getUser();
 }
 
 /***            This function allows to update a user of the database           ***/
-void UserManager::updateUser(User user)
+User * UserManager::update(User user)
 {
 
 }
 
 /***            This function allows to delete a user of the database           ***/
-void UserManager::deleteUser(User user)
+bool UserManager::remove(User user)
 {
 
 }
@@ -73,12 +74,13 @@ void UserManager::deleteUser(User user)
 User * UserManager::getUser()
 {
     // TODO : Test that the request has been executed as expected
-    query->exec("select id,familyname, firstname, email, username, password, activated from user where id = 1");
-    if (query->next()){
-        User * user = new User(query->value(0).toInt(),query->value(1).toString(),
-                               query->value(2).toString(),query->value(3).toString(),
-                               query->value(4).toString(),query->value(5).toString());
-        user->setActivated(((query->value(7).toInt() == 0) ? false : true ));
+    QSqlQuery sqlQuery(Parameters::localDb);
+    sqlQuery.exec("select id,familyname, firstname, email, username, password, activated from user where id = 1");
+    if (sqlQuery.next()){
+        User * user = new User(sqlQuery.value(0).toInt(),sqlQuery.value(1).toString(),
+                               sqlQuery.value(2).toString(),sqlQuery.value(3).toString(),
+                               sqlQuery.value(4).toString(),sqlQuery.value(5).toString());
+        user->setActivated(((sqlQuery.value(7).toInt() == 0) ? false : true ));
         return user;
     }
     return NULL;

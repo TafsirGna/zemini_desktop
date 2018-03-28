@@ -52,7 +52,19 @@ void DatabaseManager::createTables(const QString &conName)
                                   "name TEXT NOT NULL UNIQUE"
                                   ");";
 
-    QString typeCreateQuery = "CREATE TABLE IF NOT EXISTS Type("
+    QString driveTypeCreateQuery = "CREATE TABLE IF NOT EXISTS Drive_type("
+                                  "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                                  "name TEXT NOT NULL UNIQUE"
+                                  ");";
+
+    QString driveCreateQuery = "CREATE TABLE IF NOT EXISTS Drive("
+                                  "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                                  "absolutepath TEXT NOT NULL UNIQUE,"
+                                  "driveType_id INT,"
+                                  "CONSTRAINT fk_drive_id_drivetype FOREIGN KEY(driveType_id) REFERENCES Drive_type(id)"
+                                  ");";
+
+    QString typeCreateQuery = "CREATE TABLE IF NOT EXISTS File_type("
                               "id INTEGER PRIMARY KEY AUTOINCREMENT,"
                               "name TEXT NOT NULL,"
                               "suffix TEXT UNIQUE"
@@ -61,8 +73,9 @@ void DatabaseManager::createTables(const QString &conName)
     QString fileCreateQuery = "CREATE TABLE IF NOT EXISTS File("
                               "id INTEGER PRIMARY KEY AUTOINCREMENT,"
                               "iddir INT NULL,"
-                              "idtype TEXT NULL,"
-                              "idcategory TEXT NULL,"
+                              "idtype TEXT NOT NULL,"
+                              "idcategory TEXT NOT NULL,"
+                              "drive_id TEXT NOT NULL,"
                               "createdat TEXT,"
                               "updatedat TEXT,"
                               "filename TEXT,"
@@ -71,9 +84,10 @@ void DatabaseManager::createTables(const QString &conName)
                               "status INT,"
                               "thumbnail TEXT NULL,"
                               "unique(filename, path) on conflict replace,"
-                              "CONSTRAINT fk_file_id_type FOREIGN KEY(idtype) REFERENCES Type(id),"
+                              "CONSTRAINT fk_file_id_type FOREIGN KEY(idtype) REFERENCES File_type(id),"
                               "CONSTRAINT fk_file_id_file FOREIGN KEY(iddir) REFERENCES Type(id) on delete cascade,"
-                              "CONSTRAINT fk_file_id_category FOREIGN KEY(idcategory) REFERENCES Category(id)"
+                              "CONSTRAINT fk_file_id_category FOREIGN KEY(idcategory) REFERENCES Category(id),"
+                              "CONSTRAINT fk_file_id_drive FOREIGN KEY(drive_id) REFERENCES Drive(id)"
                               ");";
 
     QString appDataCreateQuery = "CREATE TABLE IF NOT EXISTS Appdata("
@@ -92,6 +106,14 @@ void DatabaseManager::createTables(const QString &conName)
     query.exec(typeCreateQuery);
     if(!query.isActive())
         qDebug()<<"An error occured while creating table Type: "+query.lastError().text();
+
+    query.exec(driveTypeCreateQuery);
+    if(!query.isActive())
+        qDebug()<<"An error occured while creating table DriveType: "+query.lastError().text();
+
+    query.exec(driveCreateQuery);
+    if(!query.isActive())
+        qDebug()<<"An error occured while creating table Drive: "+query.lastError().text();
 
     query.exec(fileCreateQuery);
     if(!query.isActive())

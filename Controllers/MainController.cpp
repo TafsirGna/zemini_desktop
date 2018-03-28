@@ -22,7 +22,7 @@ MainController::MainController()
     QWidget::connect(((DirectoryService *)this->serviceContainer->getService(ZeminiService::FileSystem)), SIGNAL(fileDeleted(QFileInfo)), ((LocalDBService *)this->getService(ZeminiService::LocalDatabase)), SLOT(saveFileDeletion(QFileInfo)));
     QWidget::connect(logInForm, SIGNAL(signUpLinkActivated()), this, SLOT(showRegisterForm()));
     QWidget::connect(logInForm, SIGNAL(userToSave(User*)), ((LocalDBService *)this->getService(ZeminiService::LocalDatabase)), SLOT(save(User *)));
-    QWidget::connect(((NetworkService *)this->serviceContainer->getService(ZeminiService::Network)), SIGNAL(initDataGot(QList<Category>*)), ((LocalDBService*)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SLOT(initDb(QList<Category> *)));
+    QWidget::connect(((NetworkService *)this->serviceContainer->getService(ZeminiService::Network)), SIGNAL(initDataGot(QList<DbEntity>*, QString)), ((LocalDBService*)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SLOT(initDb(QList<DbEntity> *, QString)));
     QWidget::connect(((LocalDBService *)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SIGNAL(userLoggedIn()), this, SLOT(setUserFolder()));
     QWidget::connect(((DirectoryService *)this->serviceContainer->getService(ZeminiService::FileSystem)), SIGNAL(dirDeleted(QFileInfo)), ((LocalDBService*)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SLOT(saveFileDeletion(QFileInfo)));
     QWidget::connect(((LocalDBService *)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SIGNAL(filesToSend(QList<File *>*)), ((NetworkService *)this->serviceContainer->getService(ZeminiService::Network)), SLOT(sendFiles(QList<File*>*)));
@@ -30,6 +30,7 @@ MainController::MainController()
     QWidget::connect(trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),this, SLOT(manageActivation(QSystemTrayIcon::ActivationReason)));
     QWidget::connect(((DirectoryService *)this->serviceContainer->getService(ZeminiService::FileSystem)), SIGNAL(storeInDb(QFileInfo)), ((LocalDBService*)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SLOT(save(QFileInfo)));
     QWidget::connect(((NetworkService *)this->serviceContainer->getService(ZeminiService::Network)), SIGNAL(readyToBackUp()), ((LocalDBService*)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SLOT(startBackingUp()));
+    QWidget::connect(((NetworkService *)this->serviceContainer->getService(ZeminiService::Network)), SIGNAL(firstBackUpDone()), this, SLOT(handleFirstBackUpDone()));
     QWidget::connect(((NetworkService *)this->serviceContainer->getService(ZeminiService::Network)), SIGNAL(fileSaved(int)), ((LocalDBService*)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SLOT(markFileSaved(int)));
     QWidget::connect(screenShotTimer, SIGNAL(timeout()), this, SLOT(takeScreenShot()));
     //QWidget::connect(trayIcon, SIGNAL(messageClicked()), this, SLOT(showDirectory()));
@@ -42,8 +43,8 @@ void MainController::start()
         firstLaunch = true;
 
         // Sending a request to get all initial data
+        ((LocalDBService *) this->getService(ZeminiService::LocalDatabase))->initDb();
         ((NetworkService *) this->getService(ZeminiService::Network))->getInitialDbData();
-
         completeInstallation();
     }
     else{
@@ -139,7 +140,6 @@ bool MainController::installationCompleted()
     QString dirPath = Parameters::STORE_DIR;
     if (!QDir(dirPath.replace("\\","/")).exists())
         return false;
-
     return true;
 }
 
@@ -210,7 +210,7 @@ bool MainController::setUserFolder()
     CategoryManager * categoryManager = (CategoryManager *) localDbService->getManager(LocalDBService::CATEGORY);
 
     // making the directories following the categories
-    QList<Category> * categories = categoryManager->getAllCategories();
+    QList<Category> * categories = categoryManager->getAll();
     ((DirectoryService * ) this->getService(ZeminiService::FileSystem))->makeInitDirectories(categories);
     this->start();
 }
@@ -277,10 +277,21 @@ void MainController::takeScreenShot()
 
     screenRecordWriter->write(frame);
     NB_FRAMES_COUNTER--;
-    qDebug() << NB_FRAMES_COUNTER << endl;
+    //qDebug() << NB_FRAMES_COUNTER << endl;
 
     if (!cv::imwrite("test.png", frame))
         qDebug() << "Failed to save the screenshot!" << endl;
+}
+
+/**
+ * @brief MainController::handleFirstBackUpDone
+ */
+void MainController::handleFirstBackUpDone()
+{
+    QString title = "Zemini Info";
+    QString message = "First backup done.";
+    qDebug() << "First backup done." << endl;
+    trayIcon->showMessage(title, message);
 }
 
 QImage  MainController::cvMatToQImage( const cv::Mat &inMat )

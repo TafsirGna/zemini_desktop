@@ -2,8 +2,9 @@
 #define CLASSCATEGORY_H
 
 #include <QString>
+#include <Database/Entities/DbEntity.h>
 
-class Category
+class Category : public DbEntity
 {
 private:
     //Class' properties
@@ -23,6 +24,8 @@ public:
     //Setters
     void setId(int id);
     void setName(QString name);
+
+    QString toString();
 };
 
 #endif // CLASSCATEGORY_H

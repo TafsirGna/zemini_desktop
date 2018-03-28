@@ -5,37 +5,40 @@ AppDataManager::AppDataManager() : AbstractManager()
 
 }
 
-bool AppDataManager::addAppData(AppData * data)
+AppData * AppDataManager::add(AppData * data)
 {
     QString request = "insert into Appdata(key, value) select '"+data->getKey()+"', '"+data->getValue()
             +"' where not exists (select 1 from Appdata where key = '"+data->getKey()+"')";
     //QString request = "insert into Appdata values ('"+data->getKey()+"', '"+data->getValue()+"');";
     qDebug() << request << endl;
-    query->exec(request);
-    if (!query->isActive()){
-        qDebug() << "Failed in inserting an app data ! " << query->lastError().text() << endl;
-        return false;
+    QSqlQuery sqlQuery(Parameters::localDb);
+    sqlQuery.exec(request);
+    if (!sqlQuery.isActive()){
+        qDebug() << "Failed in inserting an app data ! " << sqlQuery.lastError().text() << endl;
+        return NULL;
     }
-    //qDebug() << "Succeeded in inserting an app data ! " << query->lastError().text() << endl;
-    return true;
+
+    return data;
 }
 
-bool AppDataManager::updateAppData(AppData * data)
+AppData * AppDataManager::update(AppData * data)
 {
     QString request = "update Appdata set value = '"+data->getValue()+"' where key = '"+data->getKey()+"' ";
-    query->exec(request);
-    if (!query->isActive()){
+    QSqlQuery sqlQuery(Parameters::localDb);
+    sqlQuery.exec(request);
+    if (!sqlQuery.isActive()){
         qDebug() << "Failed in updating an app data ! " << endl;
-        return false;
+        return NULL;
     }
-    return true;
+    return data;
 }
 
-bool AppDataManager::deleteAppData(AppData *data)
+bool AppDataManager::remove(AppData *data)
 {
     QString request = "delete from Appdata where key = '"+data->getKey()+"'";
-    query->exec(request);
-    if (!query->isActive()){
+    QSqlQuery sqlQuery(Parameters::localDb);
+    sqlQuery.exec(request);
+    if (!sqlQuery.isActive()){
         qDebug() << "Failed in deleting an app data ! " << endl;
         return false;
     }
@@ -46,30 +49,32 @@ AppData *AppDataManager::getByKey(QString key)
 {
     //qDebug() << "test1" << endl;
     QString request = "select key, value from Appdata where key = '"+key+"'";
-    query->exec(request);
-    if (!query->isActive()){
-        qDebug() << "Failed in selecting an app data ! " << endl;
+    QSqlQuery sqlQuery(Parameters::localDb);
+    sqlQuery.exec(request);
+    if (!sqlQuery.isActive()){
+        qDebug() << "Failed in selecting an app data ! " << sqlQuery.lastError().text() << endl;
         return NULL;
     }
 
     //qDebug() << "test2 : " << query->size() << endl;
-    if (query->next()){
-        return new AppData(query->value(0).toString(), query->value(1).toString());
+    if (sqlQuery.next()){
+        return new AppData(sqlQuery.value(0).toString(), sqlQuery.value(1).toString());
     }
     return NULL;
 }
 
-QList<AppData *> * AppDataManager::getAllData()
+QList<AppData *> * AppDataManager::getAll()
 {
     QString request = "select key, value from Appdata";
-    query->exec(request);
-    if (!query->isActive()){
-        qDebug() << "Failed to get all app's data ! " << query->lastError().text() << endl;
+    QSqlQuery sqlQuery(Parameters::localDb);
+    sqlQuery.exec(request);
+    if (!sqlQuery.isActive()){
+        qDebug() << "Failed to get all app's data ! " << sqlQuery.lastError().text() << endl;
         return NULL;
     }
     QList<AppData*> *data = new QList<AppData*>();
-    while(query->next()){
-        data->append(new AppData(query->value(0).toString(), query->value(1).toString()));
+    while(sqlQuery.next()){
+        data->append(new AppData(sqlQuery.value(0).toString(), sqlQuery.value(1).toString()));
     }
     return data;
 }
