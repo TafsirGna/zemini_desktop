@@ -87,6 +87,7 @@ bool LocalDBService::save(QFileInfo fileInfo)
  */
 bool LocalDBService::save(User * user)
 {
+    qDebug() << "User saved : localdbservice" << endl;
     this->userManager->add(*user);
     emit userLoggedIn();
 }

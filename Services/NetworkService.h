@@ -22,6 +22,8 @@
 #include "Database/Entities/File.h"
 #include <Services/CypherService.h>
 #include <Services/LocalDbService.h>
+#include <QUrlQuery>
+#include <QSslKey>
 
 class NetworkService : public ZeminiService
 {
@@ -39,11 +41,12 @@ private:
         QList<File*> *filesToSend;
         bool firstBackup;
         QStringList initDataList;
-        //QSslSocket * sslSocket;
+        QSslSocket * sslSocket;
 
         //Functions
         void handleBadRequestReply(QNetworkReply*);
         void handleGoodRequestReply(QNetworkReply*);
+        void settingSslSocket();
         //void pingServer();
 
         // Static constants
@@ -77,6 +80,7 @@ signals:
         void readyToBackUp();
         void fileSaved(int);
         void firstBackUpDone();
+        void userSaved(bool);
 };
 
 #endif // NETWORKSERVICE_H

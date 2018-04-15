@@ -2,13 +2,16 @@
 #include "ui_RegisterForm.h"
 
 RegisterForm::RegisterForm(QWidget *parent, ServiceContainer *serviceContainer) :
-        QWidget(parent),
-        ui(new Ui::RegisterForm)
+    QWidget(parent),
+    ui(new Ui::RegisterForm)
 {
     ui->setupUi(this);
 
     // Setting the regExpr for email lineEdit
     emailValidator = new QRegExpValidator(*(Parameters::emailRegExpr), this);
+
+    WaitingSpinnerWidget * widget = new WaitingSpinnerWidget(this, Qt::ApplicationModal, true);
+    widget->start();
 
     // display the user default image on the top of the form
     QPixmap pixmap(Parameters::userIcon);
@@ -42,6 +45,8 @@ RegisterForm::RegisterForm(QWidget *parent, ServiceContainer *serviceContainer) 
     setMaximumSize(size());
 
     this->serviceContainer = serviceContainer;
+    networkService = (NetworkService *) serviceContainer->getService(ZeminiService::Network);
+    QWidget::connect(networkService, SIGNAL(userSaved(bool)), this, SLOT(handleUserSavedResponse(bool)));
 }
 
 RegisterForm::~RegisterForm()
@@ -77,10 +82,10 @@ void RegisterForm::on_bt_next_clicked()
         return;
 
     // building a user object with all informations gathered
-    User * m_user = new User((*(new QString())), (*(new QString())), ui->le_mail->text(), ui->le_username->text(), ui->le_password->text());
+    user = new User((*(new QString())), (*(new QString())), ui->le_mail->text(), ui->le_username->text(), ui->le_password->text());
 
     // sending a post request to put the user in the remote db
-    networkService->sendUser(m_user);
+    networkService->sendUser(user);
 }
 
 void RegisterForm::on_le_username_textChanged(const QString &arg1)
@@ -88,6 +93,21 @@ void RegisterForm::on_le_username_textChanged(const QString &arg1)
     // i remove every sign of error previously set
     if (networkService->isConnected())
         removeErrorSignes(ui->lb_username, ui->le_username);
+}
+
+void RegisterForm::handleUserSavedResponse(bool saved)
+{
+    if (!saved){
+        ui->lb_error_text->setText("An error occured. Restart the app later");
+        showErrorSignes(ui->lb_username, ui->le_username);
+        showErrorSignes(ui->lb_mail, ui->le_mail);
+        showErrorSignes(ui->lb_password, ui->le_password);
+        return;
+    }
+    // saving the user in the local database
+    qDebug() << "User saved : handleUserSavedResponse" << endl;
+    emit userToSave(user);
+    this->hide();
 }
 
 void RegisterForm::on_le_mail_textChanged(const QString &arg1)

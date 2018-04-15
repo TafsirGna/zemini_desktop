@@ -8,12 +8,12 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     a.setStyle(QStyleFactory::create("plastique"));
 
-    // Checking first the connection before launching the app
     /*
-    DatabaseManager dbManager;
-    QSqlDatabase * db = dbManager.connectToDatabase("ZeminiDB", "root","localhost", 3306, "","QSQLITE", "db");
-    if (db == NULL)
-        return 0;
+    //checking the ssl support
+    if (!QSslSocket::supportsSsl()){
+        QMessageBox::information(0, "Secure socket client", "This software doesn't support SSL/TLS.");
+        return -1;
+    }
     */
 
     // Launching the app

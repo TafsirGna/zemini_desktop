@@ -52,7 +52,6 @@ private:
 
 public:
     MainController();
-    void start();
     ZeminiService * getService(QString);
 
 private slots:
@@ -70,6 +69,7 @@ private slots:
 
 public slots:
     bool setUserFolder();
+    void start();
 
 };
 

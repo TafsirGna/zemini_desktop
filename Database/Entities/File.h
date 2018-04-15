@@ -10,6 +10,8 @@
 #include <QFileInfo>
 #include <Config/Parameters.h>
 #include <Database/Entities/DbEntity.h>
+#include <QImage>
+#include <QBuffer>
 
 using namespace std;
 

@@ -12,12 +12,14 @@
 #include "Services/NetworkService.h"
 #include <QDesktopWidget>
 #include <Services/ServiceContainer.h>
+#include <Controllers/AbstractController.h>
+#include <Vendor/QtWaitingSpinner/waitingspinnerwidget.h>
 
 namespace Ui {
     class RegisterForm;
 }
 
-class RegisterForm : public QWidget
+class RegisterForm : public QWidget, AbstractController
 {
     Q_OBJECT
 
@@ -30,6 +32,7 @@ private:
     QValidator * emailValidator;
     NetworkService * networkService;
     ServiceContainer * serviceContainer;
+    User * user;
 
 private slots:
     void on_bt_next_clicked();
@@ -44,10 +47,12 @@ private slots:
 public slots:
     //void handleFocusBack();
     void on_le_username_textChanged(const QString &arg1);
+    void handleUserSavedResponse(bool);
 
 signals:
     void userDataEntered(User *);
     void logInLinkActivated();
+    void userToSave(User *);
 };
 
 #endif // RegisterForm_H

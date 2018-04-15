@@ -265,6 +265,13 @@ QString File::toString()
  */
 QString File::serialize()
 {
+    //loading the image and turn it into a byte array
+    QImage thumb;
+    thumb.load("C:\\Users\\Public\\Pictures\\Sample Pictures\\Koala.jpg", "JPEG");
+    QByteArray ba;
+    QBuffer buffer(&ba);
+    thumb.save(&buffer, "JPEG");
+
     QString res = drive->serialize()+Parameters::NET_REQUEST_SEPARATOR
             +QString::number(status)+Parameters::NET_REQUEST_SEPARATOR
             +QString::number(id)+Parameters::NET_REQUEST_SEPARATOR
@@ -277,7 +284,7 @@ QString File::serialize()
             +((folder != NULL) ? folder->getPath().replace("/", "+") : "NULL")+Parameters::NET_REQUEST_SEPARATOR
             +type->getName()+Parameters::NET_REQUEST_SEPARATOR
             +((type == NULL || type->getName()== "directory") ? "NULL" : type->getSuffix())+Parameters::NET_REQUEST_SEPARATOR
-            +category->getName();
+            +category->getName()+Parameters::NET_REQUEST_SEPARATOR+ba;
     return res;
 }
 

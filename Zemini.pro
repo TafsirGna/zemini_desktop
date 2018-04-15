@@ -31,6 +31,7 @@ LIBS += C:\OpenCV\OpenCV3.1\build\bin\libopencv_videoio310.dll
 # OpenSSL inclusion
 INCLUDEPATH += C:\OpenSSL\OpenSSL-Win64\include
 
+#OPENSSL_LIBS += -LC:\OpenSSL\OpenSSL-Win64\lib -llibeay32 -lssleay32 -llibcrypto #.\configure.exe -openssl-linked
 LIBS += -LC:\OpenSSL\OpenSSL-Win64\lib -llibeay32
 LIBS += -LC:\OpenSSL\OpenSSL-Win64\lib -lssleay32
 LIBS += -LC:\OpenSSL\OpenSSL-Win32\lib -llibcrypto
@@ -65,13 +66,15 @@ SOURCES += main.cpp\
     Services/CypherService.cpp \
     Database/Entities/AppData.cpp \
     Database/EntityManagers/AppDataManager.cpp \
-    #Vendor/OpenSSL_Wrapper/base64.cpp \
-    #Vendor/OpenSSL_Wrapper/Crypto.cpp
     Database/Entities/DriveType.cpp \
     Database/EntityManagers/DriveTypeManager.cpp \
     Database/Entities/Drive.cpp \
     Database/EntityManagers/DriveManager.cpp \
-    Database/Entities/DbEntity.cpp
+    Database/Entities/DbEntity.cpp \
+    # Vendors' library
+    #Vendor/OpenSSL_Wrapper/base64.cpp \
+    #Vendor/OpenSSL_Wrapper/Crypto.cpp \
+    Vendor/QtWaitingSpinner/waitingspinnerwidget.cpp
 
 HEADERS  += Config\Parameters.h \
     Config/Functions.h \
@@ -108,7 +111,9 @@ HEADERS  += Config\Parameters.h \
     Database/EntityManagers/DriveTypeManager.h \
     Database/Entities/Drive.h \
     Database/EntityManagers/DriveManager.h \
-    Database/Entities/DbEntity.h
+    Database/Entities/DbEntity.h \
+    #Vendors' libray
+    Vendor/QtWaitingSpinner/waitingspinnerwidget.h
 
 
 FORMS    += Views\PreferencesForm.ui \

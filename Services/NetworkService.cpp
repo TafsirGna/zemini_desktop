@@ -22,22 +22,19 @@ NetworkService::NetworkService()
     initDataList = LocalDBService::INIT_DATA_LIST;
     filesToSend = new QList<File*>();
 
+    settingSslSocket();
+
     //cypherService->encryptRsa("test");
     //cypherService->decryptRsa("ok");
     //cypherService->decryptRsa(cypherService->encryptRsa("test"));
-
-    //sslSocket = new QSslSocket(this);
 
     // Setting connectors
     QWidget::connect(networkAccessManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(handleRequestReply(QNetworkReply*)));
     //QWidget::connect(timer1, SIGNAL(timeout()),this, SLOT(syncDb()));
 
     //QWidget::connect(timer2, SIGNAL(timeout()),this, SLOT(pingServer()));
-    //QWidget::connect(sslSocket, SIGNAL(encrypted()), this, SLOT(sslSocketConnected()));
-
     //this->timer1->start(Parameters::networkTimer1Frequency);
     //this->timer2->start(Parameters::networkTimer2Frequency);
-    //this->sslSocket->connectToHostEncrypted(Parameters::url, 993);
 }
 
 /***    this check the user's network status    ***/
@@ -48,7 +45,7 @@ bool NetworkService::isConnected()
 
 void NetworkService::sslSocketConnected()
 {
-
+    qDebug() << "connected yes" << endl;
 }
 
 // this function sends a request to the remote server to get its initial data to get started
@@ -80,7 +77,20 @@ void NetworkService::syncDb()
 }
 
 void NetworkService::sendUser(User * user){
+    QString url(Parameters::URL+"/register");
+    QUrlQuery params;
+    params.addQueryItem("username", user->getUsername());
+    params.addQueryItem("password", user->getPassword());
+    params.addQueryItem("email", user->getEmail());
 
+    QByteArray data;
+    data.append(params.toString());
+    //data.remove(0,1);
+    qDebug() << url << " " << data << endl;
+
+    QNetworkRequest* networkRequest = new QNetworkRequest(QUrl(url));
+    networkRequest->setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+    networkAccessManager->post((const QNetworkRequest &)*networkRequest, data);
 }
 
 /**
@@ -194,7 +204,7 @@ void NetworkService::handleGoodRequestReply(QNetworkReply * reply)
     int requestCode = json_map["requestCode"].toInt();
     switch (requestCode) {
     case NetworkService::CODE_REGISTER_USER:{
-
+        emit userSaved(json_map["success"].toBool());
         break;
     }
     case NetworkService::CODE_USER_LOGIN:{
@@ -243,6 +253,34 @@ void NetworkService::handleGoodRequestReply(QNetworkReply * reply)
         break;
     }
     }
+}
+
+void NetworkService::settingSslSocket()
+{
+    sslSocket = new QSslSocket(this);
+    QWidget::connect(sslSocket, SIGNAL(encrypted()), this, SLOT(sslSocketConnected()));
+    /*
+    QFile file("");
+    if (!file.open(QIODevice::ReadOnly)){
+        qDebug() << "The file containing the private key can't be opened!" << endl;
+        return;
+    }
+    QSslKey *priv_key = new QSslKey(&file, QSsl::Rsa, QSsl::Pem, QSsl::PrivateKey, "");
+    file.close();
+    sslSocket->setPrivateKey(*priv_key);
+    sslSocket->setLocalCertificate("");
+    if (!sslSocket->addCaCertificates("")){
+        qDebug() << "Can't open the certificate" << endl;
+        return;
+    }
+
+    sslSocket->setPeerVerifyMode(QSslSocket::VerifyNone);
+    sslSocket->ignoreSslErrors();
+    sslSocket->abort();
+    */
+    sslSocket->connectToHostEncrypted(Parameters::URL, 443);
+    //sslSocket->startClientEncryption();
+    qDebug() << "encrypt ok" << endl;
 }
 
 /**
