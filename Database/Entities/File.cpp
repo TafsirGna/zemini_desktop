@@ -255,7 +255,8 @@ void File::setPath(QString path)
 
 QString File::toString()
 {
-    QString toString = "id : "+ QString::number(id) + " - filename : "+ fileName + " - path : "+ path + " - createdat : " + createdAt.toString(Parameters::timeFormat) + " - updatedat : " + updatedAt.toString(Parameters::timeFormat) + " - status : "+ QString::number(status) + " - size : " + QString::number(size) + " - parent folder : "+ ((folder != NULL) ? folder->getFileName() : "NULL") + " - type : " + ((type != NULL) ? type->getName() : "NULL" ) + " - category : " + ((category != NULL) ? category->getName() : "NULL") + " - drive : " + drive->getAbsolutepath();
+    QString toString = "id : "+ QString::number(id) + " - filename : "+ fileName + " - path : "+ path + " - createdat : " + createdAt.toString(Parameters::timeFormat) + " - updatedat : " + updatedAt.toString(Parameters::timeFormat) + " - status : "+ QString::number(status) + " - size : " + QString::number(size) + " - parent folder : "+ ((folder != NULL) ? folder->getFileName() : "NULL") + " - type : " + ((type != NULL) ? type->getName() : "NULL" ) + " - category : " + ((category != NULL) ? category->getName() : "NULL") + " - drive : " + drive->getAbsolutepath()+
+            " - thumbnail : "+((thumbnail == NULL) ? "NULL" : thumbnail->absolutePath());
     return toString;
 }
 
@@ -265,13 +266,6 @@ QString File::toString()
  */
 QString File::serialize()
 {
-    //loading the image and turn it into a byte array
-    QImage thumb;
-    thumb.load("C:\\Users\\Public\\Pictures\\Sample Pictures\\Koala.jpg", "JPEG");
-    QByteArray ba;
-    QBuffer buffer(&ba);
-    thumb.save(&buffer, "JPEG");
-
     QString res = drive->serialize()+Parameters::NET_REQUEST_SEPARATOR
             +QString::number(status)+Parameters::NET_REQUEST_SEPARATOR
             +QString::number(id)+Parameters::NET_REQUEST_SEPARATOR
@@ -284,8 +278,59 @@ QString File::serialize()
             +((folder != NULL) ? folder->getPath().replace("/", "+") : "NULL")+Parameters::NET_REQUEST_SEPARATOR
             +type->getName()+Parameters::NET_REQUEST_SEPARATOR
             +((type == NULL || type->getName()== "directory") ? "NULL" : type->getSuffix())+Parameters::NET_REQUEST_SEPARATOR
-            +category->getName()+Parameters::NET_REQUEST_SEPARATOR+ba;
+            +category->getName();//+Parameters::NET_REQUEST_SEPARATOR+byteArray;
     return res;
+}
+
+void File::setRequestParams(QUrlQuery & params)
+{
+    drive->setRequestParams(params);
+    params.addQueryItem("fileStatus", QString::number(status));
+    params.addQueryItem("fileId", QString::number(id));
+    params.addQueryItem("fileName", fileName);
+    params.addQueryItem("filePath", path);
+    params.addQueryItem("fileSize", QString::number(size));
+    params.addQueryItem("fileCreatedAt", createdAt.toString(Parameters::timeFormat));
+    params.addQueryItem("fileUpdatedAt", updatedAt.toString(Parameters::timeFormat));
+    params.addQueryItem("fileFolderName", ((folder != NULL) ? folder->getFileName() : "NULL"));
+    params.addQueryItem("fileFolderPath", ((folder != NULL) ? folder->getPath() : "NULL"));
+    params.addQueryItem("fileTypeName", type->getName());
+    params.addQueryItem("fileTypeSuffix", ((type == NULL || type->getName()== "directory") ? "NULL" : type->getSuffix()));
+    params.addQueryItem("fileCategoryName", category->getName());
+
+    /*
+    QByteArray byteArray;
+    //loading the image and turn it into a byte array
+    if (thumbnail != NULL){
+        QFile file(thumbnail->absoluteFilePath());
+        if (!file.open(QIODevice::ReadOnly)){
+            qDebug() << "Failed to open the thumbnail : " << thumbnail->absoluteFilePath() << endl;
+            return;
+        }
+        byteArray = file.readAll();
+    }
+    */
+
+    /*
+    if (thumbnail != NULL){
+
+        QImage image;
+        image.load(thumbnail->absoluteFilePath().replace("\\", "/"), "PNG");
+        QByteArray byteArray;
+        QBuffer buffer(&byteArray);
+        image.save(&buffer, "PNG");
+
+        QFile image("C:/Users/Tafsir/Zemini/.thumbs/Wildlife.png");
+        if (!image.open(QIODevice::ReadOnly)){
+            qDebug() << "Failed to open the thumbnail : " << thumbnail->absoluteFilePath() << endl;
+            return;
+        }
+        QByteArray byteArray = image.readAll();
+
+        qDebug() << "binary : " << byteArray << endl;
+        params.addQueryItem("thumbnail", QString(byteArray));
+    }
+    */
 }
 
 

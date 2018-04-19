@@ -126,3 +126,15 @@ QString Functions::getDriveAbsPath(QString fileInfoAbsPath)
 {
     return fileInfoAbsPath.remove(fileInfoAbsPath.indexOf("/"+Parameters::ROOT_DIR_NAME), fileInfoAbsPath.length());
 }
+
+File * Functions::fromSqlRecord2File(QSqlRecord sqlRecord)
+{
+    QMap<QString, QString> driveProperties, fileTypeProperties, categoryProperties, folderProperties;
+    driveProperties.insert("id", sqlRecord.value(4).toString());
+    fileTypeProperties.insert("id", sqlRecord.value(2).toString());
+    categoryProperties.insert("id", sqlRecord.value(3).toString());
+    folderProperties.insert("id", sqlRecord.value(1).toString());
+
+    File * file = new File(sqlRecord.value(0).toInt(), sqlRecord.value(7).toString(), sqlRecord.value(8).toString(), sqlRecord.value(5).toDateTime(), sqlRecord.value(6).toDateTime(), sqlRecord.value(9).toInt(), sqlRecord.value(10).toInt(), ((sqlRecord.value(11).toString() == "") ? NULL : new QFileInfo(sqlRecord.value(11).toString())),FileTypeManager::getOneBy(fileTypeProperties), CategoryManager::getOneBy(categoryProperties), FileManager::getOneBy(folderProperties), DriveManager::getOneBy(driveProperties));
+    return file;
+}

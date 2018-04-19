@@ -30,6 +30,12 @@ void Drive::setType(DriveType *value)
     type = value;
 }
 
+void Drive::setRequestParams(QUrlQuery & params)
+{
+    type->setRequestParams(params);
+    params.addQueryItem("drivePath", absolutepath.replace("/", "+"));
+}
+
 QString Drive::toString()
 {
     return "id = "+QString::number(id)+", absolutepath = "+absolutepath+", type = "+type->getName();

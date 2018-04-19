@@ -22,6 +22,7 @@ public:
     void setAbsolutepath(const QString &value);
     DriveType *getType() const;
     void setType(DriveType *value);
+    void setRequestParams(QUrlQuery &);
 
     QString toString();
     QString serialize();

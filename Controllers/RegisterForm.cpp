@@ -10,8 +10,8 @@ RegisterForm::RegisterForm(QWidget *parent, ServiceContainer *serviceContainer) 
     // Setting the regExpr for email lineEdit
     emailValidator = new QRegExpValidator(*(Parameters::emailRegExpr), this);
 
-    WaitingSpinnerWidget * widget = new WaitingSpinnerWidget(this, Qt::ApplicationModal, true);
-    widget->start();
+    //WaitingSpinnerWidget * widget = new WaitingSpinnerWidget(this, Qt::ApplicationModal, true);
+    //widget->start();
 
     // display the user default image on the top of the form
     QPixmap pixmap(Parameters::userIcon);

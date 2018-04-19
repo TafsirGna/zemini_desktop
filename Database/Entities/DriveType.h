@@ -20,6 +20,7 @@ public:
     void setName(const QString &value);
 
     QString serialize();
+    void setRequestParams(QUrlQuery &);
 
     // constant static variables
     const static QString COMPUTER;

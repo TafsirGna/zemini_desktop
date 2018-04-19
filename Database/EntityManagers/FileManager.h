@@ -24,12 +24,12 @@ public :
     bool symDelete(File * file);
     bool hardDelete(File * file);
     bool updateDirContent(QDir);
-    QList<File *> *getAll();
+    static QList<File *> *getAll();
     static QList<File *> *getNotSavedFiles();
     bool setFileSaved(int);
     static File * convertToFile(QFileInfo);
     static File *getOneBy(QMap<QString, QString>);
-    void printAll();
+    static void printAll();
 
     //void setCategoryManager(CategoryManager *);
     //void setFileTypeManager(FileTypeManager *);

@@ -34,6 +34,11 @@ QString DriveType::serialize()
     return name;
 }
 
+void DriveType::setRequestParams(QUrlQuery & params)
+{
+    params.addQueryItem("driveTypeName", name);
+}
+
 DriveType::DriveType()
 {
     this->id = 0;

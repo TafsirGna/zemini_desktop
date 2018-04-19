@@ -10,7 +10,12 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
-
+#include <Database/Entities/File.h>
+#include <QSqlRecord>
+#include <Database/EntityManagers/FileTypeManager.h>
+#include <Database/EntityManagers/FileManager.h>
+#include <Database/EntityManagers/DriveManager.h>
+#include <Database/EntityManagers/CategoryManager.h>
 
 class Functions
 {
@@ -30,6 +35,8 @@ public:
     static bool isVideoFile(QFileInfo);
 
     static QString getDriveAbsPath(QString);
+
+    static File * fromSqlRecord2File(QSqlRecord);
 };
 
 #endif // FUNCTIONS_H

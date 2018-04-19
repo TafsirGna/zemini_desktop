@@ -6,6 +6,7 @@ const int NetworkService::CODE_USER_LOGIN = 2;
 const int NetworkService::CODE_FILE_SAVE = 3;
 const int NetworkService::CODE_DB_REFRESH = 4;
 const int NetworkService::CODE_PING_SERVER = 5;
+const int NetworkService::CODE_SAVE_THUMBS = 6;
 
 /**
  * @brief NetworkService::NetworkService
@@ -35,6 +36,8 @@ NetworkService::NetworkService()
     //QWidget::connect(timer2, SIGNAL(timeout()),this, SLOT(pingServer()));
     //this->timer1->start(Parameters::networkTimer1Frequency);
     //this->timer2->start(Parameters::networkTimer2Frequency);
+
+    sendFilePicture(new File());
 }
 
 /***    this check the user's network status    ***/
@@ -140,15 +143,19 @@ void NetworkService::sendFiles(QList<File*>* files)
  */
 void NetworkService::sendFile(File* file)
 {
-    //qDebug() << "not saved " << filesToSend->size() << file->serialize() << endl;
-    //if (connected){
-    QString url = Parameters::URL+"/manage_file"+Parameters::NET_REQUEST_SEPARATOR
-            +user->getEmail()+Parameters::NET_REQUEST_SEPARATOR
-            +user->getPassword()+Parameters::NET_REQUEST_SEPARATOR
-            +file->serialize();
-    networkAccessManager->get(QNetworkRequest(QUrl(url)));
-    qDebug() << url << endl;
-    //}
+    QString url(Parameters::URL+"/manage_file");
+    QUrlQuery params;
+    params.addQueryItem("email", user->getEmail());
+    params.addQueryItem("password", user->getPassword());
+    file->setRequestParams(params);
+
+    QByteArray data;
+    data.append(params.toString());
+    qDebug() << "URL_PATH : " << url << data << endl;
+
+    QNetworkRequest* networkRequest = new QNetworkRequest(QUrl(url));
+    networkRequest->setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+    networkAccessManager->post((const QNetworkRequest &)*networkRequest, data);
 }
 
 /**
@@ -252,6 +259,10 @@ void NetworkService::handleGoodRequestReply(QNetworkReply * reply)
         //connected = true;
         break;
     }
+    case NetworkService::CODE_SAVE_THUMBS:{
+        qDebug() << "Thumbs saved !" << endl;
+        break;
+    }
     }
 }
 
@@ -281,6 +292,38 @@ void NetworkService::settingSslSocket()
     sslSocket->connectToHostEncrypted(Parameters::URL, 443);
     //sslSocket->startClientEncryption();
     qDebug() << "encrypt ok" << endl;
+}
+
+void NetworkService::sendFilePicture(File * f)
+{
+    QFile file("C:/Users/Tafsir/Zemini/.thumbs/Wildlife.png"); //lets get the file by filename
+    if (!file.open(QIODevice::ReadOnly)) //accessibility controll for file
+    {
+        qDebug() << "file open failure"; //send message if file cant open
+    }
+    QByteArray line = file.readAll();
+    //we read file line by line with no error handling for reading time!!
+
+    file.close();
+    QByteArray boundary; //actually i cant understand that why we are using a second byte array for file sending.
+    // if someone know this trick please write below. I write this code like the other examples.
+
+    QByteArray datas(QString("--" + boundary + "\r\n").toUtf8());
+    datas += "Content-Disposition: form-data; name=\"file\"; filename=\""+file.fileName()+"\"\r\n";
+    //here is the http header for manuplate a normal http form and form file object
+
+    datas += "Content-Type: image/png\r\n\r\n"; //file type is here
+    datas += line; //and our file is giving to form object
+    datas += "\r\n";
+    datas += QString("--" + boundary + "\r\n\r\n").toUtf8();
+    datas += "Content-Disposition: form-data; name=\"upload\"\r\n\r\n";
+    datas += "Uploader\r\n";
+    datas += QString("--" + boundary + "--\r\n").toUtf8();
+
+    QNetworkRequest req;
+    req.setUrl(QUrl(Parameters::URL+Parameters::NET_REQUEST_SEPARATOR+"save_thumbnails")); //my virtual servers' ip address and tiny php page url is here
+    req.setRawHeader("Content-Type", "multipart/form-data; boundary=" + boundary); // we must set the first header like this. its tell the server, current object is a form
+    networkAccessManager->post(req,datas); //send all data
 }
 
 /**

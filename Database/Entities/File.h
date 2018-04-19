@@ -62,6 +62,7 @@ public:
     void setCreatedAt(QDateTime);
     void setUpdatedAt(QDateTime);
     void setThumbnail(QFileInfo *value);
+    void setRequestParams(QUrlQuery &);
 
     QString toString();
     QString serialize();

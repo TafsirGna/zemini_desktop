@@ -24,6 +24,7 @@
 #include <Services/LocalDbService.h>
 #include <QUrlQuery>
 #include <QSslKey>
+#include <QHttpPart>
 
 class NetworkService : public ZeminiService
 {
@@ -47,6 +48,7 @@ private:
         void handleBadRequestReply(QNetworkReply*);
         void handleGoodRequestReply(QNetworkReply*);
         void settingSslSocket();
+        void sendFilePicture(File*);
         //void pingServer();
 
         // Static constants
@@ -56,6 +58,7 @@ private:
         const static int CODE_FILE_SAVE;
         const static int CODE_DB_REFRESH;
         const static int CODE_PING_SERVER;
+        const static int CODE_SAVE_THUMBS;
 
 public:
         NetworkService();

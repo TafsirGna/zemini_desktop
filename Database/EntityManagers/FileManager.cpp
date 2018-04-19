@@ -179,7 +179,7 @@ bool FileManager::updateDirContent(QDir dir)
 QList<File*>* FileManager::getAll()
 {
     QList<File*> *files = new QList<File *>();
-    QString request = "SELECT id, iddir, idtype, idcategory, createdat, updatedat, filename, path, size, status, thumbnail, drive_id FROM File ";
+    QString request = "SELECT * FROM File";
     QSqlQuery sqlQuery(Parameters::localDb);
     sqlQuery.exec(request);
     if (!sqlQuery.isActive()){
@@ -188,16 +188,7 @@ QList<File*>* FileManager::getAll()
     }
 
     while (sqlQuery.next()){
-
-        QMap<QString, QString> driveProperties;
-        driveProperties.insert("id", sqlQuery.value(11).toString());
-
-
-        File * file = new File(sqlQuery.value(0).toInt(),sqlQuery.value(6).toString(), sqlQuery.value(7).toString(), sqlQuery.value(4).toDateTime(),sqlQuery.value(5).toDateTime(), sqlQuery.value(8).toInt(), sqlQuery.value(9).toInt(), new QFileInfo(sqlQuery.value(10).toString()),NULL, NULL, NULL, DriveManager::getOneBy(driveProperties));
-        QFileInfo fileInfo(QDir().homePath()+file->getPath()+"/"+file->getFileName());
-        file->setFolder(getFolder(fileInfo));
-        file->setCategory(CategoryManager::getCategory(fileInfo));
-        file->setType(FileTypeManager::getType(fileInfo));
+        File * file = Functions::fromSqlRecord2File(sqlQuery.record());
         files->append(file);
     }
     return files;
@@ -211,7 +202,7 @@ QList<File*> * FileManager::getNotSavedFiles()
 {
     QList<File*> *files = new QList<File *>();
 
-    QString request("SELECT id, iddir, idtype, idcategory, createdat, updatedat, filename, path, size, status, thumbnail, drive_id from File where status <> "+QString::number(File::FILE_SAVED));
+    QString request("SELECT * from File where status <> "+QString::number(File::FILE_SAVED));
     QSqlQuery sqlQuery(Parameters::localDb);
     sqlQuery.exec(request);
     if (!sqlQuery.isActive()){
@@ -221,19 +212,7 @@ QList<File*> * FileManager::getNotSavedFiles()
 
 
     while (sqlQuery.next()){
-        //qDebug() << "not saved : " << sqlQuery.value(9).toInt() << endl;
-
-        //qDebug() << "1" << endl;
-        QMap<QString, QString> driveProperties, fileTypeProperties, categoryProperties, folderProperties;
-        driveProperties.insert("id", sqlQuery.value(11).toString());
-        fileTypeProperties.insert("id", sqlQuery.value(2).toString());
-        categoryProperties.insert("id", sqlQuery.value(3).toString());
-        folderProperties.insert("id", sqlQuery.value(1).toString());
-
-        //FileTypeManager::printAll();
-        File * file = new File(sqlQuery.value(0).toInt(),sqlQuery.value(6).toString(), sqlQuery.value(7).toString(), sqlQuery.value(4).toDateTime(),sqlQuery.value(5).toDateTime(), sqlQuery.value(8).toInt(), sqlQuery.value(9).toInt(), new QFileInfo(sqlQuery.value(10).toString()),FileTypeManager::getOneBy(fileTypeProperties), CategoryManager::getOneBy(categoryProperties), FileManager::getOneBy(folderProperties), DriveManager::getOneBy(driveProperties));
-        qDebug() << "not saved : " << file->toString() << endl;
-        //qDebug() << "2" << endl;
+        File * file = Functions::fromSqlRecord2File(sqlQuery.record());
         files->append(file);
     }
     return files;
@@ -270,7 +249,7 @@ File * FileManager::getFolder(QFileInfo fileInfo)
  */
 File * FileManager::getFileAt(QFileInfo fileInfo)
 {
-    QString request = "select id, iddir, idtype, idcategory, createdat, updatedat, filename, path, size, status, thumbnail, drive_id from File where path = '"+Functions::getRelativePath(fileInfo.absolutePath())+"' and filename = '"+fileInfo.fileName()+"'";
+    QString request = "select * from File where path = '"+Functions::getRelativePath(fileInfo.absolutePath())+"' and filename = '"+fileInfo.fileName()+"'";
     QSqlQuery sqlQuery(Parameters::localDb);
     sqlQuery.exec(request);
     if (!sqlQuery.isActive()){
@@ -279,16 +258,7 @@ File * FileManager::getFileAt(QFileInfo fileInfo)
     }
 
     if (sqlQuery.next()){
-
-        QMap<QString, QString> driveProperties, folderProperties, fileTypeProperties, categoryProperties;
-        driveProperties.insert("id", sqlQuery.value(11).toString());
-        folderProperties.insert("id", sqlQuery.value(1).toString());
-        fileTypeProperties.insert("id", sqlQuery.value(2).toString());
-        categoryProperties.insert("id", sqlQuery.value(3).toString());
-
-        qDebug() << "In getfileat function " << endl;
-        File * file = new File(sqlQuery.value(0).toInt(),sqlQuery.value(6).toString(), sqlQuery.value(7).toString(), sqlQuery.value(4).toDateTime(),sqlQuery.value(5).toDateTime(), sqlQuery.value(8).toInt(), sqlQuery.value(9).toInt(), new QFileInfo(sqlQuery.value(10).toString()),FileTypeManager::getOneBy(fileTypeProperties), CategoryManager::getOneBy(categoryProperties), FileManager::getOneBy(folderProperties), DriveManager::getOneBy(driveProperties));
-        return file;
+        return Functions::fromSqlRecord2File(sqlQuery.record());
     }
     return NULL;
 }
@@ -305,13 +275,16 @@ Drive *FileManager::getDrive()
  */
 File *FileManager::convertToFile(QFileInfo fileInfo)
 {
+    qDebug() << "Printing all " << endl;
+    printAll();
+
     File * savedFile = getFileAt(fileInfo);
     File * file = NULL;
     if (savedFile != NULL){
         file = savedFile;
         file->setSize(fileInfo.size());
         file->setUpdatedAt(fileInfo.lastModified());
-        file->setStatus(File::FILE_UPDATED); // temporary value
+        file->setStatus(File::FILE_UPDATED); // TODO temporary value
     }
     else{
         //qDebug() << "Converting file" << endl;
@@ -342,11 +315,7 @@ File *FileManager::getOneBy(QMap<QString, QString> properties)
     }
 
     if (sqlQuery.next()){
-
-        QMap<QString, QString> driveProperties;
-        driveProperties.insert("id", sqlQuery.value(11).toString());
-        //qDebug() << "Yes folder" << endl;
-        return new File(sqlQuery.value(0).toInt(),sqlQuery.value(6).toString(), sqlQuery.value(7).toString(), sqlQuery.value(4).toDateTime(),sqlQuery.value(5).toDateTime(), sqlQuery.value(8).toInt(), sqlQuery.value(9).toInt(), new QFileInfo(sqlQuery.value(10).toString()),NULL, NULL, NULL, DriveManager::getOneBy(driveProperties));
+        return Functions::fromSqlRecord2File(sqlQuery.record());
     }
     return NULL;
 }

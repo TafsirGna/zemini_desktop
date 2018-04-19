@@ -6,6 +6,10 @@
  */
 DirectoryService::DirectoryService()
 {
+    if (!image->save("C:/Users/Tafsir/Zemini/.thumbs/fileImage.png")){
+        qDebug() << "An error occured while saving the icon" << endl;
+    }
+    qDebug()<< "icon generated " << endl;
     fsWatchers = new QList<QFileSystemWatcher*>();
 }
 
