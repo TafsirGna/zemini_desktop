@@ -10,8 +10,8 @@ RegisterForm::RegisterForm(QWidget *parent, ServiceContainer *serviceContainer) 
     // Setting the regExpr for email lineEdit
     emailValidator = new QRegExpValidator(*(Parameters::emailRegExpr), this);
 
-    //WaitingSpinnerWidget * widget = new WaitingSpinnerWidget(this, Qt::ApplicationModal, true);
-    //widget->start();
+    wSpinnerWidget = new WaitingSpinnerWidget(this, Qt::ApplicationModal, true);
+    wSpinnerWidget->start();
 
     // display the user default image on the top of the form
     QPixmap pixmap(Parameters::userIcon);
@@ -47,6 +47,7 @@ RegisterForm::RegisterForm(QWidget *parent, ServiceContainer *serviceContainer) 
     this->serviceContainer = serviceContainer;
     networkService = (NetworkService *) serviceContainer->getService(ZeminiService::Network);
     QWidget::connect(networkService, SIGNAL(userSaved(bool)), this, SLOT(handleUserSavedResponse(bool)));
+    QWidget::connect(networkService, SIGNAL(allDbDataGot()), this, SLOT(stopWaitingSpinner()));
 }
 
 RegisterForm::~RegisterForm()
@@ -108,6 +109,12 @@ void RegisterForm::handleUserSavedResponse(bool saved)
     qDebug() << "User saved : handleUserSavedResponse" << endl;
     emit userToSave(user);
     this->hide();
+}
+
+void RegisterForm::stopWaitingSpinner()
+{
+    qDebug() << "Stopping the spinner !";
+    wSpinnerWidget->stop();
 }
 
 void RegisterForm::on_le_mail_textChanged(const QString &arg1)

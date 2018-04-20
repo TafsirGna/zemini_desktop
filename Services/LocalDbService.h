@@ -9,6 +9,7 @@
 #include <Database/EntityManagers/AppDataManager.h>
 #include <Database/EntityManagers/DriveTypeManager.h>
 #include <Database/EntityManagers/DriveManager.h>
+#include <Database/EntityManagers/FileFormatManager.h>
 
 class LocalDBService: public ZeminiService
 {
@@ -22,6 +23,7 @@ private :
     AppDataManager * appDataManager;
     DriveTypeManager * driveTypeManager;
     DriveManager * driveManager;
+    FileFormatManager * fileFormatManager;
 
     // Some getters
     UserManager * getUserManager();
@@ -31,6 +33,7 @@ private :
     AppDataManager * getAppDataManager();
     DriveTypeManager * getDriveTypeManager();
     DriveManager * getDriveManager();
+    FileFormatManager * getFileFormatManager();
 
 protected:
 
@@ -45,6 +48,7 @@ public:
     const static QString APP_DATA;
     const static QString DRIVE_TYPE;
     const static QString DRIVE;
+    const static QString FILE_FORMAT;
     const static QStringList INIT_DATA_LIST;
 
     //Builder
@@ -53,7 +57,10 @@ public:
     // Getters
     bool isDbEmpty();
     AbstractManager * getManager(QString);
-    bool save(File *);
+    DbEntity * save(File *);
+    DbEntity *save(FileType *);
+    DbEntity *save(FileFormat *);
+    DbEntity * save(Category *);
     bool update(AppData * );
 
     void initDb();
@@ -71,6 +78,7 @@ public slots:
 signals:
     void filesToSend(QList<File*>*);
     void userLoggedIn();
+    void dbTableInitialized();
 
 };
 #endif // LOCALDBSERVICE_H

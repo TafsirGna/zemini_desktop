@@ -74,7 +74,9 @@ SOURCES += main.cpp\
     # Vendors' library
     #Vendor/OpenSSL_Wrapper/base64.cpp \
     #Vendor/OpenSSL_Wrapper/Crypto.cpp \
-    Vendor/QtWaitingSpinner/waitingspinnerwidget.cpp
+    Vendor/QtWaitingSpinner/waitingspinnerwidget.cpp \
+    Database/Entities/FileFormat.cpp \
+    Database/EntityManagers/FileFormatManager.cpp
 
 HEADERS  += Config\Parameters.h \
     Config/Functions.h \
@@ -113,7 +115,9 @@ HEADERS  += Config\Parameters.h \
     Database/EntityManagers/DriveManager.h \
     Database/Entities/DbEntity.h \
     #Vendors' libray
-    Vendor/QtWaitingSpinner/waitingspinnerwidget.h
+    Vendor/QtWaitingSpinner/waitingspinnerwidget.h \
+    Database/Entities/FileFormat.h \
+    Database/EntityManagers/FileFormatManager.h
 
 
 FORMS    += Views\PreferencesForm.ui \

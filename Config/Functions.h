@@ -16,6 +16,11 @@
 #include <Database/EntityManagers/FileManager.h>
 #include <Database/EntityManagers/DriveManager.h>
 #include <Database/EntityManagers/CategoryManager.h>
+#include <QFileIconProvider>
+#include <QSequentialIterable>
+#include <QVariant>
+#include <QVariantList>
+#include <QJsonObject>
 
 class Functions
 {
@@ -24,7 +29,11 @@ public:
 
     static bool isEmailValid(QString);
 
-    static QList<Category> *  fromJsonToCategories(QVariantMap);
+    static QList<Category> *  fromJsonToCategories(QVariant);
+
+    static QList<FileType> *  fromJsonToFileTypes(QVariant);
+
+    static QList<FileFormat> *  fromJsonToFileFormats(QVariant);
 
     static void makeLinkToZeminiFolder();
 
@@ -32,7 +41,11 @@ public:
 
     static QFileInfo * generateThumbnails(QFileInfo);
 
+    static QFileInfo *extractThumbnail(QFileInfo);
+
     static bool isVideoFile(QFileInfo);
+
+    static bool isImageFile(QFileInfo);
 
     static QString getDriveAbsPath(QString);
 

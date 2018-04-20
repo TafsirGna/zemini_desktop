@@ -54,10 +54,16 @@ void NetworkService::sslSocketConnected()
 // this function sends a request to the remote server to get its initial data to get started
 void NetworkService::getInitialDbData()
 {
+    //qDebug() << "All database data got : " << initDataList.size() <<endl;
     if (!initDataList.isEmpty()){
         connected = false;
-        networkAccessManager->get(QNetworkRequest(QUrl(Parameters::URL+"/init_db"+Parameters::NET_REQUEST_SEPARATOR+initDataList.first())));
-        //qDebug() << Parameters::URL+"/init_db"+Parameters::NET_REQUEST_SEPARATOR+initDataList.first() << endl;
+        networkAccessManager->get(QNetworkRequest(QUrl(Parameters::URL+Parameters::NET_REQUEST_SEPARATOR+"init_db"+
+                                                       Parameters::NET_REQUEST_SEPARATOR+initDataList.first())));
+        //qDebug() << Parameters::URL+Parameters::NET_REQUEST_SEPARATOR+"init_db"+Parameters::NET_REQUEST_SEPARATOR+initDataList.first();
+    }
+    else{
+        qDebug() << "All database data got !" << endl;
+        emit allDbDataGot();
     }
 }
 
@@ -226,11 +232,23 @@ void NetworkService::handleGoodRequestReply(QNetworkReply * reply)
     case NetworkService::CODE_DB_INIT:{
         if (!initDataList.isEmpty()){
             if (initDataList.first() == LocalDBService::CATEGORY){
-                QList<Category> * categories  = Functions::fromJsonToCategories(json_map);
+                QList<Category> * categories  = Functions::fromJsonToCategories(json_map["data"]);
+                initDataList.removeFirst();
                 emit initDataGot((QList<DbEntity>*)categories, LocalDBService::CATEGORY);
+                return;
             }
-            initDataList.removeFirst();
-            getInitialDbData();
+            if (initDataList.first() == LocalDBService::FILE_TYPE){
+                QList<FileType> * fileTypes  = Functions::fromJsonToFileTypes(json_map["data"]);
+                initDataList.removeFirst();
+                emit initDataGot((QList<DbEntity>*)fileTypes, LocalDBService::FILE_TYPE);
+                return;
+            }
+            if (initDataList.first() == LocalDBService::FILE_FORMAT){
+                QList<FileFormat> * fileFormats  = Functions::fromJsonToFileFormats(json_map["data"]);
+                initDataList.removeFirst();
+                emit initDataGot((QList<DbEntity>*)fileFormats, LocalDBService::FILE_FORMAT);
+                return;
+            }
         }
         break;
     }

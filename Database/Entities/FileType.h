@@ -4,6 +4,7 @@
 #include <QString>
 #include <QDebug>
 #include <Database/Entities/DbEntity.h>
+#include <Database/Entities/FileFormat.h>
 
 class FileType: public DbEntity
 {
@@ -12,13 +13,13 @@ private:
     int id;
     QString name;
     QString suffix;
-
+    FileFormat *fileFormat;
 
 public:
 
     //Builders
     FileType();
-    FileType(int, QString, QString);
+    FileType(int, QString, QString, FileFormat*);
 
     //Getters
     int getId();
@@ -32,6 +33,8 @@ public:
 
     // Other functions
     void toString();
+    FileFormat *getFileFormat() const;
+    void setFileFormat(FileFormat *value);
 };
 
 

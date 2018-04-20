@@ -64,10 +64,17 @@ void DatabaseManager::createTables(const QString &conName)
                                   "CONSTRAINT fk_drive_id_drivetype FOREIGN KEY(driveType_id) REFERENCES Drive_type(id)"
                                   ");";
 
+    QString formatCreateQuery = "CREATE TABLE IF NOT EXISTS File_format("
+                              "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                              "name TEXT NOT NULL"
+                              ");";
+
     QString typeCreateQuery = "CREATE TABLE IF NOT EXISTS File_type("
                               "id INTEGER PRIMARY KEY AUTOINCREMENT,"
                               "name TEXT NOT NULL,"
-                              "suffix TEXT UNIQUE"
+                              "suffix TEXT UNIQUE,"
+                              "format_id INT NULL,"
+                              "CONSTRAINT fk_format_id_type FOREIGN KEY(format_id) REFERENCES File_format(id)"
                               ");";
 
     QString fileCreateQuery = "CREATE TABLE IF NOT EXISTS File("
@@ -98,6 +105,10 @@ void DatabaseManager::createTables(const QString &conName)
     query.exec(userCreateQuery);
     if(!query.isActive())
         qDebug()<<"An error occured while creating table user: "+query.lastError().text();
+
+    query.exec(formatCreateQuery);
+    if(!query.isActive())
+        qDebug()<<"An error occured while creating table file_format: "+query.lastError().text();
 
     query.exec(categoryCreateQuery);
     if(!query.isActive())

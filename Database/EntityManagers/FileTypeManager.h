@@ -4,6 +4,7 @@
 #include "AbstractManager.h"
 #include "Database\Entities\FileType.h"
 #include "Database\EntityManagers\CategoryManager.h"
+#include <Database/EntityManagers/FileFormatManager.h>
 #include <QSqlError>
 
 class FileTypeManager : public AbstractManager

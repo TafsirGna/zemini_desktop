@@ -297,40 +297,6 @@ void File::setRequestParams(QUrlQuery & params)
     params.addQueryItem("fileTypeName", type->getName());
     params.addQueryItem("fileTypeSuffix", ((type == NULL || type->getName()== "directory") ? "NULL" : type->getSuffix()));
     params.addQueryItem("fileCategoryName", category->getName());
-
-    /*
-    QByteArray byteArray;
-    //loading the image and turn it into a byte array
-    if (thumbnail != NULL){
-        QFile file(thumbnail->absoluteFilePath());
-        if (!file.open(QIODevice::ReadOnly)){
-            qDebug() << "Failed to open the thumbnail : " << thumbnail->absoluteFilePath() << endl;
-            return;
-        }
-        byteArray = file.readAll();
-    }
-    */
-
-    /*
-    if (thumbnail != NULL){
-
-        QImage image;
-        image.load(thumbnail->absoluteFilePath().replace("\\", "/"), "PNG");
-        QByteArray byteArray;
-        QBuffer buffer(&byteArray);
-        image.save(&buffer, "PNG");
-
-        QFile image("C:/Users/Tafsir/Zemini/.thumbs/Wildlife.png");
-        if (!image.open(QIODevice::ReadOnly)){
-            qDebug() << "Failed to open the thumbnail : " << thumbnail->absoluteFilePath() << endl;
-            return;
-        }
-        QByteArray byteArray = image.readAll();
-
-        qDebug() << "binary : " << byteArray << endl;
-        params.addQueryItem("thumbnail", QString(byteArray));
-    }
-    */
 }
 
 

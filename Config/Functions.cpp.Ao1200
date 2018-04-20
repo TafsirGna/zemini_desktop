@@ -38,20 +38,39 @@ bool Functions::isEmailValid(QString email)
  */
 QList<Category> *  Functions::fromJsonToCategories(QVariant variant)
 {
-    //qDebug() << "Initializing Category : " << variant << endl;
+    qDebug() << "Initializing Category : " << variant << endl;
     QList<Category> * categories = new QList<Category>();
+
+    /*
+    for (QVariantMap::const_iterator iter = variant.begin(); iter != variant.end(); ++iter){
+        //Category * cat = new Category(iter.key().toInt(), iter.value().toString());
+        //categories->append(*cat);
+        //qDebug() << "id : " << cat->getId() << " name : " << cat->getName()<< endl;
+
+    }*/
 
     if (variant.canConvert<QVariantList>())
     {
         QSequentialIterable iterable = variant.value<QSequentialIterable>();
+        /*
+        // Can use foreach:
+        foreach (const QVariant &v, iterable) {
+            qDebug() << v;
+        }
+        // Can use C++11 range-for:
+        for (const QVariant &v : iterable) {
+            qDebug() << v;
+        }
+        */
         // Can use iterators:
         QSequentialIterable::const_iterator it = iterable.begin();
         const QSequentialIterable::const_iterator end = iterable.end();
         for ( ; it != end; ++it) {
             QMap<QString, QVariant> map = (*it).toMap();
-            categories->append(Category(map["id"].toInt(), map["name"].toString()));
+            qDebug() << map['name'] << endl;
         }
     }
+
     return categories;
 }
 

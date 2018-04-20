@@ -36,9 +36,29 @@ bool Functions::isEmailValid(QString email)
  * @param variantMap
  * @return
  */
-QList<Category> *  Functions::fromJsonToCategories(QVariantMap variantMap)
+QList<Category> *  Functions::fromJsonToCategories(QVariant variant)
 {
+    //qDebug() << "Initializing Category : " << variant << endl;
     QList<Category> * categories = new QList<Category>();
+
+    if (variant.canConvert<QVariantList>())
+    {
+        QSequentialIterable iterable = variant.value<QSequentialIterable>();
+        // Can use iterators:
+        QSequentialIterable::const_iterator it = iterable.begin();
+        const QSequentialIterable::const_iterator end = iterable.end();
+        for ( ; it != end; ++it) {
+            QMap<QString, QVariant> map = (*it).toMap();
+            categories->append(Category(map["id"].toInt(), map["name"].toString()));
+        }
+    }
+    return categories;
+}
+
+QList<FileFormat> *  Functions::fromJsonToFileFormats(QVariant variant)
+{
+    QList<FileFormat> * fileFormats = new QList<FileFormat>();
+    /*
     for (QVariantMap::const_iterator iter = variantMap.begin(); iter != variantMap.end(); ++iter){
         if (iter.key() != "requestCode"){
             Category * cat = new Category(iter.key().toInt(), iter.value().toString());
@@ -46,7 +66,23 @@ QList<Category> *  Functions::fromJsonToCategories(QVariantMap variantMap)
             //qDebug() << "id : " << cat->getId() << " name : " << cat->getName()<< endl;
         }
     }
-    return categories;
+    */
+    return fileFormats;
+}
+
+QList<FileType> *  Functions::fromJsonToFileTypes(QVariant variant)
+{
+    QList<FileType> * fileTypes = new QList<FileType>();
+    /*
+    for (QVariantMap::const_iterator iter = variantMap.begin(); iter != variantMap.end(); ++iter){
+        if (iter.key() != "requestCode"){
+            Category * cat = new Category(iter.key().toInt(), iter.value().toString());
+            categories->append(*cat);
+            //qDebug() << "id : " << cat->getId() << " name : " << cat->getName()<< endl;
+        }
+    }
+    */
+    return fileTypes;
 }
 
 /**
@@ -81,9 +117,29 @@ QString Functions::getRelativePath(QString path)
  */
 QFileInfo *Functions::generateThumbnails(QFileInfo fileInfo)
 {
-    if (!isVideoFile(fileInfo))
-        return NULL;
+    if (isVideoFile(fileInfo))
+        return extractThumbnail(fileInfo);
 
+    if (isImageFile(fileInfo)){
+        return NULL;
+    }
+
+    // if it's not a either a video or an image then we extract the file type's icon out of it
+    QFileIconProvider *provider = new QFileIconProvider();
+    QImage *image = new QImage(provider->icon(fileInfo).pixmap(128,128).toImage());
+    QString thumbPath = Parameters::THUMBS_DIR+"/"+QString::number(QDateTime::currentMSecsSinceEpoch())+".png";
+    if (!image->save(thumbPath)){
+        qDebug() << "An error occured while saving the icon" << endl;
+        return NULL;
+    }
+    return new QFileInfo(thumbPath);
+
+    return NULL;
+}
+
+QFileInfo *Functions::extractThumbnail(QFileInfo fileInfo)
+{
+    // i use opencv to extract a picture out of the video, that's gonna be the video thumbnail
     VideoCapture vcap(cv::String(fileInfo.absoluteFilePath().toStdString()));
     if (!vcap.isOpened()){
         qDebug() << "Failed in opening the video file" << endl;
@@ -100,7 +156,7 @@ QFileInfo *Functions::generateThumbnails(QFileInfo fileInfo)
         i++;
     }
 
-    QString thumbName = fileInfo.baseName()+".png";
+    QString thumbName = QString::number(QDateTime::currentMSecsSinceEpoch())+".png";
     QString thumbPath = Parameters::THUMBS_DIR+"/"+thumbName;
 
     //qDebug() << "in gen thumbnails " << endl;
@@ -119,6 +175,11 @@ bool Functions::isVideoFile(QFileInfo fileInfo)
 {
     if (Parameters::VIDEO_FORMATS.contains(fileInfo.suffix()))
         return true;
+    return false;
+}
+
+bool Functions::isImageFile(QFileInfo)
+{
     return false;
 }
 

@@ -11,7 +11,6 @@
 #include <Services/ZeminiService.h>
 #include "Config/Functions.h"
 #include <QMessageBox>
-#include <QFileIconProvider>
 
 class DirectoryService : public ZeminiService
 {

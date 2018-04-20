@@ -4,6 +4,17 @@
 /**
  * @brief FileType::FileType
  */
+
+FileFormat *FileType::getFileFormat() const
+{
+    return fileFormat;
+}
+
+void FileType::setFileFormat(FileFormat *value)
+{
+    fileFormat = value;
+}
+
 FileType::FileType()
 {
 
@@ -15,11 +26,12 @@ FileType::FileType()
  * @param name
  * @param suffix
  */
-FileType::FileType(int id, QString name, QString suffix)
+FileType::FileType(int id, QString name, QString suffix, FileFormat * fileFormat)
 {
     this->id = id;
     this->name = name;
     this->suffix = suffix;
+    this->fileFormat = fileFormat;
 }
 
 //---   Setters

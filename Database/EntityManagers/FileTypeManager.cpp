@@ -23,7 +23,7 @@ FileType *FileTypeManager::getType(QFileInfo fileInfo)
     fileTypeProperties.insert("suffix", fileInfo.suffix());
     FileType * type = FileTypeManager::getOneBy(fileTypeProperties);
     if (type == NULL)
-        return add(new FileType(0, fileInfo.suffix(), fileInfo.suffix())); //TODO
+        return add(new FileType(0, fileInfo.suffix(), fileInfo.suffix(), NULL)); //TODO
     return type;
 }
 
@@ -51,7 +51,10 @@ FileType *FileTypeManager::getOneBy(QMap<QString, QString> properties)
 
     if (sqlQuery.next()){
         //qDebug() << "Yes file type" << endl;
-        return new FileType(sqlQuery.value(0).toInt(), sqlQuery.value(1).toString(), sqlQuery.value(2).toString());
+        QMap<QString, QString> formatProperties;
+        formatProperties.insert("id", sqlQuery.value(3).toString());
+
+        return new FileType(sqlQuery.value(0).toInt(), sqlQuery.value(1).toString(), sqlQuery.value(2).toString(), FileFormatManager::getOneBy(formatProperties));
     }
     //qDebug() << "Yes file type" << properties["id"] << endl;
     return NULL;
@@ -83,7 +86,7 @@ FileType* FileTypeManager::add(FileType * type)
 QList<FileType *> * FileTypeManager::getAll()
 {
     QList<FileType *> * types = new QList<FileType *>();
-    QString request = "select id, name, suffix from File_type";
+    QString request = "select * from File_type";
     QSqlQuery sqlQuery(Parameters::localDb);
     sqlQuery.exec(request);
     if (!sqlQuery.isActive()){
@@ -91,7 +94,10 @@ QList<FileType *> * FileTypeManager::getAll()
         return NULL;
     }
     while (sqlQuery.next()){
-        types->append(new FileType(sqlQuery.value(0).toInt(), sqlQuery.value(1).toString(), sqlQuery.value(2).toString()));
+        QMap<QString, QString> formatProperties;
+        formatProperties.insert("id", sqlQuery.value(3).toString());
+
+        types->append(new FileType(sqlQuery.value(0).toInt(), sqlQuery.value(1).toString(), sqlQuery.value(2).toString(), FileFormatManager::getOneBy(formatProperties)));
     }
     return types;
 }

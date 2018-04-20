@@ -1,13 +1,14 @@
 #include "localdbservice.h"
 
 const QString LocalDBService::USER = "user";
-const QString LocalDBService::CATEGORY = "category";
+const QString LocalDBService::CATEGORY = "Category";
 const QString LocalDBService::FILE = "file";
-const QString LocalDBService::FILE_TYPE = "type";
+const QString LocalDBService::FILE_TYPE = "FileType";
 const QString LocalDBService::APP_DATA = "app_data";
 const QString LocalDBService::DRIVE_TYPE = "drive_type";
 const QString LocalDBService::DRIVE = "drive";
-const QStringList LocalDBService::INIT_DATA_LIST = (QStringList() << LocalDBService::CATEGORY );
+const QString LocalDBService::FILE_FORMAT = "FileFormat";
+const QStringList LocalDBService::INIT_DATA_LIST = (QStringList() << LocalDBService::CATEGORY << LocalDBService::FILE_FORMAT << LocalDBService::FILE_TYPE );
 
 /***        Builders        ***/
 LocalDBService::LocalDBService()
@@ -19,10 +20,7 @@ LocalDBService::LocalDBService()
     appDataManager = NULL;
     driveTypeManager = NULL;
     driveManager = NULL;
-
-    // Setting necessary arguments to convert the fileInfo to a File object
-    //getFileManager()->setCategoryManager(getCategoryManager());
-    //getFileManager()->setFileTypeManager(getFileTypeManager());
+    fileFormatManager = NULL;
 }
 
 bool LocalDBService::isDbEmpty()
@@ -61,6 +59,10 @@ AbstractManager * LocalDBService::getManager(QString manager)
 
     if (manager == LocalDBService::DRIVE){
         return getDriveManager();
+    }
+
+    if (manager == LocalDBService::FILE_FORMAT){
+        return getFileFormatManager();
     }
 
     return NULL;
@@ -124,6 +126,13 @@ DriveManager *LocalDBService::getDriveManager()
     return driveManager;
 }
 
+FileFormatManager *LocalDBService::getFileFormatManager()
+{
+    if (fileFormatManager == NULL)
+        fileFormatManager = new FileFormatManager();
+    return fileFormatManager;
+}
+
 /**
  * @brief LocalDBService::getCategoryManager
  * @return
@@ -157,9 +166,24 @@ FileManager * LocalDBService::getFileManager()
     return fileManager;
 }
 
-bool LocalDBService::save(File *file)
+DbEntity *LocalDBService::save(File *file)
 {
-    return getFileManager()->add(file);
+    return (DbEntity *)getFileManager()->add(file);
+}
+
+DbEntity * LocalDBService::save(FileType *type)
+{
+    return (DbEntity *)getFileTypeManager()->add(type);
+}
+
+DbEntity * LocalDBService::save(FileFormat *format)
+{
+    return (DbEntity *)getFileFormatManager()->add(format);
+}
+
+DbEntity *LocalDBService::save(Category *category)
+{
+    return (DbEntity *)getCategoryManager()->add(category);
 }
 
 bool LocalDBService::update(AppData* appData)
@@ -189,17 +213,30 @@ void LocalDBService::markFileSaved(int fileId)
 void LocalDBService::initDb(QList<DbEntity> * entities, QString entityName)
 {
     // inserting the data received from the remote server
-    if (entities == NULL)
+    if (entities == NULL){
+        emit dbTableInitialized();
         return;
+    }
 
-    if (entityName == LocalDBService::CATEGORY){
-
-        for (int i = 0; i < entities->size(); i++){
+    for (int i = 0; i < entities->size(); i++){
+        if (entityName == LocalDBService::CATEGORY){
             Category *category = (Category *) &(entities->at(i));
-            if (!getCategoryManager()->add(*category))
+            if (save(category))
                 qDebug() << "category " << category->getName() <<" not inserted : " << endl;
         }
+        if (entityName == LocalDBService::FILE_FORMAT){
+            FileFormat *format = (FileFormat *) &(entities->at(i));
+            if (save(format))
+                qDebug() << "format " << format->getName() <<" not inserted : " << endl;
+        }
+        if (entityName == LocalDBService::FILE_TYPE){
+            FileType *type = (FileType *) &(entities->at(i));
+            if (save(type))
+                qDebug() << "type " << type->getName() <<" not inserted : " << endl;
+        }
     }
+    qDebug() << "Emitting the entity name" << endl;
+    emit dbTableInitialized();
 }
 
 void LocalDBService::initDb()
@@ -208,7 +245,7 @@ void LocalDBService::initDb()
     getDriveTypeManager()->initDbTable();
 
     // inserting other necessary data
-    getFileTypeManager()->add(new FileType(0, "directory", ""));
+    getFileTypeManager()->add(new FileType(0, "directory", "", NULL));
 
     // initializing the datetime of the last exit from the app
     getAppDataManager()->add(new AppData(AppData::LAST_EXIT, "0000-00-00 00:00:00"));
@@ -258,8 +295,6 @@ bool LocalDBService::saveFileUpdate(QFileInfo fileInfo)
     else{
         File * file = getFileManager()->convertToFile(fileInfo);
         File * parentDir = getFileManager()->convertToFile(QFileInfo(fileInfo.absolutePath()));
-        //qDebug() << "File updated in test! " << endl;
-        //qDebug() << "File updated in db! " << parentDir->toString() << endl;
         if (!(getFileManager()->update(file) && getFileManager()->update(parentDir))){
             return false;
         }

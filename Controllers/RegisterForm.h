@@ -33,6 +33,7 @@ private:
     NetworkService * networkService;
     ServiceContainer * serviceContainer;
     User * user;
+    WaitingSpinnerWidget * wSpinnerWidget;
 
 private slots:
     void on_bt_next_clicked();
@@ -48,6 +49,7 @@ public slots:
     //void handleFocusBack();
     void on_le_username_textChanged(const QString &arg1);
     void handleUserSavedResponse(bool);
+    void stopWaitingSpinner();
 
 signals:
     void userDataEntered(User *);

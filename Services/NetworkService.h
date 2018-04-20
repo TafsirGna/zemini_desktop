@@ -63,7 +63,6 @@ private:
 public:
         NetworkService();
         bool isConnected();
-        void getInitialDbData();
         void getFreshDbData();
         void checkCredentials(QString, QString);
 
@@ -72,6 +71,7 @@ public slots:
         void syncDb();
         void sendUser(User *);
         void sendFiles(QList<File*>*);
+        void getInitialDbData();
 
 private slots:
         void sslSocketConnected();
@@ -84,6 +84,7 @@ signals:
         void fileSaved(int);
         void firstBackUpDone();
         void userSaved(bool);
+        void allDbDataGot();
 };
 
 #endif // NETWORKSERVICE_H
