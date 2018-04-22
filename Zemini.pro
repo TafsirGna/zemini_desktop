@@ -31,10 +31,19 @@ LIBS += C:\OpenCV\OpenCV3.1\build\bin\libopencv_videoio310.dll
 # OpenSSL inclusion
 INCLUDEPATH += C:\OpenSSL\OpenSSL-Win64\include
 
-#OPENSSL_LIBS += -LC:\OpenSSL\OpenSSL-Win64\lib -llibeay32 -lssleay32 -llibcrypto #.\configure.exe -openssl-linked
+#OPENSSL_LIBS = -LC:\OpenSSL\OpenSSL-Win64\lib -llibeay32 -lssleay32 -llibcrypto #.\configure.exe -openssl-linked
 LIBS += -LC:\OpenSSL\OpenSSL-Win64\lib -llibeay32
 LIBS += -LC:\OpenSSL\OpenSSL-Win64\lib -lssleay32
 LIBS += -LC:\OpenSSL\OpenSSL-Win32\lib -llibcrypto
+
+#LIBS += -LC:\OpenSSL\OpenSSL-Win32\lib -llibssl
+#LIBS += -LC:\OpenSSL\OpenSSL-Win32\lib -lopenssl
+
+#LIBS += C:\OpenSSL\OpenSSL-Win64\bin\ssleay32.dll
+#LIBS += C:\OpenSSL\OpenSSL-Win64\bin\libeay32.dll
+#LIBS += C:\OpenSSL\OpenSSL-Win64\bin\libssl32.dll
+#LIBS += C:\OpenSSL\OpenSSL-Win32\bin\libcrypto-1_1.dll
+#LIBS += C:\OpenSSL\OpenSSL-Win32\bin\libssl-1_1.dll
 
 SOURCES += main.cpp\
     #Controller sources
