@@ -29,8 +29,8 @@ ZeminiService * ServiceContainer::getService(QString service)
     }
 
     if (service == ZeminiService::Cypher){
-        if (cypherService == NULL)
-            cypherService = new CypherService();
+        //if (cypherService == NULL)
+            //cypherService = new CypherService();
         return cypherService;
     }
 

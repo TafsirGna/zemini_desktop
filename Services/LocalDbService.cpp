@@ -21,6 +21,8 @@ LocalDBService::LocalDBService()
     driveTypeManager = NULL;
     driveManager = NULL;
     fileFormatManager = NULL;
+
+    dbTables2Init = INIT_DATA_LIST;
 }
 
 bool LocalDBService::isDbEmpty()
@@ -80,18 +82,6 @@ bool LocalDBService::save(QFileInfo fileInfo)
     File *file = getFileManager()->convertToFile(fileInfo);
     //qDebug() << "file converted" << endl;
     return save(file);
-}
-
-/**
- * @brief LocalDBService::save
- * @param user
- * @return
- */
-bool LocalDBService::save(User * user)
-{
-    qDebug() << "User saved : localdbservice" << endl;
-    this->userManager->add(*user);
-    emit userLoggedIn();
 }
 
 /**
@@ -201,45 +191,36 @@ void LocalDBService::startBackingUp()
     emit filesToSend(notSavedFiles);
 }
 
-/**
- * @brief LocalDBService::markFileSaved
- * @param fileId
- */
-void LocalDBService::markFileSaved(int fileId)
+void LocalDBService::onDbInit(QMap<QString, QString> metaData, QList<DbEntity> * data)
 {
-    getFileManager()->setFileSaved(fileId);
-}
-
-void LocalDBService::initDb(QList<DbEntity> * entities, QString entityName)
-{
-    // inserting the data received from the remote server
-    if (entities == NULL){
-        emit dbTableInitialized();
-        return;
-    }
-
-    for (int i = 0; i < entities->size(); i++){
+    qDebug() << "in onDbInit function " << endl;
+    QString entityName = metaData["objectType"];
+    for (int i = 0; i < data->size(); i++){
         if (entityName == LocalDBService::CATEGORY){
-            Category *category = (Category *) &(entities->at(i));
+            Category *category = (Category *) &(data->at(i));
             if (save(category))
                 qDebug() << "category " << category->getName() <<" not inserted : " << endl;
         }
         if (entityName == LocalDBService::FILE_FORMAT){
-            FileFormat *format = (FileFormat *) &(entities->at(i));
+            FileFormat *format = (FileFormat *) &(data->at(i));
             if (save(format))
                 qDebug() << "format " << format->getName() <<" not inserted : " << endl;
         }
         if (entityName == LocalDBService::FILE_TYPE){
-            FileType *type = (FileType *) &(entities->at(i));
+            FileType *type = (FileType *) &(data->at(i));
             if (save(type))
                 qDebug() << "type " << type->getName() <<" not inserted : " << endl;
         }
     }
-    qDebug() << "Emitting the entity name" << endl;
-    emit dbTableInitialized();
+    dbTables2Init.removeOne(metaData["objectType"]);
+    qDebug()  << metaData["objectType"] << dbTables2Init << endl;
+    if (dbTables2Init.isEmpty()){
+        completeDbInit();
+        emit dbInitialized();
+    }
 }
 
-void LocalDBService::initDb()
+void LocalDBService::completeDbInit()
 {
     //inserting all the drivetype objects
     getDriveTypeManager()->initDbTable();
@@ -256,7 +237,7 @@ void LocalDBService::initDb()
     DriveType * computerType = getDriveTypeManager()->getOneBy(properties);
     getDriveManager()->add(new Drive(0, QDir().homePath(), computerType));
 
-    DriveManager::displayAll();
+    //DriveManager::displayAll();
 }
 
 /**
@@ -300,4 +281,29 @@ bool LocalDBService::saveFileUpdate(QFileInfo fileInfo)
         }
     }
     return true;
+}
+
+void LocalDBService::onRequestReplyReceived(QMap<QString, QString> metaData, QList<DbEntity> *data)
+{
+    int requestCode = metaData["code"].toInt();
+    bool success = ((metaData["success"] == "0") ? false : true);
+
+    if (requestCode == NetworkService::CODE_REGISTER_USER){
+        if (success){
+            qDebug() << "User saved : localdbservice" << endl;
+            this->userManager->add(*user);
+            emit userLoggedIn();
+        }
+    }
+
+    if (requestCode == NetworkService::CODE_FILE_SAVE){
+        if (success){
+            File * file = (File *) &(data->first());
+            getFileManager()->setFileSaved(file->getId());
+        }
+    }
+
+    if (requestCode == NetworkService::CODE_DB_INIT){
+        onDbInit(metaData, data);
+    }
 }

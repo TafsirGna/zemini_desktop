@@ -46,13 +46,28 @@ RegisterForm::RegisterForm(QWidget *parent, ServiceContainer *serviceContainer) 
 
     this->serviceContainer = serviceContainer;
     networkService = (NetworkService *) serviceContainer->getService(ZeminiService::Network);
-    QWidget::connect(networkService, SIGNAL(userSaved(bool)), this, SLOT(handleUserSavedResponse(bool)));
-    QWidget::connect(networkService, SIGNAL(allDbDataGot()), this, SLOT(stopWaitingSpinner()));
+    localDbService = (LocalDBService *) serviceContainer->getService(ZeminiService::LocalDatabase);
+    //QWidget::connect(networkService, SIGNAL(requestReplyReceived(QMap<QString,QString>,QList<DbEntity>*)), this, SLOT(onRequestReplyReceived(QMap<QString,QString>,QList<DbEntity>*)));
+    QWidget::connect(localDbService, SIGNAL(dbInitialized()), this, SLOT(onDbInitialized()));
+    QWidget::connect(networkService, SIGNAL(connectionError(int)), this, SLOT(onConnectionError(int)));
+    networkService->getInitialDbData();
+
+    initDbTimer = new QTimer(this);
+    initDbTimer->setInterval(Parameters::CHECK_CON_TIME_OUT);
+    QWidget::connect(initDbTimer, SIGNAL(timeout()), this, SLOT(resumeDbInit()));
 }
 
 RegisterForm::~RegisterForm()
 {
     delete ui;
+}
+
+void RegisterForm::onUserNotRegistered()
+{
+    ui->lb_error_text->setText("An error occured. Restart the app later");
+    showErrorSignes(ui->lb_username, ui->le_username);
+    showErrorSignes(ui->lb_mail, ui->le_mail);
+    showErrorSignes(ui->lb_password, ui->le_password);
 }
 
 void RegisterForm::on_bt_next_clicked()
@@ -94,27 +109,6 @@ void RegisterForm::on_le_username_textChanged(const QString &arg1)
     // i remove every sign of error previously set
     if (networkService->isConnected())
         removeErrorSignes(ui->lb_username, ui->le_username);
-}
-
-void RegisterForm::handleUserSavedResponse(bool saved)
-{
-    if (!saved){
-        ui->lb_error_text->setText("An error occured. Restart the app later");
-        showErrorSignes(ui->lb_username, ui->le_username);
-        showErrorSignes(ui->lb_mail, ui->le_mail);
-        showErrorSignes(ui->lb_password, ui->le_password);
-        return;
-    }
-    // saving the user in the local database
-    qDebug() << "User saved : handleUserSavedResponse" << endl;
-    emit userToSave(user);
-    this->hide();
-}
-
-void RegisterForm::stopWaitingSpinner()
-{
-    qDebug() << "Stopping the spinner !";
-    wSpinnerWidget->stop();
 }
 
 void RegisterForm::on_le_mail_textChanged(const QString &arg1)
@@ -191,4 +185,71 @@ bool RegisterForm::checkEmail()
         return false;
     }
     return true;
+}
+
+void RegisterForm::resumeDbInit()
+{
+    initDbTimer->stop();
+    networkService->getInitialDbData();
+}
+
+void RegisterForm::onConnectionError(int requestCode)
+{
+    if (requestCode == NetworkService::CODE_DB_INIT){
+        // dismiss the loading spinner
+        wSpinnerWidget->stop();
+
+        if (ui->lb_error_text->isVisible()){
+            ui->lb_error_text->setText("Error connection");
+            ui->lb_error_text->setVisible(true);
+
+            ui->lb_username->setStyleSheet("color: red; font-family: Palatino Linotype; font-size: 13px; ");
+            ui->le_username->setStyleSheet("border-color: red; border-width: 1px; border-style: solid; font-family: Palatino Linotype; font-size: 13px;");
+
+            ui->lb_mail->setStyleSheet("color: red; font-family: Palatino Linotype; font-size: 13px; ");
+            ui->le_mail->setStyleSheet("border-color: red; border-width: 1px; border-style: solid; font-family: Palatino Linotype; font-size: 13px;");
+
+            ui->lb_password->setStyleSheet("color: red; font-family: Palatino Linotype; font-size: 13px; ");
+            ui->le_password->setStyleSheet("border-color: red; border-width: 1px; border-style: solid; font-family: Palatino Linotype; font-size: 13px;");
+        }
+
+        // after reporting the connection error, i start a timer that gonna periodically check the connection status
+        initDbTimer->start();
+    }
+}
+
+void RegisterForm::onRequestReplyReceived(QMap<QString,QString> metaData, QList<DbEntity>* data)
+{
+    qDebug() << "on request reply received" << endl;
+    int requestCode = metaData["code"].toInt();
+    bool success = ((metaData["success"] == "0") ? false : true);
+
+    if (requestCode == NetworkService::CODE_REGISTER_USER){
+        if (!success){
+            onUserNotRegistered();
+        }
+        else{
+            // saving the user in the local database
+            qDebug() << "User saved" << endl;
+            emit userToSave(user);
+            this->hide();
+        }
+        return;
+    }
+}
+
+void RegisterForm::onDbInitialized()
+{
+    qDebug() << "Stopping the spinner !";
+    wSpinnerWidget->stop();
+
+    ui->lb_error_text->setVisible(false);
+    ui->lb_username->setStyleSheet("color: black; font-family: Palatino Linotype; font-size: 13px;");
+    ui->le_username->setStyleSheet("font-family: Palatino Linotype; font-size: 13px;");
+
+    ui->lb_mail->setStyleSheet("color: black; font-family: Palatino Linotype; font-size: 13px;");
+    ui->le_mail->setStyleSheet("font-family: Palatino Linotype; font-size: 13px;");
+
+    ui->lb_password->setStyleSheet("color: black; font-family: Palatino Linotype; font-size: 13px;");
+    ui->le_password->setStyleSheet("font-family: Palatino Linotype; font-size: 13px;");
 }

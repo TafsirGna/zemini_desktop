@@ -31,19 +31,9 @@ LIBS += C:\OpenCV\OpenCV3.1\build\bin\libopencv_videoio310.dll
 # OpenSSL inclusion
 INCLUDEPATH += C:\OpenSSL\OpenSSL-Win64\include
 
-#OPENSSL_LIBS = -LC:\OpenSSL\OpenSSL-Win64\lib -llibeay32 -lssleay32 -llibcrypto #.\configure.exe -openssl-linked
-LIBS += -LC:\OpenSSL\OpenSSL-Win64\lib -llibeay32
-LIBS += -LC:\OpenSSL\OpenSSL-Win64\lib -lssleay32
-LIBS += -LC:\OpenSSL\OpenSSL-Win32\lib -llibcrypto
-
-#LIBS += -LC:\OpenSSL\OpenSSL-Win32\lib -llibssl
-#LIBS += -LC:\OpenSSL\OpenSSL-Win32\lib -lopenssl
-
-#LIBS += C:\OpenSSL\OpenSSL-Win64\bin\ssleay32.dll
-#LIBS += C:\OpenSSL\OpenSSL-Win64\bin\libeay32.dll
-#LIBS += C:\OpenSSL\OpenSSL-Win64\bin\libssl32.dll
-#LIBS += C:\OpenSSL\OpenSSL-Win32\bin\libcrypto-1_1.dll
-#LIBS += C:\OpenSSL\OpenSSL-Win32\bin\libssl-1_1.dll
+#LIBS += -LC:\OpenSSL\OpenSSL-Win64\lib -llibeay32
+#LIBS += -LC:\OpenSSL\OpenSSL-Win64\lib -lssleay32
+#LIBS += -LC:\OpenSSL\OpenSSL-Win32\lib -llibcrypto
 
 SOURCES += main.cpp\
     #Controller sources
@@ -72,7 +62,7 @@ SOURCES += main.cpp\
     Services/ServiceContainer.cpp \
     Services/ZeminiService.cpp \
     Config/Functions.cpp \
-    Services/CypherService.cpp \
+    #Services/CypherService.cpp \
     Database/Entities/AppData.cpp \
     Database/EntityManagers/AppDataManager.cpp \
     Database/Entities/DriveType.cpp \
@@ -85,7 +75,8 @@ SOURCES += main.cpp\
     #Vendor/OpenSSL_Wrapper/Crypto.cpp \
     Vendor/QtWaitingSpinner/waitingspinnerwidget.cpp \
     Database/Entities/FileFormat.cpp \
-    Database/EntityManagers/FileFormatManager.cpp
+    Database/EntityManagers/FileFormatManager.cpp \
+    Config/NetRequest.cpp
 
 HEADERS  += Config\Parameters.h \
     Config/Functions.h \
@@ -113,7 +104,7 @@ HEADERS  += Config\Parameters.h \
     Tests/TestsManager.h \
     Services/ServiceContainer.h \
     Services/ZeminiService.h \
-    Services/CypherService.h \
+    #Services/CypherService.h \
     Database/Entities/AppData.h \
     Database/EntityManagers/AppDataManager.h \
     #Vendor/OpenSSL_Wrapper/base64.h \
@@ -126,7 +117,8 @@ HEADERS  += Config\Parameters.h \
     #Vendors' libray
     Vendor/QtWaitingSpinner/waitingspinnerwidget.h \
     Database/Entities/FileFormat.h \
-    Database/EntityManagers/FileFormatManager.h
+    Database/EntityManagers/FileFormatManager.h \
+    Config/NetRequest.h
 
 
 FORMS    += Views\PreferencesForm.ui \

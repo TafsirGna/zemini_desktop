@@ -23,9 +23,9 @@ MainController::MainController()
     QWidget::connect(logInForm, SIGNAL(signUpLinkActivated()), this, SLOT(showRegisterForm()));
     QWidget::connect(logInForm, SIGNAL(userToSave(User*)), ((LocalDBService *)this->getService(ZeminiService::LocalDatabase)), SLOT(save(User *)));
     QWidget::connect(registerForm, SIGNAL(userToSave(User*)), ((LocalDBService *)this->getService(ZeminiService::LocalDatabase)), SLOT(save(User *)));
-    QWidget::connect(((NetworkService *)this->serviceContainer->getService(ZeminiService::Network)), SIGNAL(initDataGot(QList<DbEntity>*, QString)), ((LocalDBService*)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SLOT(initDb(QList<DbEntity> *, QString)));
+    QWidget::connect(((NetworkService *)this->serviceContainer->getService(ZeminiService::Network)), SIGNAL(requestReplyReceived(QMap<QString,QString>,QList<DbEntity>*)), ((LocalDBService*)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SLOT(onRequestReplyReceived(QMap<QString,QString>,QList<DbEntity>*)));
     QWidget::connect(((LocalDBService *)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SIGNAL(userLoggedIn()), this, SLOT(setUserFolder()));
-    QWidget::connect(((LocalDBService *)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SIGNAL(dbTableInitialized()), ((NetworkService *)this->serviceContainer->getService(ZeminiService::Network)), SLOT(getInitialDbData()));
+    //QWidget::connect(((LocalDBService *)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SIGNAL(dbTableInitialized()), ((NetworkService *)this->serviceContainer->getService(ZeminiService::Network)), SLOT(getInitialDbData()));
     QWidget::connect(((DirectoryService *)this->serviceContainer->getService(ZeminiService::FileSystem)), SIGNAL(dirDeleted(QFileInfo)), ((LocalDBService*)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SLOT(saveFileDeletion(QFileInfo)));
     QWidget::connect(((LocalDBService *)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SIGNAL(filesToSend(QList<File *>*)), ((NetworkService *)this->serviceContainer->getService(ZeminiService::Network)), SLOT(sendFiles(QList<File*>*)));
     QWidget::connect((FileManager*)((LocalDBService *)this->serviceContainer->getService(ZeminiService::LocalDatabase))->getManager(LocalDBService::FILE), SIGNAL(fileSaved(QFileInfo)), ((DirectoryService *)this->serviceContainer->getService(ZeminiService::FileSystem)), SLOT(watchFile(QFileInfo)));
@@ -33,7 +33,6 @@ MainController::MainController()
     QWidget::connect(((DirectoryService *)this->serviceContainer->getService(ZeminiService::FileSystem)), SIGNAL(storeInDb(QFileInfo)), ((LocalDBService*)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SLOT(save(QFileInfo)));
     QWidget::connect(((NetworkService *)this->serviceContainer->getService(ZeminiService::Network)), SIGNAL(readyToBackUp()), ((LocalDBService*)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SLOT(startBackingUp()));
     QWidget::connect(((NetworkService *)this->serviceContainer->getService(ZeminiService::Network)), SIGNAL(firstBackUpDone()), this, SLOT(handleFirstBackUpDone()));
-    QWidget::connect(((NetworkService *)this->serviceContainer->getService(ZeminiService::Network)), SIGNAL(fileSaved(int)), ((LocalDBService*)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SLOT(markFileSaved(int)));
     QWidget::connect(screenShotTimer, SIGNAL(timeout()), this, SLOT(takeScreenShot()));
     //QWidget::connect(trayIcon, SIGNAL(messageClicked()), this, SLOT(showDirectory()));
 }
@@ -43,10 +42,6 @@ void MainController::start()
     if (!installationCompleted()){
         //complete zemini installation
         firstLaunch = true;
-
-        // Sending a request to get all initial data
-        ((LocalDBService *) this->getService(ZeminiService::LocalDatabase))->initDb();
-        ((NetworkService *) this->getService(ZeminiService::Network))->getInitialDbData();
         completeInstallation();
     }
     else{

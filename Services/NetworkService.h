@@ -24,7 +24,8 @@
 #include <Services/LocalDbService.h>
 #include <QUrlQuery>
 #include <QSslKey>
-#include <QHttpPart>
+//#include <QHttpPart>
+#include <Config/NetRequest.h>
 
 class NetworkService : public ZeminiService
 {
@@ -33,7 +34,6 @@ private:
         QNetworkAccessManager * networkAccessManager;
         QTimer * timer1;
         QTimer * timer2;
-        bool connected;
         QString private_key;
         QString public_key;
         RSA * keys;
@@ -41,16 +41,20 @@ private:
         //Crypto crypto;
         QList<File*> *filesToSend;
         bool firstBackup;
-        QStringList initDataList;
         QSslSocket * sslSocket;
+        QList<NetRequest *> * requestsList;
 
         //Functions
         void handleBadRequestReply(QNetworkReply*);
         void handleGoodRequestReply(QNetworkReply*);
         void settingSslSocket();
         void sendFilePicture(File*);
+        void formRequestReply(int, QString, QList<DbEntity> *);
+        void formRequestReply(int, QString, DbEntity *);
+
         //void pingServer();
 
+public:
         // Static constants
         const static int CODE_REGISTER_USER;
         const static int CODE_USER_LOGIN;
@@ -60,7 +64,6 @@ private:
         const static int CODE_PING_SERVER;
         const static int CODE_SAVE_THUMBS;
 
-public:
         NetworkService();
         bool isConnected();
         void getFreshDbData();
@@ -76,15 +79,15 @@ public slots:
 private slots:
         void sslSocketConnected();
         void sendFile(File*);
+        void sendNextRequest();
 
 signals:
-        void credentialsChecked(int, User *);
-        void initDataGot(QList<DbEntity> *, QString);
+        //void requestReplyReceived(int requestCode, bool status);
+        void requestReplyReceived(QMap<QString, QString> metaData, QList<DbEntity> * data);
         void readyToBackUp();
-        void fileSaved(int);
         void firstBackUpDone();
-        void userSaved(bool);
-        void allDbDataGot();
+        void connectionError(int);
+        void requestFailed(int);
 };
 
 #endif // NETWORKSERVICE_H

@@ -24,6 +24,8 @@ const QString Parameters::userIcon = Parameters::devAppFolder + "\\Resources\\Im
 
 const QString Parameters::timeFormat = "yyyy-MM-dd hh:mm:ss";
 
+const int Parameters::CHECK_CON_TIME_OUT = 15000;
+
 const int Parameters::MAX_SCREEN_REC_TIME = 30000;
 
 const int Parameters::NB_FRAMES_PER_SEC = 2; //30

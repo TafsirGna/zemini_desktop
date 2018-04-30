@@ -14,6 +14,8 @@ public:
 
     const static QString APP_VERSION;
 
+    const static int CHECK_CON_TIME_OUT;
+
     const static QString WEB_SITE;
 
     const static QString URL;

@@ -41,7 +41,7 @@ LogInForm::LogInForm(QWidget *parent, ServiceContainer * serviceContainer) :
     setMaximumSize(size());
 
     // connecting signals to slots
-    connect(((NetworkService*) this->serviceContainer->getService(ZeminiService::Network)), SIGNAL(credentialsChecked(int, User *)), this, SLOT(areCredentialsOk(int, User *)));
+    connect(((NetworkService*) this->serviceContainer->getService(ZeminiService::Network)), SIGNAL(requestReplyReceived(QMap<QString,QString>,QList<DbEntity>*)), this, SLOT(onRequestReplyReceived(QMap<QString,QString>,QList<DbEntity>*)));
 }
 
 LogInForm::~LogInForm()
