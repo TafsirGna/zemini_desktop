@@ -12,7 +12,7 @@ const int Parameters::networkTimer2Frequency = 30000;
 
 const QString Parameters::ROOT_DIR_NAME = "Zemini";
 
-const QString Parameters::STORE_DIR = QDir().homePath()+"/"+Parameters::ROOT_DIR_NAME;
+//const QString Parameters::STORE_DIR = QDir().homePath()+"/"+Parameters::ROOT_DIR_NAME;
 
 const QString Parameters::setupDirectory = QDir().homePath()+"/ZeminiSetup";
 
@@ -44,8 +44,7 @@ const int Parameters::MIN_CREAT_DELAY = 1;
 
 const QString Parameters::FILE_SYS_SEPARATOR = "/";
 
-const QString Parameters::THUMBS_DIR = Parameters::STORE_DIR
-        +Parameters::FILE_SYS_SEPARATOR+".thumbs";
+const QString Parameters::THUMBS_DIR_NAME = ".thumbs";
 
 const QString Parameters::KEYS_DIR = Parameters::setupDirectory
         +Parameters::FILE_SYS_SEPARATOR+".keystore";

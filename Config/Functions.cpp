@@ -7,17 +7,17 @@ using namespace cv;
  * @param variantMap
  * @return
  */
-User * Functions::fromJsonToUser(QVariantMap variantMap)
+User * Functions::fromJsonToUser(QMap<QString, QVariant> map)
 {
     User * user = new User();
 
-    user->setId(variantMap["id"].toInt());
+    user->setId(map["id"].toInt());
     //user->setFamilyname(variantMap["familyname"].toString());
     //user->setFirstname(variantMap["firstname"].toString());
-    user->setEmail(variantMap["email"].toString());
-    user->setPassword(variantMap["password"].toString());
+    user->setEmail(map["email"].toString());
+    user->setPassword(map["password"].toString());
     //user->setDateInscription(variantMap["dateinscription"].toString());
-    user->setUsername(variantMap["username"].toString());
+    user->setUsername(map["username"].toString());
     return user;
 }
 
@@ -36,10 +36,10 @@ bool Functions::isEmailValid(QString email)
  * @param variantMap
  * @return
  */
-QList<Category> *  Functions::fromJsonToCategories(QVariant variant)
+QList<Category*> *  Functions::fromJsonToCategories(QVariant variant)
 {
     //qDebug() << "Initializing Category : " << variant << endl;
-    QList<Category> * categories = new QList<Category>();
+    QList<Category*> * categories = new QList<Category*>();
 
     if (variant.canConvert<QVariantList>())
     {
@@ -49,15 +49,15 @@ QList<Category> *  Functions::fromJsonToCategories(QVariant variant)
         const QSequentialIterable::const_iterator end = iterable.end();
         for ( ; it != end; ++it) {
             QMap<QString, QVariant> map = (*it).toMap();
-            categories->append(Category(map["id"].toInt(), map["name"].toString()));
+            categories->append(new Category(map["id"].toInt(), map["name"].toString()));
         }
     }
     return categories;
 }
 
-QList<FileFormat> *  Functions::fromJsonToFileFormats(QVariant variant)
+QList<FileFormat*> *  Functions::fromJsonToFileFormats(QVariant variant)
 {
-    QList<FileFormat> * fileFormats = new QList<FileFormat>();
+    QList<FileFormat*> * fileFormats = new QList<FileFormat*>();
     /*
     for (QVariantMap::const_iterator iter = variantMap.begin(); iter != variantMap.end(); ++iter){
         if (iter.key() != "requestCode"){
@@ -70,9 +70,9 @@ QList<FileFormat> *  Functions::fromJsonToFileFormats(QVariant variant)
     return fileFormats;
 }
 
-QList<FileType> *  Functions::fromJsonToFileTypes(QVariant variant)
+QList<FileType*> *  Functions::fromJsonToFileTypes(QVariant variant)
 {
-    QList<FileType> * fileTypes = new QList<FileType>();
+    QList<FileType*> * fileTypes = new QList<FileType*>();
     /*
     for (QVariantMap::const_iterator iter = variantMap.begin(); iter != variantMap.end(); ++iter){
         if (iter.key() != "requestCode"){
@@ -88,16 +88,19 @@ QList<FileType> *  Functions::fromJsonToFileTypes(QVariant variant)
 /**
  * @brief Functions::makeLinkToZeminiFolder
  */
-void Functions::makeLinkToZeminiFolder()
+bool Functions::makeLinkToRootFolder(QDir rootDir)
 {
-    QString dirPath= QDir().homePath()+"/Zemini";
-    dirPath.replace("\\","/");
-    QString linkPath = QDir().homePath()+"/Links/Zemini.lnk";
+    QString dirPath= rootDir.absolutePath();
+    QString linkPath = QDir().homePath()+"/Links/"+Parameters::ROOT_DIR_NAME+".lnk";
     linkPath.replace("\\","/");
-    QFile dir (dirPath);
+    QFile dir(dirPath);
     bool link_created = dir.link(linkPath);
-    if (!link_created)
+    if (!link_created){
         qDebug("Failed to create the link");
+        QMessageBox::warning(0, "Link", "An error occured when makeing the link to the main folder. Check the reason and restart later please!", QMessageBox::Yes);
+        return false;
+    }
+    return true;
 }
 
 /**
@@ -127,7 +130,15 @@ QFileInfo *Functions::generateThumbnails(QFileInfo fileInfo)
     // if it's not a either a video or an image then we extract the file type's icon out of it
     QFileIconProvider *provider = new QFileIconProvider();
     QImage *image = new QImage(provider->icon(fileInfo).pixmap(128,128).toImage());
-    QString thumbPath = Parameters::THUMBS_DIR+"/"+QString::number(QDateTime::currentMSecsSinceEpoch())+".png";
+
+
+    AppData * appData = (AppData *) AppDataManager::getByKey(AppDataManager::STORAGE_DIR_KEY);
+    QString thumbsPath = appData->getValue()+"/"+Parameters::THUMBS_DIR_NAME;
+    if (!QDir(thumbsPath).exists()){
+        QDir(thumbsPath).mkdir(".");
+    }
+
+    QString thumbPath = thumbsPath+"/"+QString::number(QDateTime::currentMSecsSinceEpoch())+".png";
     if (!image->save(thumbPath)){
         qDebug() << "An error occured while saving the icon" << endl;
         return NULL;
@@ -156,8 +167,9 @@ QFileInfo *Functions::extractThumbnail(QFileInfo fileInfo)
         i++;
     }
 
+    QString thumbsPath = "";
     QString thumbName = QString::number(QDateTime::currentMSecsSinceEpoch())+".png";
-    QString thumbPath = Parameters::THUMBS_DIR+"/"+thumbName;
+    QString thumbPath = thumbsPath+"/"+thumbName;
 
     //qDebug() << "in gen thumbnails " << endl;
     if (imwrite(cv::String(thumbPath.toStdString()), frame))

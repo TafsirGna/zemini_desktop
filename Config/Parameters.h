@@ -24,7 +24,7 @@ public:
 
     const static int networkTimer2Frequency;
 
-    const static QString STORE_DIR;
+    //const static QString STORE_DIR;
 
     const static QString setupDirectory;
 
@@ -50,7 +50,7 @@ public:
 
     const static int MIN_CREAT_DELAY;
 
-    const static QString THUMBS_DIR;
+    const static QString THUMBS_DIR_NAME;
 
     const static QString FILE_SYS_SEPARATOR;
 

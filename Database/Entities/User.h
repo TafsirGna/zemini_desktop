@@ -23,7 +23,8 @@ private:
 public:
         //Constructor
         User();
-        User(QString familyname, QString firstname, QString email,QString username,QString password);
+        User(User *);
+        User(QString familyname, QString firstname, QString email, QString username, QString password);
         User(int id,QString familyname, QString firstname, QString email,QString username,QString password);
 
         //Getters

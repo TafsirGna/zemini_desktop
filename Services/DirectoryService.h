@@ -9,7 +9,7 @@
 #include <QList>
 #include <QFileSystemWatcher>
 #include <Services/ZeminiService.h>
-#include "Config/Functions.h"
+#include <Services/LocalDbService.h>
 #include <QMessageBox>
 
 class DirectoryService : public ZeminiService
@@ -26,7 +26,7 @@ protected:
 
 public:
     DirectoryService(); //FolderThread's constructor
-    bool makeInitDirectories(QList<Category> *);
+    bool initFolder(QDir, QStringList);
     void watchZeminiFolder();
     void start();
 

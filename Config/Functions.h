@@ -5,17 +5,19 @@
 #include <QVariantMap>
 #include "Config/Parameters.h"
 #include <QList>
-#include <Database/Entities/Category.h>
 #include <opencv2/opencv.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <Database/Entities/File.h>
 #include <QSqlRecord>
-#include <Database/EntityManagers/FileTypeManager.h>
-#include <Database/EntityManagers/FileManager.h>
-#include <Database/EntityManagers/DriveManager.h>
-#include <Database/EntityManagers/CategoryManager.h>
+#include "Database/EntityManagers/FileTypeManager.h"
+#include "Database/EntityManagers/CategoryManager.h"
+#include "Database/EntityManagers/FileManager.h"
+#include "Database/EntityManagers/DriveManager.h"
+#include "Database/EntityManagers/AppDataManager.h"
+//#include "Services/DirectoryService.h"
+#include <QMessageBox>
 #include <QFileIconProvider>
 #include <QSequentialIterable>
 #include <QVariant>
@@ -25,17 +27,17 @@
 class Functions
 {
 public:
-    static User * fromJsonToUser(QVariantMap);
+    static User * fromJsonToUser(QMap<QString, QVariant>);
 
     static bool isEmailValid(QString);
 
-    static QList<Category> *  fromJsonToCategories(QVariant);
+    static QList<Category*> *  fromJsonToCategories(QVariant);
 
-    static QList<FileType> *  fromJsonToFileTypes(QVariant);
+    static QList<FileType*> *  fromJsonToFileTypes(QVariant);
 
-    static QList<FileFormat> *  fromJsonToFileFormats(QVariant);
+    static QList<FileFormat*> *  fromJsonToFileFormats(QVariant);
 
-    static void makeLinkToZeminiFolder();
+    static bool makeLinkToRootFolder(QDir);
 
     static QString getRelativePath(QString);
 

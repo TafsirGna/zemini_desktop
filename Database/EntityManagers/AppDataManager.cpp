@@ -1,5 +1,7 @@
 #include "AppDataManager.h"
 
+const QString AppDataManager::STORAGE_DIR_KEY = "STORAGE_DIR";
+
 AppDataManager::AppDataManager() : AbstractManager()
 {
 

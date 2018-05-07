@@ -47,9 +47,9 @@ RegisterForm::RegisterForm(QWidget *parent, ServiceContainer *serviceContainer) 
     this->serviceContainer = serviceContainer;
     networkService = (NetworkService *) serviceContainer->getService(ZeminiService::Network);
     localDbService = (LocalDBService *) serviceContainer->getService(ZeminiService::LocalDatabase);
-    //QWidget::connect(networkService, SIGNAL(requestReplyReceived(QMap<QString,QString>,QList<DbEntity>*)), this, SLOT(onRequestReplyReceived(QMap<QString,QString>,QList<DbEntity>*)));
     QWidget::connect(localDbService, SIGNAL(dbInitialized()), this, SLOT(onDbInitialized()));
     QWidget::connect(networkService, SIGNAL(connectionError(int)), this, SLOT(onConnectionError(int)));
+    QWidget::connect(networkService, SIGNAL(requestFailed(int)), this, SLOT(onRequestFailed(int)));
     networkService->getInitialDbData();
 
     initDbTimer = new QTimer(this);
@@ -72,16 +72,6 @@ void RegisterForm::onUserNotRegistered()
 
 void RegisterForm::on_bt_next_clicked()
 {
-    if (!networkService->isConnected()){
-
-        ui->lb_error_text->setText("Error connexion");
-        ui->lb_error_text->setVisible(true);
-        showErrorSignes(ui->lb_username, ui->le_username);
-        showErrorSignes(ui->lb_mail, ui->le_mail);
-        showErrorSignes(ui->lb_password, ui->le_password);
-        return;
-    }
-
     //i check if all textedits have been filled
     if (ui->le_username->text().isEmpty())
     {
@@ -91,36 +81,36 @@ void RegisterForm::on_bt_next_clicked()
         return;
     }
 
-    if (!checkEmail())
+    if (!isEmailValid())
         return;
 
-    if (!checkPassword())
+    if (!isPasswordValid())
         return;
 
     // building a user object with all informations gathered
-    user = new User((*(new QString())), (*(new QString())), ui->le_mail->text(), ui->le_username->text(), ui->le_password->text());
+    user = new User("", "", ui->le_mail->text(), ui->le_username->text(), ui->le_password->text());
 
     // sending a post request to put the user in the remote db
-    networkService->sendUser(user);
+    QList<DbEntity*> * data = new QList<DbEntity*>();
+    data->append(user);
+    wSpinnerWidget->start();
+    networkService->send(LocalDBService::USER, data);
 }
 
 void RegisterForm::on_le_username_textChanged(const QString &arg1)
 {
     // i remove every sign of error previously set
-    if (networkService->isConnected())
-        removeErrorSignes(ui->lb_username, ui->le_username);
+    removeErrorSignes(ui->lb_username, ui->le_username);
 }
 
 void RegisterForm::on_le_mail_textChanged(const QString &arg1)
 {
-    if (networkService->isConnected())
-        removeErrorSignes(ui->lb_mail, ui->le_mail);
+    removeErrorSignes(ui->lb_mail, ui->le_mail);
 }
 
 void RegisterForm::on_le_password_textChanged(const QString &arg1)
 {
-    if (networkService->isConnected())
-        removeErrorSignes(ui->lb_password, ui->le_password);
+    removeErrorSignes(ui->lb_password, ui->le_password);
 }
 
 void RegisterForm::showErrorSignes(QLabel * label, QLineEdit * lineEdit)
@@ -144,7 +134,7 @@ void RegisterForm::on_lb_sign_in_linkActivated(const QString &link)
     emit logInLinkActivated();
 }
 
-bool RegisterForm::checkPassword()
+bool RegisterForm::isPasswordValid()
 {
     QString password = ui->le_password->text();
 
@@ -165,7 +155,7 @@ bool RegisterForm::checkPassword()
     return true;
 }
 
-bool RegisterForm::checkEmail()
+bool RegisterForm::isEmailValid()
 {
     QString user_mail = ui->le_mail->text();
 
@@ -190,7 +180,7 @@ bool RegisterForm::checkEmail()
 void RegisterForm::resumeDbInit()
 {
     initDbTimer->stop();
-    networkService->getInitialDbData();
+    networkService->sendNextRequest();
 }
 
 void RegisterForm::onConnectionError(int requestCode)
@@ -218,24 +208,11 @@ void RegisterForm::onConnectionError(int requestCode)
     }
 }
 
-void RegisterForm::onRequestReplyReceived(QMap<QString,QString> metaData, QList<DbEntity>* data)
+void RegisterForm::onUserSaved()
 {
-    qDebug() << "on request reply received" << endl;
-    int requestCode = metaData["code"].toInt();
-    bool success = ((metaData["success"] == "0") ? false : true);
-
-    if (requestCode == NetworkService::CODE_REGISTER_USER){
-        if (!success){
-            onUserNotRegistered();
-        }
-        else{
-            // saving the user in the local database
-            qDebug() << "User saved" << endl;
-            emit userToSave(user);
-            this->hide();
-        }
-        return;
-    }
+    // getting the folder in which all the files and directories will be tracked
+    QString selectedDirPath = QFileDialog::getExistingDirectory(0, tr("Open directory"), QDir::homePath(), QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    setUserFolder(QDir(selectedDirPath));
 }
 
 void RegisterForm::onDbInitialized()
@@ -252,4 +229,55 @@ void RegisterForm::onDbInitialized()
 
     ui->lb_password->setStyleSheet("color: black; font-family: Palatino Linotype; font-size: 13px;");
     ui->le_password->setStyleSheet("font-family: Palatino Linotype; font-size: 13px;");
+}
+
+void RegisterForm::onRequestFailed(int code)
+{
+    //qDebug() << "Handling request failure signal " << code << endl;
+    if (code == NetworkService::CODE_REGISTER_USER){
+        ui->lb_error_text->setText("Check your credentials");
+        ui->lb_error_text->setVisible(true);
+
+        ui->lb_username->setStyleSheet("color: red; font-family: Palatino Linotype; font-size: 13px; ");
+        ui->le_username->setStyleSheet("border-color: red; border-width: 1px; border-style: solid; font-family: Palatino Linotype; font-size: 13px;");
+
+        ui->lb_mail->setStyleSheet("color: red; font-family: Palatino Linotype; font-size: 13px; ");
+        ui->le_mail->setStyleSheet("border-color: red; border-width: 1px; border-style: solid; font-family: Palatino Linotype; font-size: 13px;");
+
+        ui->lb_password->setStyleSheet("color: red; font-family: Palatino Linotype; font-size: 13px; ");
+        ui->le_password->setStyleSheet("border-color: red; border-width: 1px; border-style: solid; font-family: Palatino Linotype; font-size: 13px;");
+    }
+    wSpinnerWidget->stop();
+}
+
+bool RegisterForm::setUserFolder(QDir rootDir)
+{
+    wSpinnerWidget->start();
+
+    // making the directories following the categories
+    QStringList subDirNames = getSubDirNames();
+    if (((DirectoryService * ) this->serviceContainer->getService(ZeminiService::FileSystem))->initFolder(rootDir, subDirNames)){
+        QMap<QString, QString> parameters;
+        parameters.insert("tableName", LocalDBService::APP_DATA);
+        ((LocalDBService * ) this->serviceContainer->getService(ZeminiService::LocalDatabase))->save(parameters, new AppData(AppDataManager::STORAGE_DIR_KEY, rootDir.absolutePath()+"/"+Parameters::ROOT_DIR_NAME));
+        wSpinnerWidget->stop();
+        emit userRegistered();
+        this->hide();
+        return true;
+    }
+    this->hide();
+    return false;
+}
+
+QStringList RegisterForm::getSubDirNames()
+{
+    CategoryManager * categoryManager = (CategoryManager *) localDbService->getManager(LocalDBService::CATEGORY);
+    QList<Category> * categories = categoryManager->getAll();
+    int size = categories->size();
+    QStringList subDirNames;
+    for (int i(0); i < size; i++){
+        Category category = categories->at(i);
+        subDirNames.append(category.getName());
+    }
+    return subDirNames;
 }

@@ -10,6 +10,7 @@
 #include <Database/EntityManagers/DriveTypeManager.h>
 #include <Database/EntityManagers/DriveManager.h>
 #include <Database/EntityManagers/FileFormatManager.h>
+#include <Database/EntityManagers/FileManager.h>
 #include <Services/NetworkService.h>
 
 class LocalDBService: public ZeminiService
@@ -17,26 +18,26 @@ class LocalDBService: public ZeminiService
     Q_OBJECT
 private :
     //All entity managers
-    FileManager * fileManager;
-    CategoryManager * categoryManager;
-    UserManager * userManager;
-    FileTypeManager * fileTypeManager;
-    AppDataManager * appDataManager;
-    DriveTypeManager * driveTypeManager;
-    DriveManager * driveManager;
-    FileFormatManager * fileFormatManager;
+    static FileManager * fileManager;
+    static CategoryManager * categoryManager;
+    static UserManager * userManager;
+    static FileTypeManager * fileTypeManager;
+    static AppDataManager * appDataManager;
+    static DriveTypeManager * driveTypeManager;
+    static DriveManager * driveManager;
+    static FileFormatManager * fileFormatManager;
 
     QStringList dbTables2Init;
 
     // Some getters
-    UserManager * getUserManager();
-    CategoryManager * getCategoryManager();
-    FileManager * getFileManager();
-    FileTypeManager * getFileTypeManager();
-    AppDataManager * getAppDataManager();
-    DriveTypeManager * getDriveTypeManager();
-    DriveManager * getDriveManager();
-    FileFormatManager * getFileFormatManager();
+    static UserManager * getUserManager();
+    static CategoryManager * getCategoryManager();
+    static FileManager * getFileManager();
+    static FileTypeManager * getFileTypeManager();
+    static AppDataManager * getAppDataManager();
+    static DriveTypeManager * getDriveTypeManager();
+    static DriveManager * getDriveManager();
+    static FileFormatManager * getFileFormatManager();
 
 protected:
 
@@ -58,15 +59,13 @@ public:
     LocalDBService();
 
     // Getters
-    bool isDbEmpty();
-    AbstractManager * getManager(QString);
-    DbEntity * save(File *);
-    DbEntity *save(FileType *);
-    DbEntity *save(FileFormat *);
-    DbEntity * save(Category *);
-    bool update(AppData * );
-    void onDbInit(QMap<QString, QString>, QList<DbEntity> *);
-    void completeDbInit();
+    static bool isDbEmpty();
+    const static AbstractManager * getManager(QString);
+    static DbEntity * save(QMap<QString, QString>, DbEntity *);
+    static  bool update(AppData * );
+    void onDbInit(QMap<QString, QString>, QList<DbEntity*> *);
+    static void completeDbInit();
+    static DbEntity * getOneBy(QMap<QString, QString>);
 
 public slots:
     bool save(QFileInfo);
@@ -74,11 +73,11 @@ public slots:
     void startBackingUp();
     void refreshDb();
     bool saveFileUpdate(QFileInfo);
-    void onRequestReplyReceived(QMap<QString,QString>,QList<DbEntity>*);
+    void onRequestReplyReceived(QMap<QString,QString>,QList<DbEntity*>*);
 
 signals:
-    void filesToSend(QList<File*>*);
-    void userLoggedIn();
+    void filesToSend(QString, QList<File*>*);
+    void userSaved();
     void dbInitialized();
 
 };

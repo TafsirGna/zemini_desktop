@@ -14,7 +14,9 @@ public:
     bool remove(AppData*);
     QList<AppData *> * getAll();
 
-    AppData * getByKey(QString);
+    static AppData * getByKey(QString);
+
+    const static QString STORAGE_DIR_KEY;
 };
 
 #endif // APPDATAMANAGER_H

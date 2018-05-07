@@ -49,6 +49,7 @@ private:
     bool displayTrayIcon();
     bool checkInitialDbData();
     cv::Mat3b QImage2Mat(const QImage &src);
+    void checkAccountConfirmation();
 
 public:
     MainController();
@@ -61,14 +62,16 @@ private slots:
     void showLogInForm();
     void showPreferences();
     void showZeminiWebSite();
+    void showUploadingDialog();
     void setArgs(AbstractController * );
     void recordScreen();
     void stop();
     void takeScreenShot();
     void handleFirstBackUpDone();
+    void onRequestFailed(int);
+    void onRequestReplyReceived(QMap<QString,QString>,QList<DbEntity*>*);
 
 public slots:
-    bool setUserFolder();
     void start();
 
 };

@@ -51,13 +51,13 @@ LogInForm::~LogInForm()
 
 void LogInForm::on_le_password_textChanged(QString )
 {
-    if (((NetworkService*) this->serviceContainer->getService(ZeminiService::Network))->isConnected())
+    //if (((NetworkService*) this->serviceContainer->getService(ZeminiService::Network))->isConnected())
         removeErrorSignes(ui->lb_password, ui->le_password);
 }
 
 void LogInForm::on_le_mail_textChanged(const QString &arg1)
 {
-    if (((NetworkService*) this->serviceContainer->getService(ZeminiService::Network))->isConnected())
+    //if (((NetworkService*) this->serviceContainer->getService(ZeminiService::Network))->isConnected())
         removeErrorSignes(ui->lb_mail, ui->le_mail);
 }
 
@@ -79,14 +79,14 @@ void LogInForm::removeErrorSignes(QLabel * label, QLineEdit * lineEdit)
 
 void LogInForm::on_bt_ok_clicked()
 {
-    if (!((NetworkService*) this->serviceContainer->getService(ZeminiService::Network))->isConnected()){
+    //if (!((NetworkService*) this->serviceContainer->getService(ZeminiService::Network))->isConnected()){
 
         ui->lb_error_text->setText("Error connexion");
         ui->lb_error_text->setVisible(true);
         showErrorSignes(ui->lb_mail, ui->le_mail);
         showErrorSignes(ui->lb_password, ui->le_password);
         return;
-    }
+    //}
 
     if (!isValidEmail()){
         ui->lb_error_text->setText("Wrong email format");

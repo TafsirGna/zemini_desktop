@@ -76,7 +76,9 @@ SOURCES += main.cpp\
     Vendor/QtWaitingSpinner/waitingspinnerwidget.cpp \
     Database/Entities/FileFormat.cpp \
     Database/EntityManagers/FileFormatManager.cpp \
-    Config/NetRequest.cpp
+    Config/NetRequest.cpp \
+    Controllers/AboutDialog.cpp \
+    Controllers/UploadingDialog.cpp
 
 HEADERS  += Config\Parameters.h \
     Config/Functions.h \
@@ -118,9 +120,13 @@ HEADERS  += Config\Parameters.h \
     Vendor/QtWaitingSpinner/waitingspinnerwidget.h \
     Database/Entities/FileFormat.h \
     Database/EntityManagers/FileFormatManager.h \
-    Config/NetRequest.h
+    Config/NetRequest.h \
+    Controllers/AboutDialog.h \
+    Controllers/UploadingDialog.h
 
 
 FORMS    += Views\PreferencesForm.ui \
     Views/LogInForm.ui \
-    Views/RegisterForm.ui
+    Views/RegisterForm.ui \
+    Views/AboutDialog.ui \
+    Views/UploadingDialog.ui

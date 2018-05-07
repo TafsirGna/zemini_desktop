@@ -14,6 +14,7 @@
 #include <Services/ServiceContainer.h>
 #include <Controllers/AbstractController.h>
 #include <Vendor/QtWaitingSpinner/waitingspinnerwidget.h>
+#include <QFileDialog>
 
 namespace Ui {
     class RegisterForm;
@@ -38,6 +39,9 @@ private:
     WaitingSpinnerWidget * wSpinnerWidget;
     QTimer * initDbTimer;
 
+    bool setUserFolder(QDir);
+    QStringList getSubDirNames();
+
 private slots:
     void on_bt_next_clicked();
     void showErrorSignes(QLabel *, QLineEdit *);
@@ -45,21 +49,22 @@ private slots:
     void on_le_mail_textChanged(const QString &arg1);
     void on_le_password_textChanged(const QString &arg1);
     void on_lb_sign_in_linkActivated(const QString &link);
-    bool checkPassword();
-    bool checkEmail();
+    bool isPasswordValid();
+    bool isEmailValid();
     void resumeDbInit();
     void onConnectionError(int);
     void onDbInitialized();
+    void onRequestFailed(int);
+
 
 public slots:
     //void handleFocusBack();
     void on_le_username_textChanged(const QString &arg1);
-    void onRequestReplyReceived(QMap<QString,QString>,QList<DbEntity>*);
+    void onUserSaved();
 
 signals:
-    void userDataEntered(User *);
     void logInLinkActivated();
-    void userToSave(User *);
+    void userRegistered();
 };
 
 #endif // RegisterForm_H

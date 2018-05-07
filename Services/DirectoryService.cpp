@@ -23,7 +23,11 @@ void DirectoryService::start()
 void DirectoryService::watchZeminiFolder()
 {
     // i start going through all files and directories to store and track them
-    QDir root_dir(Parameters::STORE_DIR);
+    QMap<QString, QString> parameters;
+    parameters.insert("tableName", LocalDBService::APP_DATA);
+    parameters.insert("id", AppDataManager::STORAGE_DIR_KEY);
+
+    QDir root_dir(((AppData *)LocalDBService::getOneBy(parameters))->getValue());
     QFileInfoList * queue = new QFileInfoList();
     (*queue) += root_dir.entryInfoList(QDir::Files | QDir::NoSymLinks | QDir::AllDirs | QDir::NoDotAndDotDot);
 
@@ -40,7 +44,14 @@ void DirectoryService::watchZeminiFolder()
     while(true){
         //qDebug() << currentObject.absoluteFilePath() << endl;
         emit storeInDb(currentObject);
-        if (currentObject.isDir() && currentObject.absoluteFilePath() != Parameters::THUMBS_DIR){
+
+        QMap<QString, QString> parameters;
+        parameters.insert("tableName", LocalDBService::APP_DATA);
+        parameters.insert("id", AppDataManager::STORAGE_DIR_KEY);
+        AppData * appData = (AppData *)LocalDBService::getOneBy(parameters);
+        QString thumbsDir = appData->getValue()+"/"+Parameters::THUMBS_DIR_NAME;
+
+        if (currentObject.isDir() && currentObject.absoluteFilePath() != thumbsDir){
             // get its children
             (*queue) += QDir(currentObject.absoluteFilePath()).entryInfoList(QDir::Files | QDir::NoSymLinks | QDir::AllDirs | QDir::NoDotAndDotDot);
         }
@@ -77,46 +88,28 @@ void DirectoryService::watchFile(QFileInfo fileInfo)
  * @param categories
  * @return
  */
-bool DirectoryService::makeInitDirectories(QList<Category> * categories)
+bool DirectoryService::initFolder(QDir rootDir, QStringList dirNames)
 {
-    if (categories == NULL)
+    if (dirNames.isEmpty())
         return false;
 
-    // making the first root directory under which the others will be put
-    QString rootDir = Parameters::STORE_DIR;
-    rootDir.replace("\\","/");
-    QDir zeminiDirectory(rootDir);
-    if (!zeminiDirectory.exists())
-    {
-        if (!zeminiDirectory.mkdir("."))
-            qDebug()<<"Error creating the main folder"<<endl;
+    QDir zeminiDir(rootDir.absolutePath()+"/"+Parameters::ROOT_DIR_NAME);
+    if (!zeminiDir.exists() && !zeminiDir.mkdir(".")){
+        qDebug() << "Failed to create zemini folder" << endl;
+        QMessageBox::critical(0, "Zemini Folder", "An error occured when making the main folder. Check the reason and restart please.", QMessageBox::Yes);
+        return false;
     }
 
-    for (int i = 0; i < categories->size(); i++){
-        Category cat = (categories->at(i));
-
-        QString categoryDirPath = rootDir+"/"+cat.getName();
-        categoryDirPath.replace("\\","/");
-        QDir categoryDir(categoryDirPath);
-        if (!categoryDir.exists())
-        {
-            if (!categoryDir.mkdir("."))
-                qDebug()<<"Error when creating the " << cat.getName() <<" folder"<<endl;
-        }
-
-    }
-
-    // then making the dir of the thumbnails
-    QString keysDirPath = Parameters::KEYS_DIR;
-    QDir keysDir(keysDirPath.replace("\\", "/"));
-    if (!keysDir.exists()){
-        if (!keysDir.mkdir("."))
-            qDebug()<<"Error when creating the " << Parameters::KEYS_DIR <<" folder"<<endl;
+    int list_size = dirNames.size();
+    for (int i = 0; i < list_size; i++){
+        QString subDirPath = zeminiDir.absolutePath()+"/"+dirNames.at(i);
+        QDir subDir(subDirPath);
+        if (!subDir.exists() && !subDir.mkdir("."))
+            qDebug()<<"Error when creating the " << dirNames.at(i) <<" folder"<<endl;
     }
 
     // finally make a link to the zemini folder
-    Functions::makeLinkToZeminiFolder();
-
+    Functions::makeLinkToRootFolder(zeminiDir);
     return true;
 }
 

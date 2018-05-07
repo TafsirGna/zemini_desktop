@@ -49,9 +49,10 @@ private:
         void handleGoodRequestReply(QNetworkReply*);
         void settingSslSocket();
         void sendFilePicture(File*);
-        void formRequestReply(int, QString, QList<DbEntity> *);
+        void formRequestReply(int, QString, QList<DbEntity *> *);
         void formRequestReply(int, QString, DbEntity *);
-
+        void registerUser(User *);
+        void saveFile(File * file);
         //void pingServer();
 
 public:
@@ -63,27 +64,25 @@ public:
         const static int CODE_DB_REFRESH;
         const static int CODE_PING_SERVER;
         const static int CODE_SAVE_THUMBS;
+        const static int CODE_ACCOUNT_CHECKING;
 
         NetworkService();
-        bool isConnected();
-        void getFreshDbData();
+        //void getFreshDbData();
         void checkCredentials(QString, QString);
+        void checkUserAccount();
 
 public slots:
         void handleRequestReply(QNetworkReply*);
         void syncDb();
-        void sendUser(User *);
-        void sendFiles(QList<File*>*);
+        void send(QString, QList<DbEntity *> *);
         void getInitialDbData();
-
-private slots:
-        void sslSocketConnected();
-        void sendFile(File*);
         void sendNextRequest();
 
+private slots:
+        //void sslSocketConnected();
+
 signals:
-        //void requestReplyReceived(int requestCode, bool status);
-        void requestReplyReceived(QMap<QString, QString> metaData, QList<DbEntity> * data);
+        void requestReplyReceived(QMap<QString, QString> metaData, QList<DbEntity*> * data);
         void readyToBackUp();
         void firstBackUpDone();
         void connectionError(int);

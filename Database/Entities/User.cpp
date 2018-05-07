@@ -13,8 +13,19 @@ User::User()
     this->username = "";
 }
 
+User::User(User * user)
+{
+    this->id = user->id;
+    this->firstname = user->firstname;
+    this->familyname = user->familyname;
+    this->email = user->email;
+    this->password = user->password;
+    this->activated = user->activated;
+    this->username = user->username;
+}
+
 /***            Another constructor for setting up the values of the class object           ***/
-User::User(QString familyname, QString firstname, QString email,QString username,QString password)
+User::User(QString familyname, QString firstname, QString email, QString username,QString password)
 {
     this->id = 0;
     this->familyname = familyname;
@@ -128,7 +139,6 @@ void User::setActivated(bool activated)
 void User::toString()
 {
     //qDebug()<< "--- user's data display ---";
-    //qDebug()<< "id : " + QString::number(this->id) + ", familyname : " + this->familyname + ", firstname : " + this->firstname +
-    //           ", email : " + this->email + ", username : " + this->username + ", password : " + this->password +
-    //           ", dateinscription : " + this->dateinscription.toString() + ", phonenumber : " + this->phonenumber;
+    qDebug()<< "id : " + QString::number(this->id) + ", familyname : " + this->familyname + ", firstname : " + this->firstname +
+               ", email : " + this->email + ", username : " + this->username + ", password : " + this->password;
 }
