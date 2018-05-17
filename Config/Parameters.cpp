@@ -2,6 +2,8 @@
 
 const QString Parameters::APP_VERSION = "1.0";
 
+QString Parameters::THUMBS_DIR_PATH = "";
+
 const QString Parameters::WEB_SITE = "http://192.168.56.1/Symfony/web";
 
 const QString Parameters::URL = Parameters::WEB_SITE+"/desktop";

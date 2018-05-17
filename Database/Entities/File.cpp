@@ -12,8 +12,11 @@ QFileInfo *File::getThumbnail() const
 
 QString File::getAbsolutePath() const
 {
-    return QDir().homePath()
-            +path+Parameters::FILE_SYS_SEPARATOR+fileName;
+    QString absPath = AppDataManager::getByKey(AppDataManager::STORAGE_DIR_KEY)->getValue();
+    QStringList pathList = absPath.split("/");
+    pathList.removeLast();
+
+    return pathList.join("/")+path+Parameters::FILE_SYS_SEPARATOR+fileName;
 }
 
 void File::setThumbnail(QFileInfo *value)

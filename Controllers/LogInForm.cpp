@@ -7,6 +7,8 @@ LogInForm::LogInForm(QWidget *parent, ServiceContainer * serviceContainer) :
 {
     ui->setupUi(this);
 
+    wSpinnerWidget = new WaitingSpinnerWidget(this, Qt::ApplicationModal, true);
+
     this->serviceContainer = serviceContainer;
 
     ui->le_mail->setFocus();
@@ -40,8 +42,12 @@ LogInForm::LogInForm(QWidget *parent, ServiceContainer * serviceContainer) :
     setMinimumSize(size());
     setMaximumSize(size());
 
-    // connecting signals to slots
-    connect(((NetworkService*) this->serviceContainer->getService(ZeminiService::Network)), SIGNAL(requestReplyReceived(QMap<QString,QString>,QList<DbEntity>*)), this, SLOT(onRequestReplyReceived(QMap<QString,QString>,QList<DbEntity>*)));
+    //connecting signals to slots
+    LocalDBService *localDbService = (LocalDBService *)this->serviceContainer->getService(ZeminiService::LocalDatabase);
+    NetworkService *networkService = (NetworkService *)this->serviceContainer->getService(ZeminiService::Network);
+    connect(localDbService, SIGNAL(userSaved(int)), this, SLOT(onUserSaved(int)));
+    connect(networkService, SIGNAL(connectionError(int)), this, SLOT(onConnectionError(int)));
+    connect(networkService, SIGNAL(requestFailed(int)), this, SLOT(onRequestFailed(int)));
 }
 
 LogInForm::~LogInForm()
@@ -49,16 +55,26 @@ LogInForm::~LogInForm()
     delete ui;
 }
 
+void LogInForm::waiting()
+{
+    wSpinnerWidget->start();
+}
+
 void LogInForm::on_le_password_textChanged(QString )
 {
-    //if (((NetworkService*) this->serviceContainer->getService(ZeminiService::Network))->isConnected())
-        removeErrorSignes(ui->lb_password, ui->le_password);
+    if (ui->lb_error_text->isVisible() || ui->lb_error_text->text() == "Error connection"){
+        return;
+    }
+    removeErrorSignes(ui->lb_password, ui->le_password);
 }
 
 void LogInForm::on_le_mail_textChanged(const QString &arg1)
 {
-    //if (((NetworkService*) this->serviceContainer->getService(ZeminiService::Network))->isConnected())
-        removeErrorSignes(ui->lb_mail, ui->le_mail);
+    if (ui->lb_error_text->isVisible() || ui->lb_error_text->text() == "Error connection"){
+        return;
+    }
+
+    removeErrorSignes(ui->lb_mail, ui->le_mail);
 }
 
 void LogInForm::showErrorSignes(QLabel * label, QLineEdit * lineEdit)
@@ -79,16 +95,9 @@ void LogInForm::removeErrorSignes(QLabel * label, QLineEdit * lineEdit)
 
 void LogInForm::on_bt_ok_clicked()
 {
-    //if (!((NetworkService*) this->serviceContainer->getService(ZeminiService::Network))->isConnected()){
-
-        ui->lb_error_text->setText("Error connexion");
-        ui->lb_error_text->setVisible(true);
-        showErrorSignes(ui->lb_mail, ui->le_mail);
-        showErrorSignes(ui->lb_password, ui->le_password);
-        return;
-    //}
-
+    wSpinnerWidget->start();
     if (!isValidEmail()){
+        wSpinnerWidget->stop();
         ui->lb_error_text->setText("Wrong email format");
         showErrorSignes(ui->lb_mail, ui->le_mail);
         ui->le_mail->setFocus();
@@ -96,6 +105,7 @@ void LogInForm::on_bt_ok_clicked()
     }
 
     // sending a request to the server to check the credentials
+    qDebug() << "checking credentials" << endl;
     ((NetworkService*) this->serviceContainer->getService(ZeminiService::Network))->checkCredentials(ui->le_mail->text(), ui->le_password->text());
 }
 
@@ -125,22 +135,72 @@ bool LogInForm::areCredentialsOk(int resultCode, User * user)
     }
 
     // saving the user in the local database
-    emit userToSave(user);
+    //emit userToSave(user);
 
     this->hide();
     //TYPE* dynamic_cast<TYPE*>(object);
     return true;
 }
 
+void LogInForm::onConnectionError(int code)
+{
+    if (code == NetworkService::CODE_USER_LOGIN || code == NetworkService::CODE_DB_INIT){
+        wSpinnerWidget->stop();
+        // notifying the error to the user
+        ui->lb_error_text->setText("Error connection");
+        ui->lb_error_text->setVisible(true);
+
+        ui->lb_mail->setStyleSheet("color: red; font-family: Palatino Linotype; font-size: 13px; ");
+        ui->le_mail->setStyleSheet("border-color: red; border-width: 1px; border-style: solid; font-family: Palatino Linotype; font-size: 13px;");
+
+        ui->lb_password->setStyleSheet("color: red; font-family: Palatino Linotype; font-size: 13px; ");
+        ui->le_password->setStyleSheet("border-color: red; border-width: 1px; border-style: solid; font-family: Palatino Linotype; font-size: 13px;");
+    }
+}
+
+void LogInForm::onRequestFailed(int code)
+{
+    if (code == NetworkService::CODE_USER_LOGIN){
+        // notitfy ti the user that the request failed
+        wSpinnerWidget->stop();
+        QMessageBox::warning(this, "Zemini Info", "Oups! It seems that an error occured when logging you in. Please, try later!");
+    }
+}
+
+void LogInForm::onUserSaved(int code)
+{
+    if (code != NetworkService::CODE_USER_LOGIN)
+        return;
+
+    wSpinnerWidget->start();
+    if (DirectoryService::setUserFolder(this)){
+        wSpinnerWidget->stop();
+        this->hide();
+        emit userLoggedIn();
+        return;
+    }
+
+    QMessageBox::information(0, "Zemini Info", "You decided not to choose the directory for now. You can try later!", QMessageBox::Ok);
+    wSpinnerWidget->stop();
+    this->hide();
+    emit closeAppSignal();
+}
+
 void LogInForm::on_le_mail_editingFinished()
 {
+    if (!((LocalDBService *)this->serviceContainer->getService(ZeminiService::LocalDatabase))->isDbInitialized()){
+        onConnectionError(NetworkService::CODE_USER_LOGIN);
+        return;
+    }
     ui->le_password->setFocus();
 }
 
-/*
+
 void LogInForm::on_le_password_editingFinished()
 {
-    qDebug() << " significatif : " <<endl;
-    on_bt_ok_clicked();
+    if (!((LocalDBService *)this->serviceContainer->getService(ZeminiService::LocalDatabase))->isDbInitialized()){
+        onConnectionError(NetworkService::CODE_USER_LOGIN);
+        return;
+    }
 }
-*/
+

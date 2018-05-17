@@ -17,6 +17,9 @@ TEMPLATE = app
 
 RC_FILE = Config/zemini.rc
 
+# Firebase inclusion
+INCLUDEPATH += C:\firebase_cpp_sdk_4.5.1\firebase_cpp_sdk\include\firebase
+
 # OpenCV inclusion
 INCLUDEPATH += C:\OpenCV\OpenCV3.1\build\include
 
@@ -70,15 +73,18 @@ SOURCES += main.cpp\
     Database/Entities/Drive.cpp \
     Database/EntityManagers/DriveManager.cpp \
     Database/Entities/DbEntity.cpp \
+    Database/Entities/FileFormat.cpp \
+    Database/EntityManagers/FileFormatManager.cpp \
+    Config/NetRequest.cpp \
+    Controllers/UploadingForm.cpp \
     # Vendors' library
     #Vendor/OpenSSL_Wrapper/base64.cpp \
     #Vendor/OpenSSL_Wrapper/Crypto.cpp \
     Vendor/QtWaitingSpinner/waitingspinnerwidget.cpp \
-    Database/Entities/FileFormat.cpp \
-    Database/EntityManagers/FileFormatManager.cpp \
-    Config/NetRequest.cpp \
-    Controllers/AboutDialog.cpp \
-    Controllers/UploadingDialog.cpp
+    Vendor/qt-firebaseapi-master/firebase.cpp \
+    Vendor/qt-firebaseapi-master/datasnapshot.cpp \
+    Vendor/qt-firebaseapi-master/json.cpp \
+    Controllers/AboutForm.cpp
 
 HEADERS  += Config\Parameters.h \
     Config/Functions.h \
@@ -109,24 +115,27 @@ HEADERS  += Config\Parameters.h \
     #Services/CypherService.h \
     Database/Entities/AppData.h \
     Database/EntityManagers/AppDataManager.h \
-    #Vendor/OpenSSL_Wrapper/base64.h \
-    #Vendor/OpenSSL_Wrapper/Crypto.h
     Database/Entities/DriveType.h \
     Database/EntityManagers/DriveTypeManager.h \
     Database/Entities/Drive.h \
     Database/EntityManagers/DriveManager.h \
     Database/Entities/DbEntity.h \
-    #Vendors' libray
-    Vendor/QtWaitingSpinner/waitingspinnerwidget.h \
     Database/Entities/FileFormat.h \
     Database/EntityManagers/FileFormatManager.h \
     Config/NetRequest.h \
-    Controllers/AboutDialog.h \
-    Controllers/UploadingDialog.h
+    Controllers/UploadingForm.h \
+    #Vendors' libray
+    Vendor/QtWaitingSpinner/waitingspinnerwidget.h \
+    Vendor/qt-firebaseapi-master/firebase.h \
+    Vendor/qt-firebaseapi-master/datasnapshot.h \
+    Vendor/qt-firebaseapi-master/json.h \
+    Controllers/AboutForm.h
+    #Vendor/OpenSSL_Wrapper/base64.h \
+    #Vendor/OpenSSL_Wrapper/Crypto.h
 
 
 FORMS    += Views\PreferencesForm.ui \
     Views/LogInForm.ui \
     Views/RegisterForm.ui \
-    Views/AboutDialog.ui \
-    Views/UploadingDialog.ui
+    Views/UploadingForm.ui \
+    Views/AboutForm.ui

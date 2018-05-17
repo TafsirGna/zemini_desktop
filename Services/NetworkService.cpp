@@ -17,6 +17,7 @@ NetworkService::NetworkService()
 {
     //Setting the pipe of requests to be sent
     requestsList = new QList<NetRequest *>();
+    firebase = new Firebase("https://zemini-e1819.firebaseio.com/");
     networkAccessManager = new QNetworkAccessManager(this);
     // variable that tells if a backup has been done yet
     firstBackup = true;
@@ -25,7 +26,6 @@ NetworkService::NetworkService()
     this->timer2 = new QTimer(this);
     filesToSend = new QList<File*>();
     QWidget::connect(networkAccessManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(handleRequestReply(QNetworkReply*)));
-    sendFilePicture(new File());
 }
 
 /*
@@ -61,13 +61,32 @@ void NetworkService::sendNextRequest()
     }
 }
 
+void NetworkService::pauseProcess()
+{
+
+}
+
+void NetworkService::cancelProcess()
+{
+
+}
+
 void NetworkService::handleRequestReply(QNetworkReply * reply)
 {
     if (reply->error() == QNetworkReply::NoError){
-        handleGoodRequestReply(reply);
-        //after handling the request's response then i remove the current netrequest object from the request list
         if (!requestsList->isEmpty())
             requestsList->removeFirst();
+
+        handleGoodRequestReply(reply);
+        //after handling the request's response then i remove the current netrequest object from the request list
+        if (requestsList->isEmpty()){
+            if (firstBackup){
+                firstBackup = false;
+                emit firstBackUpDone();
+            }
+            sendThumbnails();
+            this->timer1->start(Parameters::networkTimer1Frequency);
+        }
     }
     else{
         handleBadRequestReply(reply);
@@ -137,11 +156,18 @@ void NetworkService::registerUser(User * user)
  */
 void NetworkService::checkCredentials(QString email, QString password)
 {
+    if (requestsList->size() > 0){
+        emit connectionError(NetworkService::CODE_USER_LOGIN);
+        return;
+    }
+
     QString address = Parameters::URL+
-            "/login/"+email+
-            "/"+password;
+            "/login?email="+email+"&password="+password;
     qDebug() << "check " << address << endl;
-    networkAccessManager->get(QNetworkRequest(QUrl(address)));
+
+    NetRequest * netRequest = new NetRequest(CODE_USER_LOGIN, "GET", QNetworkRequest(QUrl(address)));
+    requestsList->append(netRequest);
+    sendNextRequest();
 }
 
 void NetworkService::checkUserAccount()
@@ -212,16 +238,7 @@ void NetworkService::handleBadRequestReply(QNetworkReply * reply)
 {
     // notify that the request failed
     NetRequest * netRequest = requestsList->first();
-    switch (netRequest->getCode()) {
-    case CODE_DB_INIT:{
-        // i emit a signal to the "Register form" parent object
-        qDebug() << "Database initialization failed " << endl;
-        emit connectionError(CODE_DB_INIT);
-        break;
-    }
-    default:
-        break;
-    }
+    emit connectionError(netRequest->getCode());
 }
 
 /**
@@ -256,14 +273,14 @@ void NetworkService::handleGoodRequestReply(QNetworkReply * reply)
     case NetworkService::CODE_USER_LOGIN:{
         User * user = NULL;
         if (json_map["success"].toBool()){
-            user = Functions::fromJsonToUser(json_map);
+            user = Functions::fromJsonToUser(json_map["user"].toMap());
         }
-        formRequestReply(CODE_USER_LOGIN, "user", user);
+        formRequestReply(CODE_USER_LOGIN, LocalDBService::USER, user);
         break;
     }
     case NetworkService::CODE_DB_INIT:{
         QString tableName = json_map["tableName"].toString();
-        qDebug() << "in handle reply function  for db initialization "<< endl;
+        qDebug() << "in handle reply function  for db initialization "<< tableName << endl;
         if (tableName == LocalDBService::CATEGORY){
             QList<Category*> * categories  = Functions::fromJsonToCategories(json_map["data"]);
             qDebug() <<  "Initializing  category table " << endl;
@@ -287,20 +304,8 @@ void NetworkService::handleGoodRequestReply(QNetworkReply * reply)
     case NetworkService::CODE_FILE_SAVE:{
         qDebug() << "Reply 'file saved' received" << endl;
         if (json_map["success"].toBool()){
-            filesToSend->removeFirst();
-            //qDebug() << filesToSend << endl;
-            if (!filesToSend->isEmpty())
-                //sendFile(filesToSend->first());
-                qDebug() << "ok" <<endl;
-            else
-                if (firstBackup){
-                    firstBackup = false;
-                    emit firstBackUpDone();
-                    this->timer1->start(Parameters::networkTimer1Frequency);
-                }
             File * file;
             file->setId(json_map["fileID"].toInt());
-
             formRequestReply(CODE_FILE_SAVE, json_map["tableName"].toString(), (DbEntity *) file);
         }
         break;
@@ -316,11 +321,11 @@ void NetworkService::handleGoodRequestReply(QNetworkReply * reply)
         break;
     }
     case NetworkService::CODE_ACCOUNT_CHECKING:{
-        qDebug() << "Checking the account status!" << endl;
         int success = json_map["success"].toBool();
         if (success){
             User * user = new User(this->user);
             user->setActivated(json_map["enabled"].toBool());
+            qDebug() << "Checking the account status!" << endl;
             formRequestReply(CODE_ACCOUNT_CHECKING, "", user);
         }
         else{
@@ -358,9 +363,27 @@ void NetworkService::settingSslSocket()
     qDebug() << "encrypt ok" << endl;
 }
 
-void NetworkService::sendFilePicture(File * f)
+void NetworkService::sendThumbnails()
 {
-    QFile file("C:/Users/Tafsir/Zemini/.thumbs/Wildlife.png"); //lets get the file by filename
+    QDir thumbsDir(Parameters::THUMBS_DIR_PATH);
+    if (thumbsDir.exists()){
+        // counting the numbers of thumbnails to send
+        QFileInfoList thumbnail_list = thumbsDir.entryInfoList(QDir::Files | QDir::NoDotAndDotDot);
+        int list_size = thumbnail_list.size();
+        if (list_size == 0){
+            qDebug() << "No thumbnails to send !" << endl;
+            return;
+        }
+
+        for (int i(0); i < list_size; i++){
+            sendFilePicture(thumbnail_list.at(i));
+        }
+    }
+}
+
+void NetworkService::sendFilePicture(QFileInfo fileInfo)
+{
+    QFile file(fileInfo.absoluteFilePath()); //lets get the file by filename
     if (!file.open(QIODevice::ReadOnly)) //accessibility controll for file
     {
         qDebug() << "file open failure"; //send message if file cant open
@@ -387,7 +410,9 @@ void NetworkService::sendFilePicture(File * f)
     QNetworkRequest req;
     req.setUrl(QUrl(Parameters::URL+Parameters::NET_REQUEST_SEPARATOR+"save_thumbnails")); //my virtual servers' ip address and tiny php page url is here
     req.setRawHeader("Content-Type", "multipart/form-data; boundary=" + boundary); // we must set the first header like this. its tell the server, current object is a form
-    networkAccessManager->post(req,datas); //send all data
+
+    NetRequest * netRequest = new NetRequest(CODE_SAVE_THUMBS, "POST", req, datas);
+    //networkAccessManager->post(req,datas); //send all data
 }
 
 void NetworkService::formRequestReply(int code, QString tableName, QList<DbEntity*> * data)

@@ -1,7 +1,6 @@
 #ifndef CLASSMAINCONTROLLER_H
 #define CLASSMAINCONTROLLER_H
 
-#include <QSystemTrayIcon>
 #include <QDir>
 #include <QDebug>
 #include <QMessageBox>
@@ -9,7 +8,6 @@
 #include <QFile>
 #include <QDesktopServices>
 #include <QUrl>
-#include <QMenu>
 #include "Controllers/PreferencesForm.h"
 #include "Controllers/RegisterForm.h"
 #include "Database/DatabaseManager.h"
@@ -22,6 +20,8 @@
 #include <QGuiApplication>
 #include <QScreen>
 #include <QWindow>
+#include <Controllers/AboutForm.h>
+#include <Controllers/UploadingForm.h>
 
 class MainController : public QWidget
 {
@@ -42,14 +42,16 @@ private:
     QImage cvMatToQImage( const cv::Mat &inMat );
     QPixmap cvMatToQPixmap( const cv::Mat &inMat );
     int NB_FRAMES_COUNTER;
+    AboutForm *aboutForm;
+    UploadingForm * uploadingForm;
+    int totalSize;
+    int filesDoneSize;
 
     // Functions
     void completeInstallation();
     bool installationCompleted();
-    bool displayTrayIcon();
     bool checkInitialDbData();
     cv::Mat3b QImage2Mat(const QImage &src);
-    void checkAccountConfirmation();
 
 public:
     MainController();
@@ -57,22 +59,30 @@ public:
 
 private slots:
     void showDirectory();
+    void showAboutForm();
     void showRegisterForm();
     void manageActivation(QSystemTrayIcon::ActivationReason);
     void showLogInForm();
     void showPreferences();
     void showZeminiWebSite();
-    void showUploadingDialog();
+    void showUploadingForm();
     void setArgs(AbstractController * );
     void recordScreen();
     void stop();
     void takeScreenShot();
-    void handleFirstBackUpDone();
+    void onFirstBackUpDone();
     void onRequestFailed(int);
-    void onRequestReplyReceived(QMap<QString,QString>,QList<DbEntity*>*);
+    void onConnectionError(int);
+    void onUserEnabled(bool);
+    void checkAccountConfirmation();
+    //void onStartWatchingRootDir();
+    //void onFileChange(File *);
 
 public slots:
     void start();
+
+signals:
+    void quitAppSignal();
 
 };
 

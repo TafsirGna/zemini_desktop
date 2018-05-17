@@ -17,11 +17,11 @@ public:
     UserManager();
 
     //Prototypes of the main functions of this class
-    User * add(User user);
-    User * update(User user);
-    bool remove(User user);
+    static User * add(User user);
+    static User * update(User user);
+    static bool remove(User user);
 
-    User * getUser();
+    static User * getUser();
 
 };
 

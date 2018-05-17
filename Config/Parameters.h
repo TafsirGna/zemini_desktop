@@ -2,6 +2,7 @@
 #define ZEMINIPARAMETERS_H
 
 #include <QString>
+#include <QSystemTrayIcon>
 #include <QDir>
 #include <QRegExpValidator>
 #include <QRegExp>
@@ -65,6 +66,8 @@ public:
     const static int NB_FRAMES_PER_SEC;
 
     const static int FRAME_COUNT_DIVIDER;
+
+    static QString THUMBS_DIR_PATH;
 };
 
 #endif // ZEMINIPARAMETERS_H

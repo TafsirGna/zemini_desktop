@@ -14,7 +14,6 @@
 #include <Services/ServiceContainer.h>
 #include <Controllers/AbstractController.h>
 #include <Vendor/QtWaitingSpinner/waitingspinnerwidget.h>
-#include <QFileDialog>
 
 namespace Ui {
     class RegisterForm;
@@ -40,7 +39,6 @@ private:
     QTimer * initDbTimer;
 
     bool setUserFolder(QDir);
-    QStringList getSubDirNames();
 
 private slots:
     void on_bt_next_clicked();
@@ -55,12 +53,12 @@ private slots:
     void onConnectionError(int);
     void onDbInitialized();
     void onRequestFailed(int);
+    void onUserSaved(int);
 
 
 public slots:
     //void handleFocusBack();
     void on_le_username_textChanged(const QString &arg1);
-    void onUserSaved();
 
 signals:
     void logInLinkActivated();

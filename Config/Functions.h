@@ -52,6 +52,14 @@ public:
     static QString getDriveAbsPath(QString);
 
     static File * fromSqlRecord2File(QSqlRecord);
+
+    static double fromOctect2Ko(int size);
+
+    static double fromOctect2Mo(int);
+
+    static double fromOctect2Go(int);
+
+    static QMap<QString, QString> fromOctect2Normal(int);
 };
 
 #endif // FUNCTIONS_H

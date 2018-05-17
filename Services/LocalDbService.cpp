@@ -9,6 +9,7 @@ const QString LocalDBService::DRIVE_TYPE = "drive_type";
 const QString LocalDBService::DRIVE = "Drive";
 const QString LocalDBService::FILE_FORMAT = "FileFormat";
 const QStringList LocalDBService::INIT_DATA_LIST = (QStringList() << LocalDBService::CATEGORY << LocalDBService::FILE_FORMAT << LocalDBService::FILE_TYPE );
+bool LocalDBService::dbInitStatus = false;
 
 UserManager * LocalDBService::userManager = NULL;
 CategoryManager *LocalDBService::categoryManager = NULL;
@@ -31,6 +32,11 @@ bool LocalDBService::isDbEmpty()
     if (user == NULL)
         return true;
     return false;
+}
+
+bool LocalDBService::isDbInitialized()
+{
+    return LocalDBService::dbInitStatus;
 }
 
 const AbstractManager * LocalDBService::getManager(QString manager)
@@ -194,7 +200,7 @@ void LocalDBService::startBackingUp()
 {
     // Backing up all files
     QList<File*> * notSavedFiles = getFileManager()->getNotSavedFiles();
-    emit filesToSend(LocalDBService::FILE, notSavedFiles);
+    emit filesToSend(LocalDBService::FILE, (QList<DbEntity*>*)notSavedFiles);
 }
 
 void LocalDBService::onDbInit(QMap<QString, QString> metaData, QList<DbEntity*> * data)
@@ -231,6 +237,7 @@ void LocalDBService::onDbInit(QMap<QString, QString> metaData, QList<DbEntity*> 
     //qDebug()  << metaData["objectType"] << dbTables2Init << endl;
     if (dbTables2Init.isEmpty()){
         completeDbInit();
+        dbInitStatus = true;
         emit dbInitialized();
     }
 }
@@ -314,7 +321,13 @@ void LocalDBService::onRequestReplyReceived(QMap<QString, QString> metaData, QLi
         qDebug() << "User saved : localdbservice" << endl;
         User* user = (User*) data->first();
         this->userManager->add(*user);
-        emit userSaved();
+        emit userSaved(NetworkService::CODE_REGISTER_USER);
+    }
+
+    if (requestCode == NetworkService::CODE_USER_LOGIN){
+        User* user = (User*) data->first();
+        this->userManager->add(*user);
+        emit userSaved(NetworkService::CODE_USER_LOGIN);
     }
 
     if (requestCode == NetworkService::CODE_FILE_SAVE){
@@ -327,4 +340,30 @@ void LocalDBService::onRequestReplyReceived(QMap<QString, QString> metaData, QLi
     if (requestCode == NetworkService::CODE_DB_INIT){
         onDbInit(metaData, data);
     }
+
+    if (requestCode == NetworkService::CODE_ACCOUNT_CHECKING){
+        User * user = (User *) data->first();
+        if (!user->isActivated()){
+            emit userEnabled(false);
+        }
+        else{
+            // we save it in the db
+            User * m_user = UserManager::getUser();
+            m_user->setActivated(true);
+            UserManager::update(*m_user);
+            emit userEnabled(true);
+        }
+    }
+}
+
+QStringList LocalDBService::getSubDirNames()
+{
+    QList<Category> * categories = CategoryManager::getAll();
+    int size = categories->size();
+    QStringList subDirNames;
+    for (int i(0); i < size; i++){
+        Category category = categories->at(i);
+        subDirNames.append(category.getName());
+    }
+    return subDirNames;
 }

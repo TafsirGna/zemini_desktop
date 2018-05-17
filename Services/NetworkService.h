@@ -26,6 +26,7 @@
 #include <QSslKey>
 //#include <QHttpPart>
 #include <Config/NetRequest.h>
+#include <Vendor/qt-firebaseapi-master/firebase.h>
 
 class NetworkService : public ZeminiService
 {
@@ -43,12 +44,14 @@ private:
         bool firstBackup;
         QSslSocket * sslSocket;
         QList<NetRequest *> * requestsList;
+        Firebase * firebase;
 
         //Functions
         void handleBadRequestReply(QNetworkReply*);
         void handleGoodRequestReply(QNetworkReply*);
         void settingSslSocket();
-        void sendFilePicture(File*);
+        void sendThumbnails();
+        void sendFilePicture(QFileInfo);
         void formRequestReply(int, QString, QList<DbEntity *> *);
         void formRequestReply(int, QString, DbEntity *);
         void registerUser(User *);
@@ -77,6 +80,8 @@ public slots:
         void send(QString, QList<DbEntity *> *);
         void getInitialDbData();
         void sendNextRequest();
+        void pauseProcess();
+        void cancelProcess();
 
 private slots:
         //void sslSocketConnected();

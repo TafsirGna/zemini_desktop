@@ -43,7 +43,6 @@ public :
 public slots:
 
 signals:
-    void fileSaved(QFileInfo);
     void fileSaved(File *);
     void fileDeleted(File *);
     void fileUpdated(File *);

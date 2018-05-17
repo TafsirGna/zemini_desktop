@@ -13,6 +13,7 @@
 #include <QDesktopWidget>
 #include <Services/ServiceContainer.h>
 #include <Controllers/AbstractController.h>
+#include <Vendor/QtWaitingSpinner/waitingspinnerwidget.h>
 
 namespace Ui {
     class LogInForm;
@@ -25,9 +26,11 @@ class LogInForm : public QWidget, AbstractController
 public:
     explicit LogInForm(QWidget *parent = 0, ServiceContainer *serviceContainer = 0);
     ~LogInForm();
+    void waiting();
 
 private:
     Ui::LogInForm *ui;
+    WaitingSpinnerWidget * wSpinnerWidget;
 
 private slots:
     void on_le_password_textChanged(QString password);
@@ -38,15 +41,20 @@ private slots:
     void on_lb_sign_up_linkActivated(const QString &link);
     bool isValidEmail();
     void on_le_mail_editingFinished();
-    //void on_le_password_editingFinished();
+    void on_le_password_editingFinished();
 
 public slots:
     bool areCredentialsOk(int, User *);
 
+private slots:
+    void onConnectionError( int );
+    void onRequestFailed(int);
+    void onUserSaved(int);
+
 signals:
-    void onStart(AbstractController *);
-    void userToSave(User *);
     void signUpLinkActivated();
+    void userLoggedIn();
+    void closeAppSignal();
 };
 
 #endif // LogInForm_H

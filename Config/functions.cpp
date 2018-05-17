@@ -21,6 +21,46 @@ User * Functions::fromJsonToUser(QMap<QString, QVariant> map)
     return user;
 }
 
+double Functions::fromOctect2Ko(int size)
+{
+    return (size/pow(1024, 2));
+}
+
+double Functions::fromOctect2Mo(int size)
+{
+    return (size/pow(1024, 2));
+}
+
+double Functions::fromOctect2Go(int size)
+{
+    return size/(size/pow(1024, 3));
+}
+
+QMap<QString, QString> Functions::fromOctect2Normal(int size)
+{
+    QMap<QString, QString> map;
+    if (size > pow(1024,3)){
+        map.insert("label", "Go");
+        map.insert("value", QString::number(fromOctect2Go(size)));
+        return map;
+    }
+    else if (size > pow(1024,2)){
+        map.insert("label", "Mo");
+        map.insert("value", QString::number(fromOctect2Mo(size)));
+        return map;
+    }
+    else if (size > 1024){
+        map.insert("label", "Ko");
+        map.insert("value", QString::number(fromOctect2Ko(size)));
+        return map;
+    }
+    else{
+        map.insert("label", "o");
+        map.insert("value", QString::number(size));
+        return map;
+    }
+}
+
 /**
  * @brief isEmailValid
  * @param email
@@ -125,6 +165,11 @@ QFileInfo *Functions::generateThumbnails(QFileInfo fileInfo)
 
     if (isImageFile(fileInfo)){
         return NULL;
+    }
+
+    try {
+
+    } catch (...) {
     }
 
     // if it's not a either a video or an image then we extract the file type's icon out of it

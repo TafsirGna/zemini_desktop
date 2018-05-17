@@ -50,6 +50,7 @@ RegisterForm::RegisterForm(QWidget *parent, ServiceContainer *serviceContainer) 
     QWidget::connect(localDbService, SIGNAL(dbInitialized()), this, SLOT(onDbInitialized()));
     QWidget::connect(networkService, SIGNAL(connectionError(int)), this, SLOT(onConnectionError(int)));
     QWidget::connect(networkService, SIGNAL(requestFailed(int)), this, SLOT(onRequestFailed(int)));
+    QWidget::connect(localDbService, SIGNAL(userSaved(int)), this, SLOT(onUserSaved(int)));
     networkService->getInitialDbData();
 
     initDbTimer = new QTimer(this);
@@ -100,16 +101,26 @@ void RegisterForm::on_bt_next_clicked()
 void RegisterForm::on_le_username_textChanged(const QString &arg1)
 {
     // i remove every sign of error previously set
+    if (ui->lb_error_text->isVisible() || ui->lb_error_text->text() == "Error connection"){
+        return;
+    }
+
     removeErrorSignes(ui->lb_username, ui->le_username);
 }
 
 void RegisterForm::on_le_mail_textChanged(const QString &arg1)
 {
+    if (ui->lb_error_text->isVisible() || ui->lb_error_text->text() == "Error connection"){
+        return;
+    }
     removeErrorSignes(ui->lb_mail, ui->le_mail);
 }
 
 void RegisterForm::on_le_password_textChanged(const QString &arg1)
 {
+    if (ui->lb_error_text->isVisible() || ui->lb_error_text->text() == "Error connection"){
+        return;
+    }
     removeErrorSignes(ui->lb_password, ui->le_password);
 }
 
@@ -208,11 +219,20 @@ void RegisterForm::onConnectionError(int requestCode)
     }
 }
 
-void RegisterForm::onUserSaved()
+void RegisterForm::onUserSaved(int code)
 {
-    // getting the folder in which all the files and directories will be tracked
-    QString selectedDirPath = QFileDialog::getExistingDirectory(0, tr("Open directory"), QDir::homePath(), QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-    setUserFolder(QDir(selectedDirPath));
+    if (code != NetworkService::CODE_REGISTER_USER)
+        return;
+
+    wSpinnerWidget->start();
+    if (DirectoryService::setUserFolder(this)){
+        wSpinnerWidget->stop();
+        emit userRegistered();
+        return;
+    }
+    //QMessageBox::critical(this, "Zemini Info", "An error occured when setting your folder.");
+    wSpinnerWidget->stop();
+    this->hide();
 }
 
 void RegisterForm::onDbInitialized()
@@ -248,36 +268,4 @@ void RegisterForm::onRequestFailed(int code)
         ui->le_password->setStyleSheet("border-color: red; border-width: 1px; border-style: solid; font-family: Palatino Linotype; font-size: 13px;");
     }
     wSpinnerWidget->stop();
-}
-
-bool RegisterForm::setUserFolder(QDir rootDir)
-{
-    wSpinnerWidget->start();
-
-    // making the directories following the categories
-    QStringList subDirNames = getSubDirNames();
-    if (((DirectoryService * ) this->serviceContainer->getService(ZeminiService::FileSystem))->initFolder(rootDir, subDirNames)){
-        QMap<QString, QString> parameters;
-        parameters.insert("tableName", LocalDBService::APP_DATA);
-        ((LocalDBService * ) this->serviceContainer->getService(ZeminiService::LocalDatabase))->save(parameters, new AppData(AppDataManager::STORAGE_DIR_KEY, rootDir.absolutePath()+"/"+Parameters::ROOT_DIR_NAME));
-        wSpinnerWidget->stop();
-        emit userRegistered();
-        this->hide();
-        return true;
-    }
-    this->hide();
-    return false;
-}
-
-QStringList RegisterForm::getSubDirNames()
-{
-    CategoryManager * categoryManager = (CategoryManager *) localDbService->getManager(LocalDBService::CATEGORY);
-    QList<Category> * categories = categoryManager->getAll();
-    int size = categories->size();
-    QStringList subDirNames;
-    for (int i(0); i < size; i++){
-        Category category = categories->at(i);
-        subDirNames.append(category.getName());
-    }
-    return subDirNames;
 }

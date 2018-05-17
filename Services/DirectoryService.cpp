@@ -7,6 +7,7 @@
 DirectoryService::DirectoryService()
 {
     fsWatchers = new QList<QFileSystemWatcher*>();
+    active = false;
 }
 
 /**
@@ -14,6 +15,7 @@ DirectoryService::DirectoryService()
  */
 void DirectoryService::start()
 {
+    active = true;
     watchZeminiFolder();
 }
 
@@ -41,8 +43,10 @@ void DirectoryService::watchZeminiFolder()
     fsWatchers->append(new QFileSystemWatcher());
     connect(fsWatchers->last(), SIGNAL(directoryChanged(QString)), this, SLOT(handleDirChanges(QString)));
     connect(fsWatchers->last(), SIGNAL(fileChanged(QString)), this, SLOT(handleFileChanges(QString)));
+    emit startWatchingRootDir();
+
     while(true){
-        //qDebug() << currentObject.absoluteFilePath() << endl;
+        qDebug() << "test : " << currentObject.absoluteFilePath() << endl;
         emit storeInDb(currentObject);
 
         QMap<QString, QString> parameters;
@@ -67,8 +71,9 @@ void DirectoryService::watchZeminiFolder()
  * @brief DirectoryService::watchFile
  * @param fileInfo
  */
-void DirectoryService::watchFile(QFileInfo fileInfo)
+void DirectoryService::watchFile(File *file)
 {
+    QFileInfo fileInfo(file->getAbsolutePath());
     qDebug() << "watching "+fileInfo.fileName() << endl;
     bool added = fsWatchers->last()->addPath(fileInfo.absoluteFilePath());
     if (!added){
@@ -78,6 +83,17 @@ void DirectoryService::watchFile(QFileInfo fileInfo)
         fsWatchers->last()->addPath(fileInfo.absoluteFilePath());
     }
     qDebug() << "Added successfully" << endl;
+}
+
+void DirectoryService::stop()
+{
+    int list_size = fsWatchers->size();
+    for (int i(0); i < list_size; i++){
+        QFileSystemWatcher * fsWatcher = fsWatchers->at(i);
+        delete(fsWatcher);
+    }
+
+    active = false;
 }
 
 // building all the structure of the user storage directory
@@ -165,3 +181,69 @@ void DirectoryService::handleFileChanges(QString filePath)
         emit fileDeleted(fileInfo);
     }
 }
+
+bool DirectoryService::setUserFolder(QWidget* parent)
+{
+    bool go_On;
+    QString selectedDirPath;
+
+    do {
+        selectedDirPath = QFileDialog::getExistingDirectory(parent, tr("Open directory"), QDir::homePath(), QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+        qDebug() << "Select folder : " << selectedDirPath << endl;
+        go_On = ((selectedDirPath == "") ? true : false);
+        if (go_On){
+            int response = QMessageBox::information(parent, "Zemini Info", "It seems you have not choosen a directory. Do you want to try again?", QMessageBox::Yes, QMessageBox::No);
+            go_On = ((response == QMessageBox::Yes) ? true : false);
+        }
+    } while (go_On);
+
+    if (!go_On && selectedDirPath == ""){
+        parent->close();
+        return false;
+    }
+
+    // making the directories following the categories
+    QStringList subDirNames = LocalDBService::getSubDirNames();
+    if (initFolder(QDir(selectedDirPath), subDirNames)){
+        QMap<QString, QString> parameters;
+        parameters.insert("tableName", LocalDBService::APP_DATA);
+        LocalDBService::save(parameters, new AppData(AppDataManager::STORAGE_DIR_KEY, QDir(selectedDirPath).absolutePath()+"/"+Parameters::ROOT_DIR_NAME));
+        qDebug() << "root folder inserted" << endl;
+        return true;
+    }
+    return false;
+}
+
+bool DirectoryService::isActive()
+{
+    return active;
+}
+
+int DirectoryService::getDirSize(QDir rootDir)
+{
+    int dirSize = 0;
+    QFileInfoList queue;
+    QFileInfo currentNode(rootDir.absolutePath()) ;
+    while(true){
+        // if the root directory is a file then
+        if (currentNode.isFile()){
+            dirSize += currentNode.size();
+        }
+        else{
+            //otherwise
+            queue += QDir(currentNode.absoluteFilePath()).entryInfoList(QDir::Files | QDir::NoSymLinks | QDir::AllDirs | QDir::NoDotAndDotDot);
+            //QMessageBox::information(0, "ok", QString::number(queue.size()));
+        }
+        if (queue.isEmpty())
+            return dirSize;
+        currentNode = queue.last();
+        queue.removeLast();
+    }
+}
+
+/*
+void DirectoryService::setTrayIcon(QSystemTrayIcon * sysTrayIcon)
+{
+    this->trayIcon = sysTrayIcon;
+}
+*/

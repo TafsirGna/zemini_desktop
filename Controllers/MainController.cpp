@@ -4,55 +4,124 @@
 MainController::MainController()
 {
     serviceContainer = new ServiceContainer();
+    registerForm = NULL;
+    logInForm = NULL;
 
     // Variable that determine if it's the first launch
     firstLaunch = false;
+    //filesDoneSize = 0;
     screenShotTimer = new QTimer(this);
 
     // Initialization of all the forms
-    registerForm = new RegisterForm(0, this->serviceContainer);
-    logInForm = new LogInForm(0, this->serviceContainer);
+    if (!installationCompleted()){
+        registerForm = new RegisterForm(0, this->serviceContainer);
+        logInForm = new LogInForm(0, this->serviceContainer);
+
+        QWidget::connect(registerForm,SIGNAL(logInLinkActivated()),this,SLOT(showLogInForm()));
+        QWidget::connect(logInForm, SIGNAL(signUpLinkActivated()), this, SLOT(showRegisterForm()));
+        QWidget::connect(logInForm, SIGNAL(closeAppSignal()), this, SLOT(close()));
+        QWidget::connect(logInForm, SIGNAL(userLoggedIn()), this, SLOT(start()));
+        QWidget::connect(registerForm, SIGNAL(userRegistered()), this, SLOT(start()));
+    }
+
+    aboutForm = new AboutForm(0);
+    uploadingForm = new UploadingForm(0, this->serviceContainer);
     trayIcon = new QSystemTrayIcon();
 
     //Setting connections with the child threads
-    QWidget::connect(registerForm,SIGNAL(logInLinkActivated()),this,SLOT(showLogInForm()));
     QWidget::connect(((DirectoryService *)this->serviceContainer->getService(ZeminiService::FileSystem)), SIGNAL(dirUpdated(QFileInfo)), ((LocalDBService *)this->getService(ZeminiService::LocalDatabase)), SLOT(saveFileUpdate(QFileInfo)));
     QWidget::connect(((DirectoryService *)this->serviceContainer->getService(ZeminiService::FileSystem)), SIGNAL(rootFolderOnWatching()), ((LocalDBService *)this->getService(ZeminiService::LocalDatabase)), SLOT(startBackingUp()));
     QWidget::connect(((DirectoryService *)this->serviceContainer->getService(ZeminiService::FileSystem)), SIGNAL(fileUpdated(QFileInfo)), ((LocalDBService *)this->getService(ZeminiService::LocalDatabase)), SLOT(saveFileUpdate(QFileInfo)));
+    //QWidget::connect(((DirectoryService *)this->serviceContainer->getService(ZeminiService::FileSystem)), SIGNAL(startWatchingRootDir()), this, SLOT(onStartWatchingRootDir()));
+    QWidget::connect(((DirectoryService *)this->serviceContainer->getService(ZeminiService::FileSystem)), SIGNAL(startWatchingRootDir()), uploadingForm, SLOT(onStartWatchingRootDir()));
     QWidget::connect(((DirectoryService *)this->serviceContainer->getService(ZeminiService::FileSystem)), SIGNAL(fileDeleted(QFileInfo)), ((LocalDBService *)this->getService(ZeminiService::LocalDatabase)), SLOT(saveFileDeletion(QFileInfo)));
-    QWidget::connect(logInForm, SIGNAL(signUpLinkActivated()), this, SLOT(showRegisterForm()));
-    QWidget::connect(logInForm, SIGNAL(userToSave(User*)), ((LocalDBService *)this->getService(ZeminiService::LocalDatabase)), SLOT(save(User *)));
-    QWidget::connect(registerForm, SIGNAL(userRegistered()), ((LocalDBService *)this->getService(ZeminiService::LocalDatabase)), SLOT(start()));
     QWidget::connect(((NetworkService *)this->serviceContainer->getService(ZeminiService::Network)), SIGNAL(requestReplyReceived(QMap<QString,QString>,QList<DbEntity*>*)), ((LocalDBService*)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SLOT(onRequestReplyReceived(QMap<QString,QString>,QList<DbEntity*>*)));
-    QWidget::connect(((LocalDBService *)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SIGNAL(userSaved()), registerForm, SLOT(onUserSaved()));
     //QWidget::connect(((LocalDBService *)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SIGNAL(dbTableInitialized()), ((NetworkService *)this->serviceContainer->getService(ZeminiService::Network)), SLOT(getInitialDbData()));
     QWidget::connect(((DirectoryService *)this->serviceContainer->getService(ZeminiService::FileSystem)), SIGNAL(dirDeleted(QFileInfo)), ((LocalDBService*)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SLOT(saveFileDeletion(QFileInfo)));
-    QWidget::connect(((LocalDBService *)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SIGNAL(filesToSend(QString, QList<File *>*)), ((NetworkService *)this->serviceContainer->getService(ZeminiService::Network)), SLOT(send(QString, QList<File*>*)));
-    QWidget::connect((FileManager*)((LocalDBService *)this->serviceContainer->getService(ZeminiService::LocalDatabase))->getManager(LocalDBService::FILE), SIGNAL(fileSaved(QFileInfo)), ((DirectoryService *)this->serviceContainer->getService(ZeminiService::FileSystem)), SLOT(watchFile(QFileInfo)));
+    QWidget::connect(((LocalDBService *)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SIGNAL(filesToSend(QString, QList<DbEntity *>*)), ((NetworkService *)this->serviceContainer->getService(ZeminiService::Network)), SLOT(send(QString, QList<DbEntity*>*)));
+    QWidget::connect(((LocalDBService *)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SIGNAL(filesToSend(QString, QList<DbEntity *>*)), uploadingForm, SLOT(onStartSendingFiles(QString, QList<DbEntity *>*)));
+    QWidget::connect((FileManager*)((LocalDBService *)this->serviceContainer->getService(ZeminiService::LocalDatabase))->getManager(LocalDBService::FILE), SIGNAL(fileSaved(File *)), ((DirectoryService *)this->serviceContainer->getService(ZeminiService::FileSystem)), SLOT(watchFile(File *)));
+    //QWidget::connect((FileManager*)((LocalDBService *)this->serviceContainer->getService(ZeminiService::LocalDatabase))->getManager(LocalDBService::FILE), SIGNAL(fileSaved(File *)), this, SLOT(onFileChange(File*)));
+    //QWidget::connect((FileManager*)((LocalDBService *)this->serviceContainer->getService(ZeminiService::LocalDatabase))->getManager(LocalDBService::FILE), SIGNAL(fileUpdated(File *)), this, SLOT(onFileChange(File *)));
     QWidget::connect(trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),this, SLOT(manageActivation(QSystemTrayIcon::ActivationReason)));
     QWidget::connect(((DirectoryService *)this->serviceContainer->getService(ZeminiService::FileSystem)), SIGNAL(storeInDb(QFileInfo)), ((LocalDBService*)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SLOT(save(QFileInfo)));
     QWidget::connect(((NetworkService *)this->serviceContainer->getService(ZeminiService::Network)), SIGNAL(readyToBackUp()), ((LocalDBService*)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SLOT(startBackingUp()));
-    QWidget::connect(((NetworkService *)this->serviceContainer->getService(ZeminiService::Network)), SIGNAL(firstBackUpDone()), this, SLOT(handleFirstBackUpDone()));
+    QWidget::connect(((NetworkService *)this->serviceContainer->getService(ZeminiService::Network)), SIGNAL(firstBackUpDone()), this, SLOT(onFirstBackUpDone()));
     QWidget::connect(((NetworkService *)this->serviceContainer->getService(ZeminiService::Network)), SIGNAL(requestFailed(int)), this, SLOT(onRequestFailed(int)));
-    QWidget::connect(((NetworkService *)this->serviceContainer->getService(ZeminiService::Network)), SIGNAL(requestFailed(int)), this, SLOT(onRequestFailed(int)));
+    QWidget::connect(((NetworkService *)this->serviceContainer->getService(ZeminiService::Network)), SIGNAL(connectionError(int)), this, SLOT(onConnectionError(int)));
+    QWidget::connect(((LocalDBService *)this->serviceContainer->getService(ZeminiService::LocalDatabase)), SIGNAL(userEnabled(bool)), this, SLOT(onUserEnabled(bool)));
     QWidget::connect(screenShotTimer, SIGNAL(timeout()), this, SLOT(takeScreenShot()));
+    QWidget::connect((FileManager*)((LocalDBService *)this->serviceContainer->getService(ZeminiService::LocalDatabase))->getManager(LocalDBService::FILE), SIGNAL(fileUpdated(File *)), uploadingForm, SLOT(onFileChange(File*)));
+    QWidget::connect((FileManager*)((LocalDBService *)this->serviceContainer->getService(ZeminiService::LocalDatabase))->getManager(LocalDBService::FILE), SIGNAL(fileSaved(File *)), uploadingForm, SLOT(onFileChange(File*)));
     //QWidget::connect(trayIcon, SIGNAL(messageClicked()), this, SLOT(showDirectory()));
+
+    // setting the contextual menu
+    //building the context menu
+    QAction * openFolder = new QAction(QIcon(),tr("Open Zemini folder"),this);
+    QWidget::connect(openFolder, SIGNAL(triggered()),this, SLOT(showDirectory()));
+    QAction * openPreferences = new QAction(QIcon(),tr("Preferences..."),this);
+    QWidget::connect(openPreferences, SIGNAL(triggered()), this , SLOT(showPreferences()));
+    QAction * quitZemini = new QAction(QIcon(),tr("Quit Zemini"),this);
+    QWidget::connect(quitZemini, SIGNAL(triggered()), this , SLOT(stop()));
+    QAction * openZeminiweb = new QAction(QIcon(),"Go to Zemini Web",this);
+    QWidget::connect(openZeminiweb, SIGNAL(triggered()), this , SLOT(showZeminiWebSite()));
+    //QAction * recordScreen = new QAction(QIcon(),tr("Start recording"),this);
+    //QWidget::connect(recordScreen, SIGNAL(triggered()), this , SLOT(recordScreen()));
+    QAction * aboutZemini = new QAction(QIcon(),tr("About"),this);
+    QWidget::connect(aboutZemini, SIGNAL(triggered()), this , SLOT(showAboutForm()));
+    QAction * uploadingProcess = new QAction(QIcon(),tr("Syncing files ... (1%)"),this);
+    uploadingProcess->setEnabled(false);
+    QWidget::connect(uploadingProcess, SIGNAL(triggered()), this , SLOT(showUploadingForm()));
+
+    QMenu * contextMenu = new QMenu();
+    contextMenu->addAction(openFolder);
+    //contextMenu->addAction(recordScreen);
+    contextMenu->addAction(contextMenu->addSeparator());
+    contextMenu->addAction(openPreferences);
+    contextMenu->addAction(openZeminiweb);
+    contextMenu->addAction(uploadingProcess);
+    contextMenu->addAction(contextMenu->addSeparator());
+    contextMenu->addAction(aboutZemini);
+    contextMenu->addAction(quitZemini);
+
+    //Setting the context menu to the system tray entrie
+    trayIcon->setContextMenu(contextMenu);
+    trayIcon->setIcon(QIcon(Parameters::refreshingIconLocation));
+    trayIcon->setToolTip("Zemini "+Parameters::APP_VERSION +" \nConnecting...");
+
+    uploadingForm->setTrayIcon(trayIcon);
+
+    //((DirectoryService *)this->serviceContainer->getService(ZeminiService::FileSystem))->setTrayIcon(trayIcon);
+    //((NetworkService *)this->serviceContainer->getService(ZeminiService::Network))->setTrayIcon(trayIcon);
 }
 
 void MainController::start()
 {
+    qDebug() << "Starting 1" << endl;
+
     if (!installationCompleted()){
         //complete zemini installation
         firstLaunch = true;
         completeInstallation();
     }
     else{
+
+        // have to do that before continuing
+        if (registerForm != NULL && logInForm != NULL){
+            delete(registerForm);
+            delete(logInForm);
+        }
+
         LocalDBService * localDbService = (LocalDBService *) this->getService(ZeminiService::LocalDatabase);
         UserManager * userManager = (UserManager *) localDbService->getManager(LocalDBService::USER);
+        Parameters::THUMBS_DIR_PATH = AppDataManager::getByKey(AppDataManager::STORAGE_DIR_KEY)->getValue()+"/"+Parameters::THUMBS_DIR_NAME;
 
         User * user = userManager->getUser();
         // if the user account is not activated
+        qDebug() << "Starting 2" << endl;
+        ((NetworkService *) this->getService(ZeminiService::Network))->setUser(user);
         if (!user->isActivated()){
+            qDebug() << "Starting 3" << endl;
             checkAccountConfirmation();
         }
         else{
@@ -62,10 +131,9 @@ void MainController::start()
                 trayIcon->showMessage(title, message);
             }
 
-            ((NetworkService *) this->getService(ZeminiService::Network))->setUser(user);
-            //((NetworkService *) this->getService(ZeminiService::Network))->getFreshDbData();
             DirectoryService * directoryService = (DirectoryService *)this->getService(ZeminiService::FileSystem);
             // noticing to the user that we're starting watching the root folder
+            trayIcon->show();
             directoryService->start();
         }
     }
@@ -82,11 +150,18 @@ void MainController::showDirectory()
     QDesktopServices::openUrl(QUrl::fromLocalFile(dirPath.replace("\\","/")));
 }
 
+void MainController::showAboutForm()
+{
+    aboutForm->show();
+    qDebug() << "ok" << endl;
+}
+
 
 /***    this manages events related to the activation of the system tray entrie ***/
 void MainController::manageActivation(QSystemTrayIcon::ActivationReason reason)
 {
-    trayIcon->contextMenu()->move(QCursor::pos());
+    QPoint point(QCursor::pos().x(), QCursor::pos().y()-125);
+    trayIcon->contextMenu()->move(point);
     trayIcon->contextMenu()->show();
 }
 
@@ -111,15 +186,42 @@ void MainController::showZeminiWebSite()
     QDesktopServices::openUrl(QUrl(Parameters::WEB_SITE));
 }
 
-void MainController::showUploadingDialog()
+void MainController::showUploadingForm()
 {
-
+    uploadingForm->show();
 }
 
 /***            Once, the user installs the sofware, at the first launch he must complete the pocedure by supplying some informations           ***/
 void MainController::completeInstallation()
-{
-    registerForm->show();
+{    
+    // Two ways to check the completeness of the installation
+    // First, the database status
+    if (((LocalDBService * ) this->getService(ZeminiService::LocalDatabase))->isDbEmpty()){
+        registerForm->show();
+        return;
+    }
+
+    //deleting the stuff , i don't need anymore before continuing the process
+    registerForm->close();
+    delete(registerForm);
+
+    // Second, the zemini directory status
+    QMap<QString, QString> parameters;
+    parameters.insert("tableName", LocalDBService::APP_DATA);
+    parameters.insert("id", AppDataManager::STORAGE_DIR_KEY);
+    AppData * appData = (AppData *)LocalDBService::getOneBy(parameters);
+
+    if (appData == NULL){
+        logInForm->show();
+        logInForm->waiting();
+        if (!DirectoryService::setUserFolder(logInForm)){
+            //qDebug() << "end app" << endl;
+            qApp->quit();
+        }
+        else{
+            start();
+        }
+    }
 }
 
 void MainController::showLogInForm()
@@ -160,46 +262,6 @@ void MainController::stop()
     localDbService->update(new AppData(AppData::LAST_EXIT, QDateTime::currentDateTime().toString(Parameters::timeFormat)));
 
     close();
-}
-
-/**
- * @brief MainController::displayTrayIcon
- * @return
- */
-bool MainController::displayTrayIcon()
-{
-    //building the context menu
-    QAction * openFolder = new QAction(QIcon(),tr("Open Zemini folder"),this);
-    QWidget::connect(openFolder, SIGNAL(triggered()),this, SLOT(showDirectory()));
-    QAction * openPreferences = new QAction(QIcon(),tr("Preferences..."),this);
-    QWidget::connect(openPreferences, SIGNAL(triggered()), this , SLOT(showPreferences()));
-    QAction * quitZemini = new QAction(QIcon(),tr("Quit Zemini"),this);
-    QWidget::connect(quitZemini, SIGNAL(triggered()), this , SLOT(stop()));
-    QAction * openZeminiweb = new QAction(QIcon(),"Go to Zemini Web",this);
-    QWidget::connect(openZeminiweb, SIGNAL(triggered()), this , SLOT(showZeminiWebSite()));
-    //QAction * recordScreen = new QAction(QIcon(),tr("Start recording"),this);
-    //QWidget::connect(recordScreen, SIGNAL(triggered()), this , SLOT(recordScreen()));
-    QAction * aboutZemini = new QAction(QIcon(),tr("Start recording"),this);
-    QWidget::connect(aboutZemini, SIGNAL(triggered()), this , SLOT(showAboutDialog()));
-    QAction * uploadingProcess = new QAction(QIcon(),tr("Uploading files ... (1%)"),this);
-    QWidget::connect(uploadingProcess, SIGNAL(triggered()), this , SLOT(showUploadingDialog()));
-
-    QMenu * contextMenu = new QMenu();
-    contextMenu->addAction(openFolder);
-    //contextMenu->addAction(recordScreen);
-    contextMenu->addAction(contextMenu->addSeparator());
-    contextMenu->addAction(openPreferences);
-    contextMenu->addAction(openZeminiweb);
-    contextMenu->addAction(contextMenu->addSeparator());
-    contextMenu->addAction(uploadingProcess);
-    contextMenu->addAction(aboutZemini);
-    contextMenu->addAction(quitZemini);
-
-    //Setting the context menu to the system tray entrie
-    trayIcon->setContextMenu(contextMenu);
-    trayIcon->setIcon(QIcon(Parameters::refreshingIconLocation));
-    trayIcon->setToolTip("Zemini "+Parameters::APP_VERSION +" \nStarting...");
-    trayIcon->show();
 }
 
 ZeminiService * MainController::getService(QString service)
@@ -286,9 +348,9 @@ void MainController::takeScreenShot()
 }
 
 /**
- * @brief MainController::handleFirstBackUpDone
+ * @brief MainController::onFirstBackUpDone
  */
-void MainController::handleFirstBackUpDone()
+void MainController::onFirstBackUpDone()
 {
     QString title = "Zemini Info";
     QString message = "First backup done.";
@@ -299,34 +361,38 @@ void MainController::handleFirstBackUpDone()
 void MainController::onRequestFailed(int requestCode)
 {
     if (requestCode == NetworkService::CODE_ACCOUNT_CHECKING){
-
+        //The way to handle this error is the same with the one to handle the connection error
+        onConnectionError(NetworkService::CODE_ACCOUNT_CHECKING);
     }
 }
 
-void MainController::onRequestReplyReceived(QMap<QString, QString> metaData, QList<DbEntity *> * data)
+void MainController::onConnectionError(int code)
 {
-    int requestCode = metaData["code"].toInt();
-    if (requestCode == NetworkService::CODE_ACCOUNT_CHECKING){
-        User * user = (User *) data->first();
-        if (!user->isActivated()){
-            QMessageBox::information(this, "Zemini", "Before fully enjoy Zemini, we invite you to check the email we've sent to you. Thanks!", QMessageBox::Ok);
-        }
-        else{
-            // we save it in the db
-            LocalDBService * localDbService = (LocalDBService *) this->getService(ZeminiService::LocalDatabase);
-            UserManager * userManager = (UserManager *) localDbService->getManager(LocalDBService::USER);
-            User * m_user = userManager->getUser();
-            m_user->setActivated(true);
-            userManager->update(*m_user);
-        }
-
-        ((NetworkService *) this->getService(ZeminiService::Network))->setUser(user);
-        //((NetworkService *) this->getService(ZeminiService::Network))->getFreshDbData();
+    //qDebug() << "test" << endl;
+    if (code == NetworkService::CODE_ACCOUNT_CHECKING){
         DirectoryService * directoryService = (DirectoryService *)this->getService(ZeminiService::FileSystem);
-        // noticing to the user that we're starting watching the root folder
-        directoryService->start();
+        if (!directoryService->isActive()){
+            QString title = "Zemini Info";
+            QString message = "It seems you are not connected to Internet!";
+            trayIcon->showMessage(title, message);
+
+            // noticing to the user that we're starting watching the root folder
+            trayIcon->show();
+            directoryService->start();
+        }
+        QTimer::singleShot(Parameters::CHECK_CON_TIME_OUT, this, SLOT(checkAccountConfirmation()));
+    }
+}
+
+void MainController::onUserEnabled(bool enabled)
+{
+    if (!enabled){
+        QMessageBox::information(this, "Zemini", "Before fully enjoy Zemini, we invite you to check the email we've sent to you. Thanks!", QMessageBox::Ok);
     }
 
+    DirectoryService * directoryService = (DirectoryService *)this->getService(ZeminiService::FileSystem);
+    trayIcon->show();
+    directoryService->start();
 }
 
 QImage  MainController::cvMatToQImage( const cv::Mat &inMat )
@@ -420,4 +486,36 @@ void MainController::checkAccountConfirmation()
 {
     ((NetworkService *)this->serviceContainer->getService(ZeminiService::Network))->checkUserAccount();
 }
+
+/*
+void MainController::onStartWatchingRootDir()
+{
+    QMenu * contextMenu = trayIcon->contextMenu();
+    QAction *menuAction = contextMenu->actions().at(4);
+    menuAction->setEnabled(true); //enabling the context menu action
+
+    menuAction->setText("Preparing ...");
+    totalSize = Functions::fromOctect2Ko(DirectoryService::getDirSize(QDir(AppDataManager::getByKey(AppDataManager::STORAGE_DIR_KEY)->getValue())));
+    filesDoneSize = 0;
+
+    menuAction->setText("Saving files ... 0%");
+
+    //QMessageBox::information(0, "ok", QString::number(totalSize));
+}
+
+void MainController::onFileChange(File *file)
+{
+    QFileInfo fileInfo(file->getAbsolutePath());
+    if (fileInfo.isFile()){
+        QMenu * contextMenu = trayIcon->contextMenu();
+        QAction *menuAction = contextMenu->actions().at(4);
+
+        filesDoneSize += Functions::fromOctect2Ko(fileInfo.size());
+        int percentage =  ((filesDoneSize * 100 )/ totalSize);
+        //qDebug()  << percentage << " / " << filesDoneSize  << totalSize << endl;
+        //QMessageBox::information(0, "zem", QString::number(filesDoneSize)+" "+QString::number(percentage));
+        menuAction->setText("Saving files ... "+QString::number(percentage)+"%");
+    }
+}
+*/
 

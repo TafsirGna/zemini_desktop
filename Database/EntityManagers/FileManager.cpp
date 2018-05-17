@@ -83,8 +83,8 @@ File* FileManager::add(File * file)
         qDebug() << "Failed to save a file " << sqlQuery.lastError().text() << endl;
         return NULL;
     }
-    //printAllFiles();
-    emit fileSaved(QFileInfo(file->getAbsolutePath()));
+
+    emit fileSaved(file);
 
     QMap<QString, QString> fileProperties;
     fileProperties.insert("filename", file->getFileName());
@@ -275,9 +275,8 @@ Drive *FileManager::getDrive()
  */
 File *FileManager::convertToFile(QFileInfo fileInfo)
 {
-    qDebug() << "Printing all " << endl;
-    printAll();
-
+    //qDebug() << "Printing all " << endl;
+    //printAll();
     File * savedFile = getFileAt(fileInfo);
     File * file = NULL;
     if (savedFile != NULL){

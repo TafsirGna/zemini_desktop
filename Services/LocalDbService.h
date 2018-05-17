@@ -26,6 +26,7 @@ private :
     static DriveTypeManager * driveTypeManager;
     static DriveManager * driveManager;
     static FileFormatManager * fileFormatManager;
+    static bool dbInitStatus;
 
     QStringList dbTables2Init;
 
@@ -60,12 +61,14 @@ public:
 
     // Getters
     static bool isDbEmpty();
+    static bool isDbInitialized();
     const static AbstractManager * getManager(QString);
     static DbEntity * save(QMap<QString, QString>, DbEntity *);
     static  bool update(AppData * );
     void onDbInit(QMap<QString, QString>, QList<DbEntity*> *);
     static void completeDbInit();
     static DbEntity * getOneBy(QMap<QString, QString>);
+    static QStringList getSubDirNames();
 
 public slots:
     bool save(QFileInfo);
@@ -76,8 +79,9 @@ public slots:
     void onRequestReplyReceived(QMap<QString,QString>,QList<DbEntity*>*);
 
 signals:
-    void filesToSend(QString, QList<File*>*);
-    void userSaved();
+    void filesToSend(QString, QList<DbEntity*>*);
+    void userSaved(int);
+    void userEnabled(bool);
     void dbInitialized();
 
 };

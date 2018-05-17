@@ -12,6 +12,7 @@
 #include <Database/Entities/DbEntity.h>
 #include <QImage>
 #include <QBuffer>
+#include <Database/EntityManagers/AppDataManager.h>
 
 using namespace std;
 
