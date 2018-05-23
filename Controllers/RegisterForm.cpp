@@ -95,7 +95,7 @@ void RegisterForm::on_bt_next_clicked()
     QList<DbEntity*> * data = new QList<DbEntity*>();
     data->append(user);
     wSpinnerWidget->start();
-    networkService->send(LocalDBService::USER, data);
+    networkService->send(Parameters::DB_USER, data);
 }
 
 void RegisterForm::on_le_username_textChanged(const QString &arg1)
@@ -196,7 +196,7 @@ void RegisterForm::resumeDbInit()
 
 void RegisterForm::onConnectionError(int requestCode)
 {
-    if (requestCode == NetworkService::CODE_DB_INIT){
+    if (requestCode == Parameters::CODE_DB_INIT){
         // dismiss the loading spinner
         wSpinnerWidget->stop();
 
@@ -221,7 +221,7 @@ void RegisterForm::onConnectionError(int requestCode)
 
 void RegisterForm::onUserSaved(int code)
 {
-    if (code != NetworkService::CODE_REGISTER_USER)
+    if (code != Parameters::CODE_REGISTER_USER)
         return;
 
     wSpinnerWidget->start();
@@ -254,7 +254,7 @@ void RegisterForm::onDbInitialized()
 void RegisterForm::onRequestFailed(int code)
 {
     //qDebug() << "Handling request failure signal " << code << endl;
-    if (code == NetworkService::CODE_REGISTER_USER){
+    if (code == Parameters::CODE_REGISTER_USER){
         ui->lb_error_text->setText("Check your credentials");
         ui->lb_error_text->setVisible(true);
 

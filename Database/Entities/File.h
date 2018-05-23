@@ -22,6 +22,7 @@ private:
     int id;
     QDateTime createdAt;
     QDateTime updatedAt;
+    QDateTime addedAt;
     QString path;
     QString fileName;
     int size;
@@ -35,7 +36,7 @@ private:
 public:
     //Constructors
     File();
-    File(int id, QString fileName, QString path, QDateTime createdAt, QDateTime updatedAt, int size, int status, QFileInfo *thumbnail, FileType * type, Category * category, File * folder, Drive * drive);
+    File(int id, QString fileName, QString path, QDateTime createdAt, QDateTime addedAt, QDateTime updatedAt, int size, int status, QFileInfo *thumbnail, FileType * type, Category * category, File * folder, Drive * drive);
     File(const File & file);
     File & operator =(const File & file);
 
@@ -51,6 +52,8 @@ public:
     int getSize() const;
     QFileInfo *getThumbnail() const;
     QString getAbsolutePath() const;
+    bool isFile() const;
+    bool isDir() const;
 
     //Setters
     void setId(int id);
@@ -77,6 +80,8 @@ public:
     void setStatus(bool value);
     Drive *getDrive() const;
     void setDrive(Drive *value);
+    QDateTime getAddedAt() const;
+    void setAddedAt(const QDateTime &value);
 };
 
 #endif // CLASSFILE_H

@@ -11,7 +11,7 @@
 #include <Database/EntityManagers/DriveManager.h>
 #include <Database/EntityManagers/FileFormatManager.h>
 #include <Database/EntityManagers/FileManager.h>
-#include <Services/NetworkService.h>
+#include <QTimer>
 
 class LocalDBService: public ZeminiService
 {
@@ -29,6 +29,7 @@ private :
     static bool dbInitStatus;
 
     QStringList dbTables2Init;
+    int nbFiles2Send;
 
     // Some getters
     static UserManager * getUserManager();
@@ -43,18 +44,6 @@ private :
 protected:
 
 public:
-
-    //Constants
-    const static QString USER;
-    const static QString CATEGORY;
-    const static QString TYPE;
-    const static QString FILE;
-    const static QString FILE_TYPE;
-    const static QString APP_DATA;
-    const static QString DRIVE_TYPE;
-    const static QString DRIVE;
-    const static QString FILE_FORMAT;
-    const static QStringList INIT_DATA_LIST;
 
     //Builder
     LocalDBService();
@@ -83,6 +72,6 @@ signals:
     void userSaved(int);
     void userEnabled(bool);
     void dbInitialized();
-
+    void fileBackedUp(File *);
 };
 #endif // LOCALDBSERVICE_H

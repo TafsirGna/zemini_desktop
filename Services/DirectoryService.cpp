@@ -8,6 +8,8 @@ DirectoryService::DirectoryService()
 {
     fsWatchers = new QList<QFileSystemWatcher*>();
     active = false;
+    stopSaving = false;
+    pauseSaving = false;
 }
 
 /**
@@ -24,13 +26,14 @@ void DirectoryService::start()
  */
 void DirectoryService::watchZeminiFolder()
 {
+    FileManager::deleteAll();
     // i start going through all files and directories to store and track them
     QMap<QString, QString> parameters;
-    parameters.insert("tableName", LocalDBService::APP_DATA);
+    parameters.insert("tableName", Parameters::DB_APP_DATA);
     parameters.insert("id", AppDataManager::STORAGE_DIR_KEY);
 
     QDir root_dir(((AppData *)LocalDBService::getOneBy(parameters))->getValue());
-    QFileInfoList * queue = new QFileInfoList();
+    queue = new QFileInfoList();
     (*queue) += root_dir.entryInfoList(QDir::Files | QDir::NoSymLinks | QDir::AllDirs | QDir::NoDotAndDotDot);
 
     if (queue->size() == 0){
@@ -46,11 +49,20 @@ void DirectoryService::watchZeminiFolder()
     emit startWatchingRootDir();
 
     while(true){
+
+        if (pauseSaving){
+            break;
+        }
+
+        if (stopSaving){
+            queue->clear();
+            break;
+        }
         qDebug() << "test : " << currentObject.absoluteFilePath() << endl;
         emit storeInDb(currentObject);
 
         QMap<QString, QString> parameters;
-        parameters.insert("tableName", LocalDBService::APP_DATA);
+        parameters.insert("tableName", Parameters::DB_APP_DATA);
         parameters.insert("id", AppDataManager::STORAGE_DIR_KEY);
         AppData * appData = (AppData *)LocalDBService::getOneBy(parameters);
         QString thumbsDir = appData->getValue()+"/"+Parameters::THUMBS_DIR_NAME;
@@ -64,6 +76,7 @@ void DirectoryService::watchZeminiFolder()
         currentObject = (queue->last());
         queue->removeLast();
     }
+    qDebug() << "Folder on watching " << endl;
     emit rootFolderOnWatching();
 }
 
@@ -206,7 +219,7 @@ bool DirectoryService::setUserFolder(QWidget* parent)
     QStringList subDirNames = LocalDBService::getSubDirNames();
     if (initFolder(QDir(selectedDirPath), subDirNames)){
         QMap<QString, QString> parameters;
-        parameters.insert("tableName", LocalDBService::APP_DATA);
+        parameters.insert("tableName", Parameters::DB_APP_DATA);
         LocalDBService::save(parameters, new AppData(AppDataManager::STORAGE_DIR_KEY, QDir(selectedDirPath).absolutePath()+"/"+Parameters::ROOT_DIR_NAME));
         qDebug() << "root folder inserted" << endl;
         return true;
@@ -247,3 +260,34 @@ void DirectoryService::setTrayIcon(QSystemTrayIcon * sysTrayIcon)
     this->trayIcon = sysTrayIcon;
 }
 */
+
+void DirectoryService::onProcessPaused()
+{
+    pauseSaving = true;
+}
+
+void DirectoryService::onProcessCancelled()
+{
+    stopSaving = true;
+}
+
+void DirectoryService::onProcessResumed()
+{
+    pauseSaving = false;
+}
+
+void DirectoryService::onProcessRestarted()
+{
+    stopSaving = false;
+}
+
+void DirectoryService::onFileBackedUp(File * file)
+{
+    if (file->getThumbnail() != NULL){
+        QFile qFile(file->getThumbnail()->absoluteFilePath());
+        try {
+            qFile.remove();
+        } catch (...) {
+        }
+    }
+}

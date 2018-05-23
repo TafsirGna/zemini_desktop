@@ -7,40 +7,6 @@ UserManager::UserManager(): AbstractManager()
     user = NULL;
 }
 
-/***            This function allows to create or save a user into a database           ***/
-/*
-void UserManager::saveUser(User user)
-{
-    //qDebug()<<"sending data";
-
-    if (!saveUserLocally(user))
-    {
-        QMessageBox::critical(0,"Message","An error occured when saving your parameters! Please, close the window and start over all the process");
-        return;
-    }
-
-    if(connected)
-    {
-        //if the user is connected then the data on the user is sent to the server
-
-        QUrl params;
-
-        params.addQueryItem("action",QString::number(1));
-        params.addQueryItem("familyname",user.getFamilyname());
-        params.addQueryItem("firstname",user.getFirstname());
-        params.addQueryItem("email",user.getEmail());
-        params.addQueryItem("username",user.getUsername());
-        params.addQueryItem("password",user.getPassword());
-
-
-        QUrl resource(str_Url);
-        QNetworkRequest request(resource);
-        //request.setHeader(QNetworkRequest::ContentTypeHeader,"application/x-www-form-urlencoded");
-        this->accessManager->get(QNetworkRequest(params));
-    }
-}
-*/
-
 /**
  * @brief UserManager::insertUser
  * @param user
@@ -62,7 +28,15 @@ User * UserManager::add(User user)
 /***            This function allows to update a user of the database           ***/
 User * UserManager::update(User user)
 {
-
+    QString request = "Update User set familyname = '"+user.getFamilyname()+"' ,  firstname = '"+user.getFirstname()+"' , email = '"+user.getEmail()+"' , username = '"+user.getUsername()+"' , password = '"+user.getPassword()+"' , activated = "+((user.isActivated()) ? QString::number(1) : QString::number(0))+" where id = "+QString::number(user.getId());
+    QSqlQuery sqlQuery(Parameters::localDb);
+    sqlQuery.exec(request);
+    if(!sqlQuery.isActive()){
+        qDebug()<<"Error when updating User: " + sqlQuery.lastError().text();
+        return NULL;
+    }
+    qDebug()<<"Success in updating User: " + request << endl;
+    return getUser();
 }
 
 /***            This function allows to delete a user of the database           ***/
@@ -75,12 +49,13 @@ User * UserManager::getUser()
 {
     // TODO : Test that the request has been executed as expected
     QSqlQuery sqlQuery(Parameters::localDb);
-    sqlQuery.exec("select id,familyname, firstname, email, username, password, activated from user where id = 1");
+    sqlQuery.exec("select id,familyname, firstname, email, username, password, activated from User where id = 1");
     if (sqlQuery.next()){
         User * user = new User(sqlQuery.value(0).toInt(),sqlQuery.value(1).toString(),
                                sqlQuery.value(2).toString(),sqlQuery.value(3).toString(),
                                sqlQuery.value(4).toString(),sqlQuery.value(5).toString());
-        user->setActivated(((sqlQuery.value(7).toInt() == 0) ? false : true ));
+        user->setActivated(((sqlQuery.value(6).toInt() == 0) ? false : true ));
+        //user->toString();
         return user;
     }
     return NULL;

@@ -56,3 +56,39 @@ const bool Parameters::USE_OPENSSL = true;
 const QStringList Parameters::VIDEO_FORMATS = (QStringList() << "avi" << "wmv");
 
 const int Parameters::FRAME_COUNT_DIVIDER = 64;
+
+// Network Request Codes
+
+const int Parameters::CODE_DB_INIT = 0;
+
+const int Parameters::CODE_REGISTER_USER = 1;
+
+const int Parameters::CODE_USER_LOGIN = 2;
+
+const int Parameters::CODE_FILE_SAVE = 3;
+
+const int Parameters::CODE_DB_REFRESH = 4;
+
+const int Parameters::CODE_SAVE_THUMBS = 6;
+
+const int Parameters::CODE_ACCOUNT_CHECKING = 7;
+
+// Database services constants
+
+const QString Parameters::DB_USER = "User";
+
+const QString Parameters::DB_CATEGORY = "Category";
+
+const QString Parameters::DB_FILE = "File";
+
+const QString Parameters::DB_FILE_TYPE = "FileType";
+
+const QString Parameters::DB_APP_DATA = "App_data";
+
+const QString Parameters::DB_DRIVE_TYPE = "drive_type";
+
+const QString Parameters::DB_DRIVE = "Drive";
+
+const QString Parameters::DB_FILE_FORMAT = "FileFormat";
+
+const QStringList Parameters::DB_INIT_DATA_LIST = (QStringList() << Parameters::DB_CATEGORY << Parameters::DB_FILE_FORMAT << Parameters::DB_FILE_TYPE );

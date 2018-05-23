@@ -53,7 +53,7 @@ File* FileManager::add(File * file)
     QString request = "insert into File(id, iddir, idtype, idcategory, drive_id, createdat, updatedat, filename, path, size, status, thumbnail) select NULL, "
             +((file->getFolder() == NULL) ? "NULL" : QString::number(file->getFolder()->getId()))+", "
             +QString::number(file->getType()->getId())+", "
-            +QString::number(file->getCategory()->getId())+", "
+            +((file->getCategory() == NULL) ? "NULL" : QString::number(file->getCategory()->getId()))+", "
             +QString::number(file->getDrive()->getId())+", '"
             +file->getCreatedAt().toString(Parameters::timeFormat)
             +"', '"+file->getUpdatedAt().toString(Parameters::timeFormat)
@@ -275,21 +275,28 @@ Drive *FileManager::getDrive()
  */
 File *FileManager::convertToFile(QFileInfo fileInfo)
 {
-    //qDebug() << "Printing all " << endl;
-    //printAll();
     File * savedFile = getFileAt(fileInfo);
     File * file = NULL;
     if (savedFile != NULL){
         file = savedFile;
         file->setSize(fileInfo.size());
-        file->setUpdatedAt(fileInfo.lastModified());
+        file->setUpdatedAt(fileInfo.lastRead());
         file->setStatus(File::FILE_UPDATED); // TODO temporary value
     }
     else{
-        //qDebug() << "Converting file" << endl;
-        file = new File(0, fileInfo.fileName(), Functions::getRelativePath(fileInfo.absolutePath()), fileInfo.created(), fileInfo.lastModified(), fileInfo.size(), File::FILE_ADDED, ((fileInfo.isDir()) ? NULL : Functions::generateThumbnails(fileInfo)), FileTypeManager::getType(fileInfo), CategoryManager::getCategory(fileInfo), FileManager::getFolder(fileInfo), DriveManager::getDrive(fileInfo));
+        /*
+        if (FileTypeManager::getType(fileInfo) == NULL)
+            qDebug() << "File type NULL" << endl;
+        if (CategoryManager::getCategory(fileInfo) == NULL)
+            qDebug() << "Category NULL " << endl;
+        if (FileManager::getFolder(fileInfo) == NULL)
+            qDebug() << "Folder NULL " <<endl;
+        if (DriveManager::getDrive(fileInfo) == NULL)
+            qDebug() << "Drive NULL" <<endl;
+            */
+        qDebug() << "Converting file" << endl;
+        file = new File(0, fileInfo.fileName(), Functions::getRelativePath(fileInfo.absolutePath()), fileInfo.created(), QDateTime::currentDateTime(), fileInfo.lastRead(), fileInfo.size(), File::FILE_ADDED, ((fileInfo.isDir()) ? NULL : Functions::generateThumbnails(fileInfo)), FileTypeManager::getType(fileInfo), CategoryManager::getCategory(fileInfo), FileManager::getFolder(fileInfo), DriveManager::getDrive(fileInfo));
     }
-    //qDebug() << file->toString() << endl;
     return file;
 }
 
@@ -306,13 +313,15 @@ File *FileManager::getOneBy(QMap<QString, QString> properties)
         j++;
     }
 
+    qDebug() << request << endl;
+    qDebug() << "fine 2" <<endl;
     QSqlQuery sqlQuery(Parameters::localDb);
     sqlQuery.exec(request);
     if (!sqlQuery.isActive()){
         qDebug() << "Failed to select the file : " << sqlQuery.lastError().text() <<endl;
         return NULL;
     }
-
+    qDebug() << "fine 2.1" <<endl;
     if (sqlQuery.next()){
         return Functions::fromSqlRecord2File(sqlQuery.record());
     }
@@ -339,6 +348,19 @@ void FileManager::printAll()
     for (int i(0); i < size; i++){
         qDebug() << files->at(i)->toString() << endl;
     }
+}
+
+void FileManager::deleteAll()
+{
+    QString request = "delete from "+Parameters::DB_FILE;
+    QSqlQuery sqlQuery(Parameters::localDb);
+    sqlQuery.exec(request);
+    if (!sqlQuery.isActive()){
+        qDebug()<<"Error when deleting all files : " + sqlQuery.lastError().text();
+        return;
+    }
+    qDebug() << "Succeed in deleting all files " << endl;
+    qDebug() << "The remaining files are " << getAll()->size() << endl;
 }
 
 

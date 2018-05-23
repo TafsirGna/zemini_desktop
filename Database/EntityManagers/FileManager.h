@@ -26,10 +26,11 @@ public :
     bool updateDirContent(QDir);
     static QList<File *> *getAll();
     static QList<File *> *getNotSavedFiles();
-    bool setFileSaved(int);
+    static bool setFileSaved(int);
     static File * convertToFile(QFileInfo);
     static File *getOneBy(QMap<QString, QString>);
     static void printAll();
+    static void deleteAll();
 
     //void setCategoryManager(CategoryManager *);
     //void setFileTypeManager(FileTypeManager *);

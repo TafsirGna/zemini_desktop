@@ -140,5 +140,5 @@ void User::toString()
 {
     //qDebug()<< "--- user's data display ---";
     qDebug()<< "id : " + QString::number(this->id) + ", familyname : " + this->familyname + ", firstname : " + this->firstname +
-               ", email : " + this->email + ", username : " + this->username + ", password : " + this->password;
+               ", email : " + this->email + ", username : " + this->username + ", password : " + this->password + " activated : "+ ((this->isActivated()) ? QString::number(1) : QString::number(0));
 }

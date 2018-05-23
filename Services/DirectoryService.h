@@ -12,7 +12,6 @@
 #include <Services/LocalDbService.h>
 #include <QMessageBox>
 #include <QFileDialog>
-//#include <>
 
 class DirectoryService : public ZeminiService
 {
@@ -21,7 +20,9 @@ private:
     // Variables
     QList<QFileSystemWatcher*> * fsWatchers;
     bool active;
-    //QSystemTrayIcon *trayIcon;
+    bool pauseSaving;
+    bool stopSaving;
+    QFileInfoList * queue;
 
     //Functions
     bool removeWatchOver(QFileInfo);
@@ -53,6 +54,12 @@ private slots:
 public slots:
     void watchFile(File *);
     void stop();
+    void onProcessPaused();
+    void onProcessCancelled();
+    void onProcessResumed();
+    void onProcessRestarted();
+    void onFileBackedUp(File *);
+
 
 signals:
     void rootFolderOnWatching();

@@ -19,6 +19,16 @@ QString File::getAbsolutePath() const
     return pathList.join("/")+path+Parameters::FILE_SYS_SEPARATOR+fileName;
 }
 
+bool File::isFile() const
+{
+    return false;
+}
+
+bool File::isDir() const
+{
+    return false;
+}
+
 void File::setThumbnail(QFileInfo *value)
 {
     thumbnail = value;
@@ -44,13 +54,23 @@ void File::setDrive(Drive *value)
     drive = value;
 }
 
+QDateTime File::getAddedAt() const
+{
+    return addedAt;
+}
+
+void File::setAddedAt(const QDateTime &value)
+{
+    addedAt = value;
+}
+
 File::File()
 {
     //Nothing to do for now
 }
 
 /***            A second constructor            ***/
-File::File(int id, QString fileName, QString path, QDateTime createdAt, QDateTime updatedAt, int size, int status, QFileInfo *thumbnail, FileType *type, Category *category, File * folder, Drive * drive)
+File::File(int id, QString fileName, QString path, QDateTime createdAt,QDateTime addedAt, QDateTime updatedAt, int size, int status, QFileInfo *thumbnail, FileType *type, Category *category, File * folder, Drive * drive)
 {
     this->id = id;
     this->fileName = fileName;
@@ -64,6 +84,7 @@ File::File(int id, QString fileName, QString path, QDateTime createdAt, QDateTim
     this->type = type;
     this->thumbnail = thumbnail;
     this->drive =  drive;
+    this->addedAt = addedAt;
 }
 
 File::File(const File &file)
@@ -95,6 +116,7 @@ File & File::operator =(const File & file)
     this->category = file.category;
     this->thumbnail = file.thumbnail;
     this->drive =  file.drive;
+    this->addedAt = file.addedAt;
     return *this;
 }
 
@@ -276,6 +298,7 @@ QString File::serialize()
             +path.replace("/", "+")+Parameters::NET_REQUEST_SEPARATOR
             +QString::number(size)+Parameters::NET_REQUEST_SEPARATOR
             +createdAt.toString(Parameters::timeFormat)+Parameters::NET_REQUEST_SEPARATOR
+            +addedAt.toString(Parameters::timeFormat)+Parameters::NET_REQUEST_SEPARATOR
             +updatedAt.toString(Parameters::timeFormat)+Parameters::NET_REQUEST_SEPARATOR
             +((folder != NULL) ? folder->getFileName() : "NULL")+Parameters::NET_REQUEST_SEPARATOR
             +((folder != NULL) ? folder->getPath().replace("/", "+") : "NULL")+Parameters::NET_REQUEST_SEPARATOR
@@ -294,6 +317,7 @@ void File::setRequestParams(QUrlQuery & params)
     params.addQueryItem("filePath", path);
     params.addQueryItem("fileSize", QString::number(size));
     params.addQueryItem("fileCreatedAt", createdAt.toString(Parameters::timeFormat));
+    params.addQueryItem("fileAddedAt", addedAt.toString(Parameters::timeFormat));
     params.addQueryItem("fileUpdatedAt", updatedAt.toString(Parameters::timeFormat));
     params.addQueryItem("fileFolderName", ((folder != NULL) ? folder->getFileName() : "NULL"));
     params.addQueryItem("fileFolderPath", ((folder != NULL) ? folder->getPath() : "NULL"));

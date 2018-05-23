@@ -45,13 +45,16 @@ private:
         QSslSocket * sslSocket;
         QList<NetRequest *> * requestsList;
         Firebase * firebase;
+        bool stopUploading;
+        bool pauseUploading;
+        File * currentFile;
 
         //Functions
         void handleBadRequestReply(QNetworkReply*);
         void handleGoodRequestReply(QNetworkReply*);
         void settingSslSocket();
-        void sendThumbnails();
-        void sendFilePicture(QFileInfo);
+        //void sendThumbnails();
+        void sendFileThumbnail(File *file);
         void formRequestReply(int, QString, QList<DbEntity *> *);
         void formRequestReply(int, QString, DbEntity *);
         void registerUser(User *);
@@ -59,16 +62,6 @@ private:
         //void pingServer();
 
 public:
-        // Static constants
-        const static int CODE_REGISTER_USER;
-        const static int CODE_USER_LOGIN;
-        const static int CODE_DB_INIT;
-        const static int CODE_FILE_SAVE;
-        const static int CODE_DB_REFRESH;
-        const static int CODE_PING_SERVER;
-        const static int CODE_SAVE_THUMBS;
-        const static int CODE_ACCOUNT_CHECKING;
-
         NetworkService();
         //void getFreshDbData();
         void checkCredentials(QString, QString);
@@ -80,8 +73,10 @@ public slots:
         void send(QString, QList<DbEntity *> *);
         void getInitialDbData();
         void sendNextRequest();
-        void pauseProcess();
-        void cancelProcess();
+        void onProcessPaused();
+        void onProcessCancelled();
+        void onProcessResumed();
+        void onProcessRestarted();
 
 private slots:
         //void sslSocketConnected();

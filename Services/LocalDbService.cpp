@@ -1,14 +1,5 @@
 #include "localdbservice.h"
 
-const QString LocalDBService::USER = "User";
-const QString LocalDBService::CATEGORY = "Category";
-const QString LocalDBService::FILE = "File";
-const QString LocalDBService::FILE_TYPE = "FileType";
-const QString LocalDBService::APP_DATA = "App_data";
-const QString LocalDBService::DRIVE_TYPE = "drive_type";
-const QString LocalDBService::DRIVE = "Drive";
-const QString LocalDBService::FILE_FORMAT = "FileFormat";
-const QStringList LocalDBService::INIT_DATA_LIST = (QStringList() << LocalDBService::CATEGORY << LocalDBService::FILE_FORMAT << LocalDBService::FILE_TYPE );
 bool LocalDBService::dbInitStatus = false;
 
 UserManager * LocalDBService::userManager = NULL;
@@ -23,7 +14,7 @@ FileFormatManager * LocalDBService::fileFormatManager = NULL;
 /***        Builders        ***/
 LocalDBService::LocalDBService()
 {
-    dbTables2Init = INIT_DATA_LIST;
+    dbTables2Init = Parameters::DB_INIT_DATA_LIST;
 }
 
 bool LocalDBService::isDbEmpty()
@@ -41,35 +32,35 @@ bool LocalDBService::isDbInitialized()
 
 const AbstractManager * LocalDBService::getManager(QString manager)
 {
-    if (manager == LocalDBService::USER){
+    if (manager == Parameters::DB_USER){
         return getUserManager();
     }
 
-    if (manager == LocalDBService::CATEGORY){
+    if (manager == Parameters::DB_CATEGORY){
         return getCategoryManager();
     }
 
-    if (manager == LocalDBService::FILE_TYPE){
+    if (manager == Parameters::DB_FILE_TYPE){
         return getFileTypeManager();
     }
 
-    if (manager == LocalDBService::FILE){
+    if (manager == Parameters::DB_FILE){
         return getFileManager();
     }
 
-    if (manager == LocalDBService::APP_DATA){
+    if (manager == Parameters::DB_APP_DATA){
         return getAppDataManager();
     }
 
-    if (manager == LocalDBService::DRIVE_TYPE){
+    if (manager == Parameters::DB_DRIVE_TYPE){
         return getDriveTypeManager();
     }
 
-    if (manager == LocalDBService::DRIVE){
+    if (manager == Parameters::DB_DRIVE){
         return getDriveManager();
     }
 
-    if (manager == LocalDBService::FILE_FORMAT){
+    if (manager == Parameters::DB_FILE_FORMAT){
         return getFileFormatManager();
     }
 
@@ -86,9 +77,9 @@ bool LocalDBService::save(QFileInfo fileInfo)
     //qDebug() << "inserting file " << endl;
     // Converting ...
     File *file = getFileManager()->convertToFile(fileInfo);
-    //qDebug() << "file converted" << endl;
+    qDebug() << "file converted" << endl;
     QMap<QString, QString> parameters;
-    parameters.insert("tableName", LocalDBService::FILE);
+    parameters.insert("tableName", Parameters::DB_FILE);
     return save(parameters, file);
 }
 
@@ -167,23 +158,23 @@ FileManager * LocalDBService::getFileManager()
 DbEntity *LocalDBService::save(QMap<QString, QString> parameters, DbEntity * entity)
 {
     QString tableName = parameters["tableName"];
-    if (tableName == LocalDBService::APP_DATA){
+    if (tableName == Parameters::DB_APP_DATA){
         return (DbEntity *) getAppDataManager()->add((AppData*) entity);
     }
 
-    if (tableName == LocalDBService::FILE){
+    if (tableName == Parameters::DB_FILE){
         return (DbEntity *)getFileManager()->add((File *) entity);
     }
 
-    if (tableName == LocalDBService::FILE_TYPE){
+    if (tableName == Parameters::DB_FILE_TYPE){
         return (DbEntity *)getFileTypeManager()->add((FileType *) entity);
     }
 
-    if (tableName == LocalDBService::FILE_FORMAT){
+    if (tableName == Parameters::DB_FILE_FORMAT){
         return (DbEntity *)getFileFormatManager()->add((FileFormat *)entity);
     }
 
-    if (tableName == LocalDBService::CATEGORY){
+    if (tableName == Parameters::DB_CATEGORY){
         return (DbEntity *)getCategoryManager()->add((Category *)entity);
     }
 }
@@ -200,7 +191,11 @@ void LocalDBService::startBackingUp()
 {
     // Backing up all files
     QList<File*> * notSavedFiles = getFileManager()->getNotSavedFiles();
-    emit filesToSend(LocalDBService::FILE, (QList<DbEntity*>*)notSavedFiles);
+    if (notSavedFiles->size() == 0){
+        return;
+    }
+    nbFiles2Send = notSavedFiles->size();
+    emit filesToSend(Parameters::DB_FILE, (QList<DbEntity*>*)notSavedFiles);
 }
 
 void LocalDBService::onDbInit(QMap<QString, QString> metaData, QList<DbEntity*> * data)
@@ -208,27 +203,27 @@ void LocalDBService::onDbInit(QMap<QString, QString> metaData, QList<DbEntity*> 
     qDebug() << "in onDbInit function " << endl;
     QString entityName = metaData["objectType"];
     for (int i = 0; i < data->size(); i++){
-        if (entityName == LocalDBService::CATEGORY){
+        if (entityName == Parameters::DB_CATEGORY){
             Category *category = (Category *) data->at(i);
 
             QMap<QString, QString> parameters;
-            parameters.insert("tableName", LocalDBService::CATEGORY);
+            parameters.insert("tableName", Parameters::DB_CATEGORY);
             if (save(parameters, category))
                 qDebug() << "category " << category->getName() <<" not inserted : " << endl;
         }
-        if (entityName == LocalDBService::FILE_FORMAT){
+        if (entityName == Parameters::DB_FILE_FORMAT){
             FileFormat *format = (FileFormat *) data->at(i);
 
             QMap<QString, QString> parameters;
-            parameters.insert("tableName", LocalDBService::FILE_FORMAT);
+            parameters.insert("tableName", Parameters::DB_FILE_FORMAT);
             if (save(parameters, format))
                 qDebug() << "format " << format->getName() <<" not inserted : " << endl;
         }
-        if (entityName == LocalDBService::FILE_TYPE){
+        if (entityName == Parameters::DB_FILE_TYPE){
             FileType *type = (FileType *)data->at(i);
 
             QMap<QString, QString> parameters;
-            parameters.insert("tableName", LocalDBService::FILE_TYPE);
+            parameters.insert("tableName", Parameters::DB_FILE_TYPE);
             if (save(parameters, type))
                 qDebug() << "type " << type->getName() <<" not inserted : " << endl;
         }
@@ -247,6 +242,8 @@ void LocalDBService::completeDbInit()
     //inserting all the drivetype objects
     getDriveTypeManager()->initDbTable();
 
+    //CategoryManager::add(new Category(0, "Uncategorized"));
+
     // inserting other necessary data
     getFileTypeManager()->add(new FileType(0, "directory", "", NULL));
 
@@ -264,7 +261,7 @@ void LocalDBService::completeDbInit()
 
 DbEntity *LocalDBService::getOneBy(QMap<QString, QString> parameters)
 {
-    if (parameters["tableName"] == LocalDBService::APP_DATA){
+    if (parameters["tableName"] == Parameters::DB_APP_DATA){
         return getAppDataManager()->getByKey(parameters["id"]);
     }
 }
@@ -317,31 +314,47 @@ void LocalDBService::onRequestReplyReceived(QMap<QString, QString> metaData, QLi
     int requestCode = metaData["code"].toInt();
     bool success = ((metaData["success"] == "0") ? false : true);
 
-    if (requestCode == NetworkService::CODE_REGISTER_USER){
+    if (requestCode == Parameters::CODE_REGISTER_USER){
         qDebug() << "User saved : localdbservice" << endl;
         User* user = (User*) data->first();
         this->userManager->add(*user);
-        emit userSaved(NetworkService::CODE_REGISTER_USER);
+        emit userSaved(Parameters::CODE_REGISTER_USER);
+        return;
     }
 
-    if (requestCode == NetworkService::CODE_USER_LOGIN){
+    if (requestCode == Parameters::CODE_USER_LOGIN){
         User* user = (User*) data->first();
         this->userManager->add(*user);
-        emit userSaved(NetworkService::CODE_USER_LOGIN);
+        emit userSaved(Parameters::CODE_USER_LOGIN);
+        return;
     }
 
-    if (requestCode == NetworkService::CODE_FILE_SAVE){
+    if (requestCode == Parameters::CODE_FILE_SAVE){
         if (success){
-            File * file = (File *) &(data->first());
-            getFileManager()->setFileSaved(file->getId());
+            nbFiles2Send--;
+            File * file = (File *) (data->first());
+            qDebug() << "fine 0" <<(file->getId())<<endl;
+            QMap<QString, QString> map;
+            map.insert("id", QString::number(file->getId()));
+            file = FileManager::getOneBy(map);
+            qDebug() << "fine 3" <<endl;
+            if (file->getThumbnail() == NULL){
+                getFileManager()->setFileSaved(file->getId());
+                emit fileBackedUp(file);
+            }
+            qDebug() << "fine 4" <<endl;
+
+            if (nbFiles2Send == 0)
+                QTimer::singleShot(Parameters::CHECK_CON_TIME_OUT, this, SLOT(startBackingUp()));
         }
     }
 
-    if (requestCode == NetworkService::CODE_DB_INIT){
+    if (requestCode == Parameters::CODE_DB_INIT){
         onDbInit(metaData, data);
+        return;
     }
 
-    if (requestCode == NetworkService::CODE_ACCOUNT_CHECKING){
+    if (requestCode == Parameters::CODE_ACCOUNT_CHECKING){
         User * user = (User *) data->first();
         if (!user->isActivated()){
             emit userEnabled(false);
@@ -351,7 +364,21 @@ void LocalDBService::onRequestReplyReceived(QMap<QString, QString> metaData, QLi
             User * m_user = UserManager::getUser();
             m_user->setActivated(true);
             UserManager::update(*m_user);
+            //qDebug() << "popo : " << m_user->isActivated() << UserManager::getUser()->isActivated() <<  endl;
             emit userEnabled(true);
+        }
+    }
+
+    if (requestCode == Parameters::CODE_SAVE_THUMBS){
+        if (success){
+            File * file = (File *) &(data->first());
+            QMap<QString, QString> map;
+            map.insert("id", QString::number(file->getId()));
+            file = FileManager::getOneBy(map);
+            if (file->getThumbnail() != NULL){
+                getFileManager()->setFileSaved(file->getId());
+                emit fileBackedUp(file);
+            }
         }
     }
 }

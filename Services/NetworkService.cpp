@@ -1,14 +1,5 @@
 #include "NetworkService.h"
 
-const int NetworkService::CODE_DB_INIT = 0;
-const int NetworkService::CODE_REGISTER_USER = 1;
-const int NetworkService::CODE_USER_LOGIN = 2;
-const int NetworkService::CODE_FILE_SAVE = 3;
-const int NetworkService::CODE_DB_REFRESH = 4;
-const int NetworkService::CODE_PING_SERVER = 5;
-const int NetworkService::CODE_SAVE_THUMBS = 6;
-const int NetworkService::CODE_ACCOUNT_CHECKING = 7;
-
 /**
  * @brief NetworkService::NetworkService
  * Builder
@@ -19,8 +10,11 @@ NetworkService::NetworkService()
     requestsList = new QList<NetRequest *>();
     firebase = new Firebase("https://zemini-e1819.firebaseio.com/");
     networkAccessManager = new QNetworkAccessManager(this);
+    NetRequest::NetworkAccessManager = networkAccessManager;
     // variable that tells if a backup has been done yet
     firstBackup = true;
+    stopUploading = false;
+    pauseUploading = false;
 
     this->timer1 = new QTimer(this);
     this->timer2 = new QTimer(this);
@@ -28,47 +22,49 @@ NetworkService::NetworkService()
     QWidget::connect(networkAccessManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(handleRequestReply(QNetworkReply*)));
 }
 
-/*
-void NetworkService::sslSocketConnected()
-{
-    qDebug() << "connected yes" << endl;
-}
-*/
-
 // this function sends a request to the remote server to get its initial data to get started
 void NetworkService::getInitialDbData()
 {
-    int list_size = LocalDBService::INIT_DATA_LIST.size();
+    int list_size = Parameters::DB_INIT_DATA_LIST.size();
     for (int i(0); i < list_size; i++){
-        QNetworkRequest request(QUrl(Parameters::URL+Parameters::NET_REQUEST_SEPARATOR+"init_db"+
-                                     Parameters::NET_REQUEST_SEPARATOR+LocalDBService::INIT_DATA_LIST.at(i)));
-        request.setSslConfiguration(QSslConfiguration::defaultConfiguration());
-        requestsList->append(new NetRequest(CODE_DB_INIT, "POST", request));
+        requestsList->append(new NetRequest(Parameters::CODE_DB_INIT, Parameters::DB_INIT_DATA_LIST.at(i)));
     }
     sendNextRequest();
 }
 
 void NetworkService::sendNextRequest()
 {
+    if (pauseUploading)
+        return;
+
+    if (stopUploading)
+        requestsList->clear();
+
+    //qDebug() << "Finally" << requestsList->size() << stopUploading << endl;
     if (!requestsList->isEmpty()){
         NetRequest * netRequest = requestsList->first();
-        qDebug() << "sending the next request : " << netRequest->getNetworkRequest().url().toString() << endl;
-        if (netRequest->getType() == "POST")
-            networkAccessManager->post(netRequest->getNetworkRequest(), netRequest->getData());
-        else if (netRequest->getType() == "GET"){
-            networkAccessManager->get(netRequest->getNetworkRequest());
-        }
+        netRequest->exec();
     }
 }
 
-void NetworkService::pauseProcess()
+void NetworkService::onProcessPaused()
 {
-
+    pauseUploading = true;
 }
 
-void NetworkService::cancelProcess()
+void NetworkService::onProcessCancelled()
 {
+    stopUploading = true;
+}
 
+void NetworkService::onProcessResumed()
+{
+    pauseUploading = false;
+}
+
+void NetworkService::onProcessRestarted()
+{
+    stopUploading = false;
 }
 
 void NetworkService::handleRequestReply(QNetworkReply * reply)
@@ -78,15 +74,6 @@ void NetworkService::handleRequestReply(QNetworkReply * reply)
             requestsList->removeFirst();
 
         handleGoodRequestReply(reply);
-        //after handling the request's response then i remove the current netrequest object from the request list
-        if (requestsList->isEmpty()){
-            if (firstBackup){
-                firstBackup = false;
-                emit firstBackUpDone();
-            }
-            sendThumbnails();
-            this->timer1->start(Parameters::networkTimer1Frequency);
-        }
     }
     else{
         handleBadRequestReply(reply);
@@ -106,19 +93,20 @@ void NetworkService::syncDb()
 void NetworkService::send(QString objectType, QList<DbEntity *> * data)
 {
     if (!user->isActivated()){
-        emit requestFailed(CODE_FILE_SAVE);
+        emit requestFailed(Parameters::CODE_FILE_SAVE);
         return;
     }
-    if (objectType == LocalDBService::USER){
+    if (objectType == Parameters::DB_USER){
         User * user = (User *) (data->first());
         registerUser(user);
         return;
     }
-    if (objectType == LocalDBService::FILE){
-        int list_size = data->length();
+    if (objectType == Parameters::DB_FILE){
+        int list_size = data->size();
         for (int i(0); i < list_size; i++){
-            saveFile((File * ) data->at(i));
+            saveFile((File * ) data->at(i));            
         }
+        qDebug() << "files to send received " << data->size() << endl;
         sendNextRequest();
         return;
     }
@@ -127,22 +115,7 @@ void NetworkService::send(QString objectType, QList<DbEntity *> * data)
 void NetworkService::registerUser(User * user)
 {
     qDebug() << "Registering user 0" << endl;
-    QString url(Parameters::URL+"/register");
-    QUrlQuery params;
-
-    params.addQueryItem("username", user->getUsername());
-    params.addQueryItem("password", user->getPassword());
-    params.addQueryItem("email", user->getEmail());
-
-    QByteArray data;
-    data.append(params.toString());
-    //data.remove(0,1);
-    qDebug() << url << " " << data << endl;
-
-
-    QNetworkRequest* networkRequest = new QNetworkRequest(QUrl(url));
-    networkRequest->setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
-    NetRequest * netRequest = new NetRequest(CODE_REGISTER_USER, QString("POST"), *networkRequest, data);
+    NetRequest * netRequest = new NetRequest(Parameters::CODE_REGISTER_USER, user);
     requestsList->append(netRequest);
 
     sendNextRequest();
@@ -156,24 +129,23 @@ void NetworkService::registerUser(User * user)
  */
 void NetworkService::checkCredentials(QString email, QString password)
 {
+    User * m_user = new User();
+    m_user->setEmail(email);
+    m_user->setPassword(password);
+
     if (requestsList->size() > 0){
-        emit connectionError(NetworkService::CODE_USER_LOGIN);
+        emit connectionError(Parameters::CODE_USER_LOGIN);
         return;
     }
 
-    QString address = Parameters::URL+
-            "/login?email="+email+"&password="+password;
-    qDebug() << "check " << address << endl;
-
-    NetRequest * netRequest = new NetRequest(CODE_USER_LOGIN, "GET", QNetworkRequest(QUrl(address)));
+    NetRequest * netRequest = new NetRequest(Parameters::CODE_USER_LOGIN, m_user);
     requestsList->append(netRequest);
     sendNextRequest();
 }
 
 void NetworkService::checkUserAccount()
 {
-    QNetworkRequest request(QUrl(Parameters::URL+"/account_confirmation?email="+user->getEmail()+"&password="+user->getPassword()));
-    NetRequest * netRequest = new NetRequest(CODE_ACCOUNT_CHECKING, "GET", request);
+    NetRequest * netRequest = new NetRequest(Parameters::CODE_ACCOUNT_CHECKING, user);
     requestsList->append(netRequest);
 
     sendNextRequest();
@@ -213,21 +185,12 @@ void NetworkService::sendFiles(QList<File*>* files)
 
 void NetworkService::saveFile(File* file)
 {
-    QString url(Parameters::URL+"/manage_file");
-    QUrlQuery params;
-    params.addQueryItem("email", user->getEmail());
-    params.addQueryItem("password", user->getPassword());
-    file->setRequestParams(params);
-
-    QByteArray data;
-    data.append(params.toString());
-    qDebug() << "URL_PATH : " << url << data << endl;
-
-    QNetworkRequest* networkRequest = new QNetworkRequest(QUrl(url));
-    networkRequest->setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
-
-    requestsList->append(new NetRequest(CODE_FILE_SAVE, "POST", *networkRequest, data));
+    requestsList->append(new NetRequest(Parameters::CODE_FILE_SAVE, file));
     //networkAccessManager->post((const QNetworkRequest &)*networkRequest, data);
+    // if the file has a generated thumbnails
+    if (file->getThumbnail() != NULL){
+        sendFileThumbnail(file);
+    }
 }
 
 /**
@@ -255,83 +218,82 @@ void NetworkService::handleGoodRequestReply(QNetworkReply * reply)
     QVariantMap json_map = jsonObject.toVariantMap();
 
     int requestCode = json_map["requestCode"].toInt();
-    switch (requestCode) {
-    case NetworkService::CODE_REGISTER_USER:{
+    if  (requestCode == Parameters::CODE_REGISTER_USER){
         bool success = json_map["success"].toBool();
         if (!success){
             qDebug() << "Emitting request failure signal" << endl;
-            emit requestFailed(CODE_REGISTER_USER);
+            emit requestFailed(Parameters::CODE_REGISTER_USER);
         }
         else{
             qDebug() << "Registering user " << json_map << endl;
             User * user = Functions::fromJsonToUser(json_map["user"].toMap());
-            user->toString();
-            formRequestReply(CODE_REGISTER_USER, LocalDBService::USER, user);
+            //user->toString();
+            formRequestReply(Parameters::CODE_REGISTER_USER, Parameters::DB_USER, user);
         }
-        break;
+        return;
     }
-    case NetworkService::CODE_USER_LOGIN:{
+    if  (requestCode == Parameters::CODE_USER_LOGIN){
         User * user = NULL;
         if (json_map["success"].toBool()){
             user = Functions::fromJsonToUser(json_map["user"].toMap());
         }
-        formRequestReply(CODE_USER_LOGIN, LocalDBService::USER, user);
-        break;
+        formRequestReply(Parameters::CODE_USER_LOGIN, Parameters::DB_USER, user);
+        return;
     }
-    case NetworkService::CODE_DB_INIT:{
+
+    if  (requestCode == Parameters::CODE_DB_INIT){
         QString tableName = json_map["tableName"].toString();
         qDebug() << "in handle reply function  for db initialization "<< tableName << endl;
-        if (tableName == LocalDBService::CATEGORY){
+        if (tableName == Parameters::DB_CATEGORY){
             QList<Category*> * categories  = Functions::fromJsonToCategories(json_map["data"]);
             qDebug() <<  "Initializing  category table " << endl;
-            formRequestReply(CODE_DB_INIT, tableName, (QList<DbEntity*> *) categories);
+            formRequestReply(Parameters::CODE_DB_INIT, tableName, (QList<DbEntity*> *) categories);
             return;
         }
-        if (tableName == LocalDBService::FILE_TYPE){
+        if (tableName == Parameters::DB_FILE_TYPE){
             qDebug() <<  "Initializing  file_type table " << endl;
             QList<FileType*> * fileTypes  = Functions::fromJsonToFileTypes(json_map["data"]);
-            formRequestReply(CODE_DB_INIT, LocalDBService::FILE_TYPE, (QList<DbEntity*>*) fileTypes);
+            formRequestReply(Parameters::CODE_DB_INIT, Parameters::DB_FILE_TYPE, (QList<DbEntity*>*) fileTypes);
             return;
         }
-        if (tableName == LocalDBService::FILE_FORMAT){
+        if (tableName == Parameters::DB_FILE_FORMAT){
             qDebug() <<  "Initializing  file_format table " << endl;
             QList<FileFormat*> * fileFormats  = Functions::fromJsonToFileFormats(json_map["data"]);
-            formRequestReply(CODE_DB_INIT, LocalDBService::FILE_FORMAT, (QList<DbEntity*> * ) fileFormats);
+            formRequestReply(Parameters::CODE_DB_INIT, Parameters::DB_FILE_FORMAT, (QList<DbEntity*> * ) fileFormats);
             return;
         }
-        break;
     }
-    case NetworkService::CODE_FILE_SAVE:{
+    if  (requestCode == Parameters::CODE_FILE_SAVE){
         qDebug() << "Reply 'file saved' received" << endl;
         if (json_map["success"].toBool()){
-            File * file;
+            File * file = new File();
             file->setId(json_map["fileID"].toInt());
-            formRequestReply(CODE_FILE_SAVE, json_map["tableName"].toString(), (DbEntity *) file);
+            qDebug() << "file ID : " << file->getId() << endl;
+            formRequestReply(Parameters::CODE_FILE_SAVE, Parameters::DB_FILE, file);
         }
-        break;
+        return;
     }
-    case NetworkService::CODE_DB_REFRESH:{
-        break;
+    if  (requestCode == Parameters::CODE_DB_REFRESH){
+        return;
     }
-    case NetworkService::CODE_PING_SERVER:{
-        break;
-    }
-    case NetworkService::CODE_SAVE_THUMBS:{
+    if  (requestCode == Parameters::CODE_SAVE_THUMBS){
         qDebug() << "Thumbs saved !" << endl;
-        break;
+        File * file = new File();
+        file->setId(json_map["fileID"].toInt());
+        formRequestReply(Parameters::CODE_SAVE_THUMBS, Parameters::DB_FILE, (DbEntity *) file);
+        return;
     }
-    case NetworkService::CODE_ACCOUNT_CHECKING:{
+    if  (requestCode == Parameters::CODE_ACCOUNT_CHECKING){
         int success = json_map["success"].toBool();
         if (success){
             User * user = new User(this->user);
             user->setActivated(json_map["enabled"].toBool());
             qDebug() << "Checking the account status!" << endl;
-            formRequestReply(CODE_ACCOUNT_CHECKING, "", user);
+            formRequestReply(Parameters::CODE_ACCOUNT_CHECKING, "", user);
         }
         else{
-            emit requestFailed(CODE_ACCOUNT_CHECKING);
+            emit requestFailed(Parameters::CODE_ACCOUNT_CHECKING);
         }
-    }
     }
 }
 
@@ -363,6 +325,7 @@ void NetworkService::settingSslSocket()
     qDebug() << "encrypt ok" << endl;
 }
 
+/*
 void NetworkService::sendThumbnails()
 {
     QDir thumbsDir(Parameters::THUMBS_DIR_PATH);
@@ -380,39 +343,13 @@ void NetworkService::sendThumbnails()
         }
     }
 }
+*/
 
-void NetworkService::sendFilePicture(QFileInfo fileInfo)
+void NetworkService::sendFileThumbnail(File * file)
 {
-    QFile file(fileInfo.absoluteFilePath()); //lets get the file by filename
-    if (!file.open(QIODevice::ReadOnly)) //accessibility controll for file
-    {
-        qDebug() << "file open failure"; //send message if file cant open
-    }
-    QByteArray line = file.readAll();
-    //we read file line by line with no error handling for reading time!!
-
-    file.close();
-    QByteArray boundary; //actually i cant understand that why we are using a second byte array for file sending.
-    // if someone know this trick please write below. I write this code like the other examples.
-
-    QByteArray datas(QString("--" + boundary + "\r\n").toUtf8());
-    datas += "Content-Disposition: form-data; name=\"file\"; filename=\""+file.fileName()+"\"\r\n";
-    //here is the http header for manuplate a normal http form and form file object
-
-    datas += "Content-Type: image/png\r\n\r\n"; //file type is here
-    datas += line; //and our file is giving to form object
-    datas += "\r\n";
-    datas += QString("--" + boundary + "\r\n\r\n").toUtf8();
-    datas += "Content-Disposition: form-data; name=\"upload\"\r\n\r\n";
-    datas += "Uploader\r\n";
-    datas += QString("--" + boundary + "--\r\n").toUtf8();
-
-    QNetworkRequest req;
-    req.setUrl(QUrl(Parameters::URL+Parameters::NET_REQUEST_SEPARATOR+"save_thumbnails")); //my virtual servers' ip address and tiny php page url is here
-    req.setRawHeader("Content-Type", "multipart/form-data; boundary=" + boundary); // we must set the first header like this. its tell the server, current object is a form
-
-    NetRequest * netRequest = new NetRequest(CODE_SAVE_THUMBS, "POST", req, datas);
+    NetRequest * netRequest = new NetRequest(Parameters::CODE_SAVE_THUMBS, file);
     //networkAccessManager->post(req,datas); //send all data
+    requestsList->append(netRequest);
 }
 
 void NetworkService::formRequestReply(int code, QString tableName, QList<DbEntity*> * data)
@@ -442,4 +379,14 @@ void NetworkService::getFreshDbData()
 {
     networkAccessManager->get(QNetworkRequest(QUrl(Parameters::URL+"/refresh_db")));
 }
+
+        //after handling the request's response then i remove the current netrequest object from the request list
+        if (requestsList->isEmpty()){
+            if (firstBackup){
+                firstBackup = false;
+                emit firstBackUpDone();
+            }
+            sendThumbnails();
+            this->timer1->start(Parameters::networkTimer1Frequency);
+        }
 */

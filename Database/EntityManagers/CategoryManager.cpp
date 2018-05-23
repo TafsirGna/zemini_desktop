@@ -28,7 +28,7 @@ Category * CategoryManager::add(Category category)
     QSqlQuery sqlQuery(Parameters::localDb);
     sqlQuery.exec(request);
     if (!sqlQuery.isActive()){
-        qDebug() << "Failed to insert a new catagory : " << sqlQuery.lastError().text() << endl;
+        qDebug() << "Failed to insert a new category : " << sqlQuery.lastError().text() << endl;
         return NULL;
     }
 

@@ -68,6 +68,45 @@ public:
     const static int FRAME_COUNT_DIVIDER;
 
     static QString THUMBS_DIR_PATH;
+
+    // Network request Codes
+
+    const static int CODE_REGISTER_USER;
+
+    const static int CODE_USER_LOGIN;
+
+    const static int CODE_DB_INIT;
+
+    const static int CODE_FILE_SAVE;
+
+    const static int CODE_DB_REFRESH;
+
+    const static int CODE_SAVE_THUMBS;
+
+    const static int CODE_ACCOUNT_CHECKING;
+
+    // Database services constants
+
+    const static QString DB_USER;
+
+    const static QString DB_CATEGORY;
+
+    const static QString DB_TYPE;
+
+    const static QString DB_FILE;
+
+    const static QString DB_FILE_TYPE;
+
+    const static QString DB_APP_DATA;
+
+    const static QString DB_DRIVE_TYPE;
+
+    const static QString DB_DRIVE;
+
+    const static QString DB_FILE_FORMAT;
+
+    const static QStringList DB_INIT_DATA_LIST;
+
 };
 
 #endif // ZEMINIPARAMETERS_H

@@ -182,7 +182,6 @@ QFileInfo *Functions::generateThumbnails(QFileInfo fileInfo)
     if (!QDir(thumbsPath).exists()){
         QDir(thumbsPath).mkdir(".");
     }
-
     QString thumbPath = thumbsPath+"/"+QString::number(QDateTime::currentMSecsSinceEpoch())+".png";
     if (!image->save(thumbPath)){
         qDebug() << "An error occured while saving the icon" << endl;
@@ -212,9 +211,12 @@ QFileInfo *Functions::extractThumbnail(QFileInfo fileInfo)
         i++;
     }
 
-    QString thumbsPath = "";
-    QString thumbName = QString::number(QDateTime::currentMSecsSinceEpoch())+".png";
-    QString thumbPath = thumbsPath+"/"+thumbName;
+    AppData * appData = (AppData *) AppDataManager::getByKey(AppDataManager::STORAGE_DIR_KEY);
+    QString thumbsPath = appData->getValue()+"/"+Parameters::THUMBS_DIR_NAME;
+    if (!QDir(thumbsPath).exists()){
+        QDir(thumbsPath).mkdir(".");
+    }
+    QString thumbPath = thumbsPath+"/"+QString::number(QDateTime::currentMSecsSinceEpoch())+".png";
 
     //qDebug() << "in gen thumbnails " << endl;
     if (imwrite(cv::String(thumbPath.toStdString()), frame))
@@ -253,6 +255,11 @@ File * Functions::fromSqlRecord2File(QSqlRecord sqlRecord)
     categoryProperties.insert("id", sqlRecord.value(3).toString());
     folderProperties.insert("id", sqlRecord.value(1).toString());
 
-    File * file = new File(sqlRecord.value(0).toInt(), sqlRecord.value(7).toString(), sqlRecord.value(8).toString(), sqlRecord.value(5).toDateTime(), sqlRecord.value(6).toDateTime(), sqlRecord.value(9).toInt(), sqlRecord.value(10).toInt(), ((sqlRecord.value(11).toString() == "") ? NULL : new QFileInfo(sqlRecord.value(11).toString())),FileTypeManager::getOneBy(fileTypeProperties), CategoryManager::getOneBy(categoryProperties), FileManager::getOneBy(folderProperties), DriveManager::getOneBy(driveProperties));
+    //qDebug() << sqlRecord.value(8).toString() <<" :/ " << sqlRecord.value(11).toString() << endl;
+    QString absPath = AppDataManager::getByKey(AppDataManager::STORAGE_DIR_KEY)->getValue();
+    QStringList pathList = absPath.split("/");
+    pathList.removeLast();
+
+    File * file = new File(sqlRecord.value(0).toInt(), sqlRecord.value(8).toString(), sqlRecord.value(9).toString(), sqlRecord.value(5).toDateTime(), sqlRecord.value(6).toDateTime(), sqlRecord.value(7).toDateTime(), sqlRecord.value(10).toInt(), sqlRecord.value(11).toInt(), ((sqlRecord.value(12).toString() == "") ? NULL : new QFileInfo(pathList.join("/")+sqlRecord.value(12).toString())),FileTypeManager::getOneBy(fileTypeProperties), CategoryManager::getOneBy(categoryProperties), FileManager::getOneBy(folderProperties), DriveManager::getOneBy(driveProperties));
     return file;
 }

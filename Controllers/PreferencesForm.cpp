@@ -6,8 +6,9 @@ PreferencesForm::PreferencesForm(QWidget *parent, ServiceContainer * serviceCont
 {
     ui->setupUi(this);
 
+
     //setWindowFlags(Qt::CustomizeWindowHint);
-    setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowTitleHint /*| Qt::WindowCloseButtonHint */ );
+    setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowTitleHint);
 
     // This commands put the form on the middle of the screen
     QDesktopWidget bureau;
@@ -17,12 +18,13 @@ PreferencesForm::PreferencesForm(QWidget *parent, ServiceContainer * serviceCont
     int x = surface_bureau.width()-(width()+90), y = surface_bureau.height()-(height()+100);
     move(x,y);
 
-    /*Empêcher le redimensionnement de la fenêtre*/
+    //Empêcher le redimensionnement de la fenêtre
     setMinimumSize(size());
     setMaximumSize(size());
 
     connect(ui->tabWidget, SIGNAL(currentChanged(int)),this, SLOT(handle_current_tab_changed(int)));
     ui->tabWidget->setCurrentIndex(0);
+
 
     // here's the code that calculates the percentage of each type and shows it under the statistics tab
     /*
@@ -33,8 +35,9 @@ PreferencesForm::PreferencesForm(QWidget *parent, ServiceContainer * serviceCont
     ui->progressBarSongs->setValue(typeManager->getTypePercentage("Songs"));
     */
 
+
     // And here, i fill the email field with user's email
-    ui->le_email->setText(userManager->getUser()->getEmail());
+    ui->le_email->setText(UserManager::getUser()->getEmail());
 
     // i disable for now the checkbox intended to set up the 'on start' launch of the application
     ui->chkbx_launchOnStart->setEnabled(false);
@@ -42,15 +45,6 @@ PreferencesForm::PreferencesForm(QWidget *parent, ServiceContainer * serviceCont
     // i fill the combobox about languages with all the languages supported
     ui->cb_language->addItem("French");
 
-    // i fill the other location lineedit with its content if it exists
-    /*
-    QList<Directory> dirsList = dirManager->findDirectoryByIdDirectory(0);
-    Directory * dir = (Directory *) &(dirsList.at(0));
-
-    otherDir = dirManager->findOtherDirectoryOnDisk();
-    if (otherDir != NULL)
-        ui->le_otherLocation->setText(otherDir->getPath());
-        */
 }
 
 PreferencesForm::~PreferencesForm()

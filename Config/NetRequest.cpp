@@ -1,14 +1,6 @@
 #include "NetRequest.h"
 
-QNetworkRequest NetRequest::getNetworkRequest() const
-{
-    return networkRequest;
-}
-
-void NetRequest::setNetworkRequest(const QNetworkRequest &value)
-{
-    networkRequest = value;
-}
+QNetworkAccessManager *NetRequest::NetworkAccessManager = NULL;
 
 QString NetRequest::getType() const
 {
@@ -40,22 +32,161 @@ void NetRequest::setCode(int value)
     code = value;
 }
 
+DbEntity *NetRequest::getEntity() const
+{
+    return entity;
+}
+
+void NetRequest::setEntity(DbEntity *value)
+{
+    entity = value;
+}
+
+QString NetRequest::getEntityClass() const
+{
+    return entityClass;
+}
+
+void NetRequest::setEntityClass(const QString &value)
+{
+    entityClass = value;
+}
+
+QNetworkRequest *NetRequest::getNetworkRequest() const
+{
+    return networkRequest;
+}
+
+void NetRequest::setNetworkRequest(QNetworkRequest *value)
+{
+    networkRequest = value;
+}
+
 NetRequest::NetRequest()
 {
 
 }
 
-NetRequest::NetRequest(int code, QString type, QNetworkRequest request)
+NetRequest::NetRequest(int code, QString tableName)
 {
     this->code = code;
-    networkRequest = request;
-    this->type = type;
+
+    if (code == Parameters::CODE_DB_INIT) {
+        this->type = "GET";
+        this->networkRequest = new QNetworkRequest(QUrl(Parameters::URL+Parameters::NET_REQUEST_SEPARATOR+"init_db"+
+                                                        Parameters::NET_REQUEST_SEPARATOR+tableName));
+        this->networkRequest->setSslConfiguration(QSslConfiguration::defaultConfiguration());
+    }
 }
 
-NetRequest::NetRequest(int code, QString type, QNetworkRequest request, QByteArray data)
+NetRequest::NetRequest(int code , DbEntity * entity)
 {
-    this->code = code;
-    networkRequest = request;
-    this->type = type;
-    this->data = data;
+    if (code == Parameters::CODE_USER_LOGIN){
+        this->type = "GET";
+        this->entity = entity;
+        this->entityClass = Parameters::DB_USER;
+
+        User * user = (User * ) entity;
+        QString address = Parameters::URL+
+                "/login?email="+user->getEmail()+"&password="+user->getPassword();
+        qDebug() << "check " << address << endl;
+        this->networkRequest = new QNetworkRequest(QUrl(address));
+    }
+
+    if (code == Parameters::CODE_REGISTER_USER){
+
+        this->type = "POST";
+        this->entity = entity;
+        this->entityClass = Parameters::DB_USER;
+
+        User * user = (User *) entity;
+        QString url(Parameters::URL+"/register");
+        QUrlQuery params;
+        params.addQueryItem("username", user->getUsername());
+        params.addQueryItem("password", user->getPassword());
+        params.addQueryItem("email", user->getEmail());
+
+        QByteArray data;
+        data.append(params.toString());
+        qDebug() << url << " " << data << endl;
+
+        this->networkRequest = new QNetworkRequest(QUrl(url));
+        this->networkRequest->setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+    }
+
+    if (code == Parameters::CODE_ACCOUNT_CHECKING){
+        this->type = "GET";
+        this->entity = entity;
+        this->entityClass = Parameters::DB_USER;
+
+        User * user = (User *) entity;
+        this->networkRequest = new QNetworkRequest(QUrl(Parameters::URL+"/account_confirmation?email="+user->getEmail()+"&password="+user->getPassword()));
+    }
+
+    if (code == Parameters::CODE_FILE_SAVE){
+
+        User * user = UserManager::getUser();
+        File * file = (File *) entity;
+        this->type = "POST";
+        this->entity = entity;
+        this->entityClass = Parameters::DB_FILE;
+
+        QString url(Parameters::URL+"/manage_file");
+        QUrlQuery params;
+        params.addQueryItem("email", user->getEmail());
+        params.addQueryItem("password", user->getPassword());
+        file->setRequestParams(params);
+
+        data.append(params.toString());
+        qDebug() << "URL_PATH : " << url << data << endl;
+
+        networkRequest = new QNetworkRequest(QUrl(url));
+        networkRequest->setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
+    }
+
+    if (code == Parameters::CODE_SAVE_THUMBS){
+
+        this->type = "POST";
+        this->entity = entity;
+        this->entityClass = Parameters::DB_FILE;
+        qDebug() << "thumbnail file : " << ((File*) entity)->getFileName() << " / " << ((File*) entity)->getThumbnail()->absoluteFilePath() << endl;
+        QFile qfile(((File*) entity)->getThumbnail()->absoluteFilePath()); //lets get the file by filename
+        if (!qfile.open(QIODevice::ReadOnly)) //accessibility controll for file
+        {
+            qDebug() << "file open failure"; //send message if file cant open
+        }
+        QByteArray line = qfile.readAll();
+        //we read file line by line with no error handling for reading time!!
+
+        qfile.close();
+        QByteArray boundary; //actually i cant understand that why we are using a second byte array for file sending.
+        // if someone know this trick please write below. I write this code like the other examples.
+
+        QByteArray datas(QString("--" + boundary + "\r\n").toUtf8());
+        datas += "Content-Disposition: form-data; name=\"file\"; filename=\""+qfile.fileName()+"\"\r\n";
+        //here is the http header for manuplate a normal http form and form file object
+
+        datas += "Content-Type: image/png\r\n\r\n"; //file type is here
+        datas += line; //and our file is giving to form object
+        datas += "\r\n";
+        datas += QString("--" + boundary + "\r\n\r\n").toUtf8();
+        datas += "Content-Disposition: form-data; name=\"upload\"\r\n\r\n";
+        datas += "Uploader\r\n";
+        datas += QString("--" + boundary + "--\r\n").toUtf8();
+
+        QNetworkRequest req;
+        req.setUrl(QUrl(Parameters::URL+Parameters::NET_REQUEST_SEPARATOR+"save_thumbnails")); //my virtual servers' ip address and tiny php page url is here
+        req.setRawHeader("Content-Type", "multipart/form-data; boundary=" + boundary); // we must set the first header like this. its tell the server, current object is a form
+    }
 }
+
+void NetRequest::exec()
+{
+    if (type == "POST")
+        NetworkAccessManager->post(*networkRequest, data);
+    else if (type == "GET"){
+        NetworkAccessManager->get(*networkRequest);
+    }
+}
+
+

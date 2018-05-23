@@ -144,7 +144,7 @@ bool LogInForm::areCredentialsOk(int resultCode, User * user)
 
 void LogInForm::onConnectionError(int code)
 {
-    if (code == NetworkService::CODE_USER_LOGIN || code == NetworkService::CODE_DB_INIT){
+    if (code == Parameters::CODE_USER_LOGIN || code == Parameters::CODE_DB_INIT){
         wSpinnerWidget->stop();
         // notifying the error to the user
         ui->lb_error_text->setText("Error connection");
@@ -160,7 +160,7 @@ void LogInForm::onConnectionError(int code)
 
 void LogInForm::onRequestFailed(int code)
 {
-    if (code == NetworkService::CODE_USER_LOGIN){
+    if (code == Parameters::CODE_USER_LOGIN){
         // notitfy ti the user that the request failed
         wSpinnerWidget->stop();
         QMessageBox::warning(this, "Zemini Info", "Oups! It seems that an error occured when logging you in. Please, try later!");
@@ -169,7 +169,7 @@ void LogInForm::onRequestFailed(int code)
 
 void LogInForm::onUserSaved(int code)
 {
-    if (code != NetworkService::CODE_USER_LOGIN)
+    if (code != Parameters::CODE_USER_LOGIN)
         return;
 
     wSpinnerWidget->start();
@@ -189,7 +189,7 @@ void LogInForm::onUserSaved(int code)
 void LogInForm::on_le_mail_editingFinished()
 {
     if (!((LocalDBService *)this->serviceContainer->getService(ZeminiService::LocalDatabase))->isDbInitialized()){
-        onConnectionError(NetworkService::CODE_USER_LOGIN);
+        onConnectionError(Parameters::CODE_USER_LOGIN);
         return;
     }
     ui->le_password->setFocus();
@@ -199,7 +199,7 @@ void LogInForm::on_le_mail_editingFinished()
 void LogInForm::on_le_password_editingFinished()
 {
     if (!((LocalDBService *)this->serviceContainer->getService(ZeminiService::LocalDatabase))->isDbInitialized()){
-        onConnectionError(NetworkService::CODE_USER_LOGIN);
+        onConnectionError(Parameters::CODE_USER_LOGIN);
         return;
     }
 }

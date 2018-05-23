@@ -46,6 +46,7 @@ private:
     UploadingForm * uploadingForm;
     int totalSize;
     int filesDoneSize;
+    bool pausedProcess;
 
     // Functions
     void completeInstallation();
@@ -75,8 +76,10 @@ private slots:
     void onConnectionError(int);
     void onUserEnabled(bool);
     void checkAccountConfirmation();
-    //void onStartWatchingRootDir();
-    //void onFileChange(File *);
+    void onProcessPaused();
+    void onProcessResumed();
+    void onProcessCancelled();
+    void onProcessRestarted();
 
 public slots:
     void start();

@@ -84,6 +84,7 @@ void DatabaseManager::createTables(const QString &conName)
                               "idcategory TEXT NOT NULL,"
                               "drive_id TEXT NOT NULL,"
                               "createdat TEXT,"
+                              "addedat TEXT,"
                               "updatedat TEXT,"
                               "filename TEXT,"
                               "path TEXT,"
