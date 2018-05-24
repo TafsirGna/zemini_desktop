@@ -64,11 +64,22 @@ void NetRequest::setNetworkRequest(QNetworkRequest *value)
 
 NetRequest::NetRequest()
 {
-
+    code = -1;
+    networkRequest = NULL;
+    type = "";
+    entity = NULL;
+    entityClass = "";
+    data = NULL;
 }
 
 NetRequest::NetRequest(int code, QString tableName)
 {
+    // default values
+    networkRequest = NULL;
+    type = "";
+    entity = NULL;
+    entityClass = tableName;
+    data = NULL;
     this->code = code;
 
     if (code == Parameters::CODE_DB_INIT) {
@@ -81,9 +92,16 @@ NetRequest::NetRequest(int code, QString tableName)
 
 NetRequest::NetRequest(int code , DbEntity * entity)
 {
+    // default values
+    this->code = code;
+    networkRequest = NULL;
+    type = "";
+    this->entity = entity;
+    entityClass = "";
+    data = NULL;
+
     if (code == Parameters::CODE_USER_LOGIN){
         this->type = "GET";
-        this->entity = entity;
         this->entityClass = Parameters::DB_USER;
 
         User * user = (User * ) entity;
@@ -94,9 +112,7 @@ NetRequest::NetRequest(int code , DbEntity * entity)
     }
 
     if (code == Parameters::CODE_REGISTER_USER){
-
         this->type = "POST";
-        this->entity = entity;
         this->entityClass = Parameters::DB_USER;
 
         User * user = (User *) entity;
@@ -116,7 +132,6 @@ NetRequest::NetRequest(int code , DbEntity * entity)
 
     if (code == Parameters::CODE_ACCOUNT_CHECKING){
         this->type = "GET";
-        this->entity = entity;
         this->entityClass = Parameters::DB_USER;
 
         User * user = (User *) entity;
@@ -128,7 +143,6 @@ NetRequest::NetRequest(int code , DbEntity * entity)
         User * user = UserManager::getUser();
         File * file = (File *) entity;
         this->type = "POST";
-        this->entity = entity;
         this->entityClass = Parameters::DB_FILE;
 
         QString url(Parameters::URL+"/manage_file");
@@ -147,8 +161,9 @@ NetRequest::NetRequest(int code , DbEntity * entity)
     if (code == Parameters::CODE_SAVE_THUMBS){
 
         this->type = "POST";
-        this->entity = entity;
         this->entityClass = Parameters::DB_FILE;
+        this->entity = entity;
+
         qDebug() << "thumbnail file : " << ((File*) entity)->getFileName() << " / " << ((File*) entity)->getThumbnail()->absoluteFilePath() << endl;
         QFile qfile(((File*) entity)->getThumbnail()->absoluteFilePath()); //lets get the file by filename
         if (!qfile.open(QIODevice::ReadOnly)) //accessibility controll for file
@@ -174,17 +189,29 @@ NetRequest::NetRequest(int code , DbEntity * entity)
         datas += "Uploader\r\n";
         datas += QString("--" + boundary + "--\r\n").toUtf8();
 
-        QNetworkRequest req;
-        req.setUrl(QUrl(Parameters::URL+Parameters::NET_REQUEST_SEPARATOR+"save_thumbnails")); //my virtual servers' ip address and tiny php page url is here
-        req.setRawHeader("Content-Type", "multipart/form-data; boundary=" + boundary); // we must set the first header like this. its tell the server, current object is a form
+        this->data = datas;
+        User * user = UserManager::getUser();
+
+        QUrlQuery params;
+        params.addQueryItem("email", user->getEmail());
+        params.addQueryItem("password", user->getPassword());
+        ((File *) entity)->setRequestParams(params);
+        qDebug() << "datas : " << params.toString() << endl;
+
+        networkRequest = new QNetworkRequest(QUrl(Parameters::URL+Parameters::NET_REQUEST_SEPARATOR+"save_thumbnails?"+params.toString()));
+        networkRequest->setRawHeader("Content-Type", "multipart/form-data; boundary=" + boundary); // we must set the first header like this. its tell the server, current object is a form
     }
 }
 
 void NetRequest::exec()
 {
-    if (type == "POST")
+    qDebug() << "In exec function " << networkRequest->url() << " -: " << type <<  endl;
+    if (type == "POST"){
+        qDebug() << "POST / Url : " << networkRequest->url() << " ; Data : " << data << endl;
         NetworkAccessManager->post(*networkRequest, data);
+    }
     else if (type == "GET"){
+        qDebug() << "GET / Url : " << networkRequest->url() << endl;
         NetworkAccessManager->get(*networkRequest);
     }
 }

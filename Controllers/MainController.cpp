@@ -378,7 +378,6 @@ void MainController::onConnectionError(int code)
             trayIcon->show();
             directoryService->start();
         }
-        QTimer::singleShot(Parameters::CHECK_CON_TIME_OUT, this, SLOT(checkAccountConfirmation()));
     }
 }
 
@@ -485,10 +484,7 @@ cv::Mat3b MainController::QImage2Mat(const QImage &src) {
 
 void MainController::checkAccountConfirmation()
 {
-    if (!pausedProcess)
-        ((NetworkService *)this->serviceContainer->getService(ZeminiService::Network))->checkUserAccount();
-    else
-        QTimer::singleShot(Parameters::CHECK_CON_TIME_OUT, this, SLOT(checkAccountConfirmation()));
+    ((NetworkService *)this->serviceContainer->getService(ZeminiService::Network))->checkUserAccount();
 }
 
 void MainController::onProcessPaused()

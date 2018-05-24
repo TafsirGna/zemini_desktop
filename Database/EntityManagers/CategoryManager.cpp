@@ -8,7 +8,6 @@ CategoryManager::CategoryManager() : AbstractManager()
 
 Category * CategoryManager::getCategory(QFileInfo fileInfo)
 {
-    //printAll();
     QString path = fileInfo.absoluteFilePath();
     QStringList pathTab = path.split("/");
     int index  = pathTab.indexOf(Parameters::ROOT_DIR_NAME);
@@ -16,8 +15,11 @@ Category * CategoryManager::getCategory(QFileInfo fileInfo)
     QMap<QString, QString> catProperties;
     catProperties.insert("name", pathTab.at(index+1));
     Category * category = CategoryManager::getOneBy(catProperties);
-    if (category == NULL)
-        return add(new Category(0, pathTab.at(index+1)));
+    if (category == NULL){
+        QMap<QString, QString> catProp;
+        catProp.insert("name", "Uncategorized");
+        return CategoryManager::getOneBy(catProp);
+    }
     return category;
 }
 

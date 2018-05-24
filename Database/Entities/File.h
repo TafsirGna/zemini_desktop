@@ -54,6 +54,7 @@ public:
     QString getAbsolutePath() const;
     bool isFile() const;
     bool isDir() const;
+    static int getDirSize(QDir);
 
     //Setters
     void setId(int id);

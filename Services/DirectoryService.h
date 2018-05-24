@@ -37,8 +37,6 @@ public:
     QStringList getSubDirNames();
     static bool setUserFolder(QWidget * parent = 0);
     bool isActive();
-    static int getDirSize(QDir);
-    //void setTrayIcon(QSystemTrayIcon *);
 
 signals:
     void storeInDb(QFileInfo );

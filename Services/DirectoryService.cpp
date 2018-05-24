@@ -31,8 +31,14 @@ void DirectoryService::watchZeminiFolder()
     QMap<QString, QString> parameters;
     parameters.insert("tableName", Parameters::DB_APP_DATA);
     parameters.insert("id", AppDataManager::STORAGE_DIR_KEY);
-
     QDir root_dir(((AppData *)LocalDBService::getOneBy(parameters))->getValue());
+
+    parameters.clear();
+    parameters.insert("tableName", Parameters::DB_APP_DATA);
+    parameters.insert("id", AppDataManager::STORAGE_DIR_KEY);
+    AppData * appData = (AppData *)LocalDBService::getOneBy(parameters);
+    QString thumbsDir = appData->getValue()+"/"+Parameters::THUMBS_DIR_NAME;
+
     queue = new QFileInfoList();
     (*queue) += root_dir.entryInfoList(QDir::Files | QDir::NoSymLinks | QDir::AllDirs | QDir::NoDotAndDotDot);
 
@@ -59,13 +65,8 @@ void DirectoryService::watchZeminiFolder()
             break;
         }
         qDebug() << "test : " << currentObject.absoluteFilePath() << endl;
-        emit storeInDb(currentObject);
-
-        QMap<QString, QString> parameters;
-        parameters.insert("tableName", Parameters::DB_APP_DATA);
-        parameters.insert("id", AppDataManager::STORAGE_DIR_KEY);
-        AppData * appData = (AppData *)LocalDBService::getOneBy(parameters);
-        QString thumbsDir = appData->getValue()+"/"+Parameters::THUMBS_DIR_NAME;
+        if (currentObject.absoluteFilePath() != thumbsDir)
+            emit storeInDb(currentObject);
 
         if (currentObject.isDir() && currentObject.absoluteFilePath() != thumbsDir){
             // get its children
@@ -230,28 +231,6 @@ bool DirectoryService::setUserFolder(QWidget* parent)
 bool DirectoryService::isActive()
 {
     return active;
-}
-
-int DirectoryService::getDirSize(QDir rootDir)
-{
-    int dirSize = 0;
-    QFileInfoList queue;
-    QFileInfo currentNode(rootDir.absolutePath()) ;
-    while(true){
-        // if the root directory is a file then
-        if (currentNode.isFile()){
-            dirSize += currentNode.size();
-        }
-        else{
-            //otherwise
-            queue += QDir(currentNode.absoluteFilePath()).entryInfoList(QDir::Files | QDir::NoSymLinks | QDir::AllDirs | QDir::NoDotAndDotDot);
-            //QMessageBox::information(0, "ok", QString::number(queue.size()));
-        }
-        if (queue.isEmpty())
-            return dirSize;
-        currentNode = queue.last();
-        queue.removeLast();
-    }
 }
 
 /*

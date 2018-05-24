@@ -50,12 +50,13 @@ File* FileManager::add(QFileInfo rootFileInfo)
 File* FileManager::add(File * file)
 {
     qDebug() << "adding file" << endl;
-    QString request = "insert into File(id, iddir, idtype, idcategory, drive_id, createdat, updatedat, filename, path, size, status, thumbnail) select NULL, "
+    QString request = "insert into File(id, iddir, idtype, idcategory, drive_id, createdat, updatedat, addedat, filename, path, size, status, thumbnail) select NULL, "
             +((file->getFolder() == NULL) ? "NULL" : QString::number(file->getFolder()->getId()))+", "
             +QString::number(file->getType()->getId())+", "
             +((file->getCategory() == NULL) ? "NULL" : QString::number(file->getCategory()->getId()))+", "
             +QString::number(file->getDrive()->getId())+", '"
             +file->getCreatedAt().toString(Parameters::timeFormat)
+            +"', '"+file->getAddedAt().toString(Parameters::timeFormat)
             +"', '"+file->getUpdatedAt().toString(Parameters::timeFormat)
             +"', '"+file->getFileName()+"', '"+file->getPath()
             +"', "+QString::number(file->getSize())+", "+QString::number(File::FILE_ADDED)
@@ -279,12 +280,15 @@ File *FileManager::convertToFile(QFileInfo fileInfo)
     File * file = NULL;
     if (savedFile != NULL){
         file = savedFile;
-        file->setSize(fileInfo.size());
+        if (fileInfo.isFile())
+            file->setSize(fileInfo.size());
+        else if (fileInfo.isDir())
+            file->setSize(File::getDirSize(QDir(fileInfo.absoluteFilePath())));
         file->setUpdatedAt(fileInfo.lastRead());
         file->setStatus(File::FILE_UPDATED); // TODO temporary value
     }
     else{
-        /*
+
         if (FileTypeManager::getType(fileInfo) == NULL)
             qDebug() << "File type NULL" << endl;
         if (CategoryManager::getCategory(fileInfo) == NULL)
@@ -293,9 +297,11 @@ File *FileManager::convertToFile(QFileInfo fileInfo)
             qDebug() << "Folder NULL " <<endl;
         if (DriveManager::getDrive(fileInfo) == NULL)
             qDebug() << "Drive NULL" <<endl;
-            */
-        qDebug() << "Converting file" << endl;
-        file = new File(0, fileInfo.fileName(), Functions::getRelativePath(fileInfo.absolutePath()), fileInfo.created(), QDateTime::currentDateTime(), fileInfo.lastRead(), fileInfo.size(), File::FILE_ADDED, ((fileInfo.isDir()) ? NULL : Functions::generateThumbnails(fileInfo)), FileTypeManager::getType(fileInfo), CategoryManager::getCategory(fileInfo), FileManager::getFolder(fileInfo), DriveManager::getDrive(fileInfo));
+
+        qDebug() << "Converting file" << fileInfo.fileName() <<  endl;
+        int size = ((fileInfo.isDir()) ? File::getDirSize(QDir(fileInfo.absoluteFilePath())) : fileInfo.size());
+
+        file = new File(0, fileInfo.fileName(), Functions::getRelativePath(fileInfo.absolutePath()), fileInfo.created(), QDateTime::currentDateTime(), fileInfo.lastRead(), size, File::FILE_ADDED, ((fileInfo.isDir()) ? NULL : Functions::generateThumbnails(fileInfo)), FileTypeManager::getType(fileInfo), CategoryManager::getCategory(fileInfo), FileManager::getFolder(fileInfo), DriveManager::getDrive(fileInfo));
     }
     return file;
 }
@@ -313,15 +319,13 @@ File *FileManager::getOneBy(QMap<QString, QString> properties)
         j++;
     }
 
-    qDebug() << request << endl;
-    qDebug() << "fine 2" <<endl;
+    //qDebug() << request << endl;
     QSqlQuery sqlQuery(Parameters::localDb);
     sqlQuery.exec(request);
     if (!sqlQuery.isActive()){
         qDebug() << "Failed to select the file : " << sqlQuery.lastError().text() <<endl;
         return NULL;
     }
-    qDebug() << "fine 2.1" <<endl;
     if (sqlQuery.next()){
         return Functions::fromSqlRecord2File(sqlQuery.record());
     }

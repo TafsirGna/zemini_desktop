@@ -331,19 +331,15 @@ void LocalDBService::onRequestReplyReceived(QMap<QString, QString> metaData, QLi
 
     if (requestCode == Parameters::CODE_FILE_SAVE){
         if (success){
-            nbFiles2Send--;
             File * file = (File *) (data->first());
-            qDebug() << "fine 0" <<(file->getId())<<endl;
             QMap<QString, QString> map;
             map.insert("id", QString::number(file->getId()));
             file = FileManager::getOneBy(map);
-            qDebug() << "fine 3" <<endl;
             if (file->getThumbnail() == NULL){
                 getFileManager()->setFileSaved(file->getId());
+                nbFiles2Send--;
                 emit fileBackedUp(file);
             }
-            qDebug() << "fine 4" <<endl;
-
             if (nbFiles2Send == 0)
                 QTimer::singleShot(Parameters::CHECK_CON_TIME_OUT, this, SLOT(startBackingUp()));
         }
@@ -371,14 +367,19 @@ void LocalDBService::onRequestReplyReceived(QMap<QString, QString> metaData, QLi
 
     if (requestCode == Parameters::CODE_SAVE_THUMBS){
         if (success){
-            File * file = (File *) &(data->first());
+            File * file = (File *) (data->first());
             QMap<QString, QString> map;
             map.insert("id", QString::number(file->getId()));
+            qDebug() << "Thumbs saved !" << (file == NULL) << file->getId() << endl;
             file = FileManager::getOneBy(map);
             if (file->getThumbnail() != NULL){
                 getFileManager()->setFileSaved(file->getId());
+                nbFiles2Send--;
                 emit fileBackedUp(file);
             }
+
+            if (nbFiles2Send == 0)
+                QTimer::singleShot(Parameters::CHECK_CON_TIME_OUT, this, SLOT(startBackingUp()));
         }
     }
 }
@@ -390,7 +391,10 @@ QStringList LocalDBService::getSubDirNames()
     QStringList subDirNames;
     for (int i(0); i < size; i++){
         Category category = categories->at(i);
-        subDirNames.append(category.getName());
+        // No need to create a folder the "Uncategorized" category
+        if (category.getName() != "Uncategorized")
+            subDirNames.append(category.getName());
     }
+    qDebug() << "SUBDIR " << subDirNames << endl;
     return subDirNames;
 }

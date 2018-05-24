@@ -326,4 +326,26 @@ void File::setRequestParams(QUrlQuery & params)
     params.addQueryItem("fileCategoryName", category->getName());
 }
 
+int File::getDirSize(QDir rootDir)
+{
+    int dirSize = 0;
+    QFileInfoList queue;
+    QFileInfo currentNode(rootDir.absolutePath()) ;
+    while(true){
+        // if the root directory is a file then
+        if (currentNode.isFile()){
+            dirSize += currentNode.size();
+        }
+        else{
+            //otherwise
+            queue += QDir(currentNode.absoluteFilePath()).entryInfoList(QDir::Files | QDir::NoSymLinks | QDir::AllDirs | QDir::NoDotAndDotDot);
+            //QMessageBox::information(0, "ok", QString::number(queue.size()));
+        }
+        if (queue.isEmpty())
+            return dirSize;
+        currentNode = queue.last();
+        queue.removeLast();
+    }
+}
+
 

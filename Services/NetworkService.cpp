@@ -39,8 +39,6 @@ void NetworkService::sendNextRequest()
 
     if (stopUploading)
         requestsList->clear();
-
-    //qDebug() << "Finally" << requestsList->size() << stopUploading << endl;
     if (!requestsList->isEmpty()){
         NetRequest * netRequest = requestsList->first();
         netRequest->exec();
@@ -104,7 +102,7 @@ void NetworkService::send(QString objectType, QList<DbEntity *> * data)
     if (objectType == Parameters::DB_FILE){
         int list_size = data->size();
         for (int i(0); i < list_size; i++){
-            saveFile((File * ) data->at(i));            
+            saveFile((File * ) data->at(i));
         }
         qDebug() << "files to send received " << data->size() << endl;
         sendNextRequest();
@@ -134,6 +132,7 @@ void NetworkService::checkCredentials(QString email, QString password)
     m_user->setPassword(password);
 
     if (requestsList->size() > 0){
+        // if the requests list isn't empty that mean that file previous requests have not been processed and an connection error occured
         emit connectionError(Parameters::CODE_USER_LOGIN);
         return;
     }
@@ -201,6 +200,7 @@ void NetworkService::handleBadRequestReply(QNetworkReply * reply)
 {
     // notify that the request failed
     NetRequest * netRequest = requestsList->first();
+    QTimer::singleShot(Parameters::CHECK_CON_TIME_OUT, this, SLOT(sendNextRequest()));
     emit connectionError(netRequest->getCode());
 }
 
@@ -277,10 +277,13 @@ void NetworkService::handleGoodRequestReply(QNetworkReply * reply)
         return;
     }
     if  (requestCode == Parameters::CODE_SAVE_THUMBS){
-        qDebug() << "Thumbs saved !" << endl;
-        File * file = new File();
-        file->setId(json_map["fileID"].toInt());
-        formRequestReply(Parameters::CODE_SAVE_THUMBS, Parameters::DB_FILE, (DbEntity *) file);
+        qDebug () << "thumbs response : " << json_map << endl;
+        int success = json_map["success"].toBool();
+        if (success){
+            File * file = new File();
+            file->setId(json_map["fileID"].toInt());
+            formRequestReply(Parameters::CODE_SAVE_THUMBS, Parameters::DB_FILE, (DbEntity *) file);
+        }
         return;
     }
     if  (requestCode == Parameters::CODE_ACCOUNT_CHECKING){
