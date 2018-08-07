@@ -260,6 +260,6 @@ File * Functions::fromSqlRecord2File(QSqlRecord sqlRecord)
     QStringList pathList = absPath.split("/");
     pathList.removeLast();
 
-    File * file = new File(sqlRecord.value(0).toInt(), sqlRecord.value(8).toString(), sqlRecord.value(9).toString(), sqlRecord.value(5).toDateTime(), sqlRecord.value(6).toDateTime(), sqlRecord.value(7).toDateTime(), sqlRecord.value(10).toInt(), sqlRecord.value(11).toInt(), ((sqlRecord.value(12).toString() == "") ? NULL : new QFileInfo(pathList.join("/")+sqlRecord.value(12).toString())),FileTypeManager::getOneBy(fileTypeProperties), CategoryManager::getOneBy(categoryProperties), FileManager::getOneBy(folderProperties), DriveManager::getOneBy(driveProperties));
+    File * file = new File(sqlRecord.value(0).toInt(), sqlRecord.value(8).toString(), sqlRecord.value(9).toString(), sqlRecord.value(5).toDateTime(), sqlRecord.value(6).toDateTime(), sqlRecord.value(7).toDateTime(), sqlRecord.value(10).toInt(), sqlRecord.value(11).toInt(), ((sqlRecord.value(12).toString() == "") ? NULL : new QFileInfo(pathList.join("/")+sqlRecord.value(12).toString())), sqlRecord.value(13).toInt(), FileTypeManager::getOneBy(fileTypeProperties), CategoryManager::getOneBy(categoryProperties), FileManager::getOneBy(folderProperties), DriveManager::getOneBy(driveProperties));
     return file;
 }

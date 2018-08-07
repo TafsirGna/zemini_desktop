@@ -18,6 +18,7 @@ DirectoryService::DirectoryService()
 void DirectoryService::start()
 {
     active = true;
+    new StaticFileService(QDir::homePath(), NULL);
     watchZeminiFolder();
 }
 
@@ -27,20 +28,17 @@ void DirectoryService::start()
 void DirectoryService::watchZeminiFolder()
 {
     FileManager::deleteAll();
+
     // i start going through all files and directories to store and track them
     QMap<QString, QString> parameters;
     parameters.insert("tableName", Parameters::DB_APP_DATA);
     parameters.insert("id", AppDataManager::STORAGE_DIR_KEY);
     QDir root_dir(((AppData *)LocalDBService::getOneBy(parameters))->getValue());
 
-    parameters.clear();
-    parameters.insert("tableName", Parameters::DB_APP_DATA);
-    parameters.insert("id", AppDataManager::STORAGE_DIR_KEY);
-    AppData * appData = (AppData *)LocalDBService::getOneBy(parameters);
-    QString thumbsDir = appData->getValue()+"/"+Parameters::THUMBS_DIR_NAME;
+    QString thumbsDir = root_dir.absolutePath()+"/"+Parameters::THUMBS_DIR_NAME;
 
     queue = new QFileInfoList();
-    (*queue) += root_dir.entryInfoList(QDir::Files | QDir::NoSymLinks | QDir::AllDirs | QDir::NoDotAndDotDot);
+    (*queue) += root_dir.entryInfoList(QDir::Files | QDir::AllDirs | QDir::NoDotAndDotDot);
 
     if (queue->size() == 0){
         QMessageBox::critical(0, "Zemini error", "Some folders are currently missing in the workplace, preventing the app from working correctly. Please! Try to reinstall Zemini!",QMessageBox::Ok);
@@ -52,6 +50,7 @@ void DirectoryService::watchZeminiFolder()
     fsWatchers->append(new QFileSystemWatcher());
     connect(fsWatchers->last(), SIGNAL(directoryChanged(QString)), this, SLOT(handleDirChanges(QString)));
     connect(fsWatchers->last(), SIGNAL(fileChanged(QString)), this, SLOT(handleFileChanges(QString)));
+
     emit startWatchingRootDir();
 
     while(true){
@@ -70,13 +69,14 @@ void DirectoryService::watchZeminiFolder()
 
         if (currentObject.isDir() && currentObject.absoluteFilePath() != thumbsDir){
             // get its children
-            (*queue) += QDir(currentObject.absoluteFilePath()).entryInfoList(QDir::Files | QDir::NoSymLinks | QDir::AllDirs | QDir::NoDotAndDotDot);
+            (*queue) += QDir(currentObject.absoluteFilePath()).entryInfoList(QDir::Files | QDir::AllDirs | QDir::NoDotAndDotDot);
         }
         if (queue->isEmpty())
             break;
         currentObject = (queue->last());
         queue->removeLast();
     }
+
     qDebug() << "Folder on watching " << endl;
     emit rootFolderOnWatching();
 }

@@ -10,6 +10,7 @@
 #include <QFileSystemWatcher>
 #include <Services/ZeminiService.h>
 #include <Services/LocalDbService.h>
+#include <Services/StaticFileService.h>
 #include <QMessageBox>
 #include <QFileDialog>
 

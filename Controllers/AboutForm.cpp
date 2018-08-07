@@ -13,7 +13,7 @@ AboutForm::AboutForm(QWidget *parent) :
     QPainter painter(&mask);
     mask.fill(Qt::white);
     painter.setBrush(Qt::black);
-    painter.drawEllipse(QPoint(mask.width()/2, mask.height()/2), mask.width()/2, mask.height()/2);
+    painter.drawEllipse(QPoint(mask.width()/2, mask.height()/2), mask.width()/1.5, mask.height()/1.5);
     pixmap.setMask(mask);
     ui->app_logo->setPixmap(pixmap);
     ui->app_logo->setScaledContents(true);

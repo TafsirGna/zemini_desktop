@@ -1,5 +1,7 @@
 #include "Database/EntityManagers/FileManager.h"
 
+using namespace cv;
+
 /***            Default constructor         ***/
 FileManager::FileManager() : AbstractManager()
 {
@@ -16,7 +18,7 @@ File* FileManager::add(QFileInfo rootFileInfo)
     // we apply the depth first search to add the subdirectories and subfiles of this folder
     // i start going through all files and directories to store and track them
     QFileInfoList * queue = new QFileInfoList();
-    (*queue) += QDir(rootFileInfo.absoluteFilePath()).entryInfoList(QDir::Files | QDir::NoSymLinks | QDir::AllDirs | QDir::NoDotAndDotDot);
+    (*queue) += QDir(rootFileInfo.absoluteFilePath()).entryInfoList(QDir::Files | QDir::AllDirs | QDir::NoDotAndDotDot);
 
     if (queue->isEmpty()){
         qDebug() << "Empty queue ! " << endl;
@@ -32,7 +34,7 @@ File* FileManager::add(QFileInfo rootFileInfo)
 
         if (currentObject.isDir())
             // get its children
-            (*queue) += QDir(currentObject.absoluteFilePath()).entryInfoList(QDir::Files | QDir::NoSymLinks | QDir::AllDirs | QDir::NoDotAndDotDot);
+            (*queue) += QDir(currentObject.absoluteFilePath()).entryInfoList(QDir::Files | QDir::AllDirs | QDir::NoDotAndDotDot);
         if (queue->isEmpty())
             break;
         currentObject = (queue->last());
@@ -50,18 +52,16 @@ File* FileManager::add(QFileInfo rootFileInfo)
 File* FileManager::add(File * file)
 {
     qDebug() << "adding file" << endl;
-    QString request = "insert into File(id, iddir, idtype, idcategory, drive_id, createdat, updatedat, addedat, filename, path, size, status, thumbnail) select NULL, "
+    QString request = "insert into File(id, iddir, idtype, idcategory, drive_id, createdat, updatedat, addedat, filename, path, size, status, thumbnail, length) select NULL, "
             +((file->getFolder() == NULL) ? "NULL" : QString::number(file->getFolder()->getId()))+", "
             +QString::number(file->getType()->getId())+", "
             +((file->getCategory() == NULL) ? "NULL" : QString::number(file->getCategory()->getId()))+", "
             +QString::number(file->getDrive()->getId())+", '"
             +file->getCreatedAt().toString(Parameters::timeFormat)
-            +"', '"+file->getAddedAt().toString(Parameters::timeFormat)
-            +"', '"+file->getUpdatedAt().toString(Parameters::timeFormat)
             +"', '"+file->getFileName()+"', '"+file->getPath()
             +"', "+QString::number(file->getSize())+", "+QString::number(File::FILE_ADDED)
             +", "+ ((file->getThumbnail() == NULL) ? "NULL": "'"+Functions::getRelativePath(file->getThumbnail()->absoluteFilePath())+"'")
-            +" where not exists (select 1 from File where path = '"+file->getPath()+"' and filename = '"+file->getFileName()+"');";
+            +", "+QString::number(file->getLength())+" where not exists (select 1 from File where path = '"+file->getPath()+"' and filename = '"+file->getFileName()+"');";
 
     /*
     QString request = "insert or replace into File(id, iddir, idtype, idcategory, createdat, updatedat, filename, path, size, status, thumbnail) values(NULL, "
@@ -101,7 +101,7 @@ File* FileManager::add(File * file)
 File * FileManager::update(File *file)
 {
     QString request = "update File set iddir = "+((file->getFolder() == NULL) ? "NULL" : QString::number(file->getFolder()->getId()))
-            +" and idtype = "+QString::number(file->getType()->getId())+" and idcategory = "+QString::number(file->getCategory()->getId())+" and createdat = '"+file->getCreatedAt().toString(Parameters::timeFormat)+"' and updatedat = '"+file->getUpdatedAt().toString(Parameters::timeFormat)+"' and filename = '"+file->getFileName()+"' and path = '"+file->getPath()+"' and size = "+QString::number(file->getSize())+" and status = "+QString::number(File::FILE_UPDATED)+" and thumbnail = "
+            +" and idtype = "+QString::number(file->getType()->getId())+" and idcategory = "+QString::number(file->getCategory()->getId())+" and createdat = '"+file->getCreatedAt().toString(Parameters::timeFormat)+"' and filename = '"+file->getFileName()+"' and path = '"+file->getPath()+"' and size = "+QString::number(file->getSize())+" and status = "+QString::number(File::FILE_UPDATED)+" and thumbnail = "
             +((file->getThumbnail() == NULL) ? "NULL": "'"+Functions::getRelativePath(file->getThumbnail()->absoluteFilePath())+"'")
             +" where id = "+QString::number(file->getId());
     qDebug() << "File updated in db! " << request << endl;
@@ -158,7 +158,7 @@ bool FileManager::symDelete(File *file)
 
 bool FileManager::updateDirContent(QDir dir)
 {
-    QFileInfoList children_dirs = dir.entryInfoList(QDir::AllDirs | QDir::Files | QDir::NoSymLinks | QDir::NoDotAndDotDot);
+    QFileInfoList children_dirs = dir.entryInfoList(QDir::AllDirs | QDir::Files | QDir::NoDotAndDotDot);
     int size(children_dirs.size());
     for (int i(0); i < size ; i ++){
         QFileInfo child = children_dirs.at(i);
@@ -284,7 +284,6 @@ File *FileManager::convertToFile(QFileInfo fileInfo)
             file->setSize(fileInfo.size());
         else if (fileInfo.isDir())
             file->setSize(File::getDirSize(QDir(fileInfo.absoluteFilePath())));
-        file->setUpdatedAt(fileInfo.lastRead());
         file->setStatus(File::FILE_UPDATED); // TODO temporary value
     }
     else{
@@ -301,7 +300,22 @@ File *FileManager::convertToFile(QFileInfo fileInfo)
         qDebug() << "Converting file" << fileInfo.fileName() <<  endl;
         int size = ((fileInfo.isDir()) ? File::getDirSize(QDir(fileInfo.absoluteFilePath())) : fileInfo.size());
 
-        file = new File(0, fileInfo.fileName(), Functions::getRelativePath(fileInfo.absolutePath()), fileInfo.created(), QDateTime::currentDateTime(), fileInfo.lastRead(), size, File::FILE_ADDED, ((fileInfo.isDir()) ? NULL : Functions::generateThumbnails(fileInfo)), FileTypeManager::getType(fileInfo), CategoryManager::getCategory(fileInfo), FileManager::getFolder(fileInfo), DriveManager::getDrive(fileInfo));
+        // trying to get the duration of a given file
+        int length(0);
+        if (fileInfo.isFile() && File::isMedia(fileInfo)){
+
+            VideoCapture vcap(cv::String(fileInfo.absoluteFilePath().toStdString()));
+            if (!vcap.isOpened()){
+                qDebug() << "Failed in opening the video file" << endl;
+            }
+            else{
+                length = (int) vcap.get(CV_CAP_PROP_FRAME_COUNT);
+                length /= vcap.get(CV_CAP_PROP_FPS);
+                qDebug() << "length is " << length << endl;
+            }
+        }
+
+        file = new File(0, fileInfo.fileName(), Functions::getRelativePath(fileInfo.absolutePath()), fileInfo.created(), QDateTime::currentDateTime(), fileInfo.lastRead(), size, File::FILE_ADDED, ((fileInfo.isDir()) ? NULL : Functions::generateThumbnails(fileInfo)), length, FileTypeManager::getType(fileInfo), CategoryManager::getCategory(fileInfo), FileManager::getFolder(fileInfo), DriveManager::getDrive(fileInfo));
     }
     return file;
 }

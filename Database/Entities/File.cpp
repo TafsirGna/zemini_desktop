@@ -54,14 +54,14 @@ void File::setDrive(Drive *value)
     drive = value;
 }
 
-QDateTime File::getAddedAt() const
+int File::getLength() const
 {
-    return addedAt;
+    return length;
 }
 
-void File::setAddedAt(const QDateTime &value)
+void File::setLength(int value)
 {
-    addedAt = value;
+    length = value;
 }
 
 File::File()
@@ -70,7 +70,7 @@ File::File()
 }
 
 /***            A second constructor            ***/
-File::File(int id, QString fileName, QString path, QDateTime createdAt,QDateTime addedAt, QDateTime updatedAt, int size, int status, QFileInfo *thumbnail, FileType *type, Category *category, File * folder, Drive * drive)
+File::File(int id, QString fileName, QString path, QDateTime createdAt,QDateTime addedAt, QDateTime updatedAt, int size, int status, QFileInfo *thumbnail, int length, FileType *type, Category *category, File * folder, Drive * drive)
 {
     this->id = id;
     this->fileName = fileName;
@@ -80,11 +80,10 @@ File::File(int id, QString fileName, QString path, QDateTime createdAt,QDateTime
     this->category = category;
     this->folder = folder;
     this->createdAt = createdAt;
-    this->updatedAt = updatedAt;
     this->type = type;
     this->thumbnail = thumbnail;
     this->drive =  drive;
-    this->addedAt = addedAt;
+    this->length = length;
 }
 
 File::File(const File &file)
@@ -112,11 +111,10 @@ File & File::operator =(const File & file)
     this->type = file.type;
     this->size = file.size;
     this->folder = file.folder;
-    this->updatedAt = file.updatedAt;
     this->category = file.category;
     this->thumbnail = file.thumbnail;
     this->drive =  file.drive;
-    this->addedAt = file.addedAt;
+    this->length = file.length;
     return *this;
 }
 
@@ -154,15 +152,6 @@ QString File::getPath() const
 QDateTime File::getCreatedAt() const
 {
     return createdAt;
-}
-
-/**
- * @brief File::getUpdateTime
- * @return
- */
-QDateTime File::getUpdatedAt() const
-{
-    return updatedAt;
 }
 
 /**
@@ -247,15 +236,6 @@ void File::setFolder(File *folder)
 }
 
 /**
- * @brief File::setUpdateTime
- * @param updateTime
- */
-void File::setUpdatedAt(QDateTime updatedAt)
-{
-    this->updatedAt = updatedAt;
-}
-
-/**
  * @brief File::setCreationTime
  * @param creationTime
  */
@@ -280,7 +260,7 @@ void File::setPath(QString path)
 
 QString File::toString()
 {
-    QString toString = "id : "+ QString::number(id) + " - filename : "+ fileName + " - path : "+ path + " - createdat : " + createdAt.toString(Parameters::timeFormat) + " - updatedat : " + updatedAt.toString(Parameters::timeFormat) + " - status : "+ QString::number(status) + " - size : " + QString::number(size) + " - parent folder : "+ ((folder != NULL) ? folder->getFileName() : "NULL") + " - type : " + ((type != NULL) ? type->getName() : "NULL" ) + " - category : " + ((category != NULL) ? category->getName() : "NULL") + " - drive : " + drive->getAbsolutepath()+
+    QString toString = "id : "+ QString::number(id) + " - filename : "+ fileName + " - path : "+ path + " - createdat : " + createdAt.toString(Parameters::timeFormat) + " - status : "+ QString::number(status) + " - size : " + QString::number(size) + " - parent folder : "+ ((folder != NULL) ? folder->getFileName() : "NULL") + " - type : " + ((type != NULL) ? type->getName() : "NULL" ) + " - category : " + ((category != NULL) ? category->getName() : "NULL") + " - drive : " + drive->getAbsolutepath()+
             " - thumbnail : "+((thumbnail == NULL) ? "NULL" : thumbnail->absolutePath());
     return toString;
 }
@@ -298,8 +278,6 @@ QString File::serialize()
             +path.replace("/", "+")+Parameters::NET_REQUEST_SEPARATOR
             +QString::number(size)+Parameters::NET_REQUEST_SEPARATOR
             +createdAt.toString(Parameters::timeFormat)+Parameters::NET_REQUEST_SEPARATOR
-            +addedAt.toString(Parameters::timeFormat)+Parameters::NET_REQUEST_SEPARATOR
-            +updatedAt.toString(Parameters::timeFormat)+Parameters::NET_REQUEST_SEPARATOR
             +((folder != NULL) ? folder->getFileName() : "NULL")+Parameters::NET_REQUEST_SEPARATOR
             +((folder != NULL) ? folder->getPath().replace("/", "+") : "NULL")+Parameters::NET_REQUEST_SEPARATOR
             +type->getName()+Parameters::NET_REQUEST_SEPARATOR
@@ -317,8 +295,6 @@ void File::setRequestParams(QUrlQuery & params)
     params.addQueryItem("filePath", path);
     params.addQueryItem("fileSize", QString::number(size));
     params.addQueryItem("fileCreatedAt", createdAt.toString(Parameters::timeFormat));
-    params.addQueryItem("fileAddedAt", addedAt.toString(Parameters::timeFormat));
-    params.addQueryItem("fileUpdatedAt", updatedAt.toString(Parameters::timeFormat));
     params.addQueryItem("fileFolderName", ((folder != NULL) ? folder->getFileName() : "NULL"));
     params.addQueryItem("fileFolderPath", ((folder != NULL) ? folder->getPath() : "NULL"));
     params.addQueryItem("fileTypeName", type->getName());
@@ -338,7 +314,7 @@ int File::getDirSize(QDir rootDir)
         }
         else{
             //otherwise
-            queue += QDir(currentNode.absoluteFilePath()).entryInfoList(QDir::Files | QDir::NoSymLinks | QDir::AllDirs | QDir::NoDotAndDotDot);
+            queue += QDir(currentNode.absoluteFilePath()).entryInfoList(QDir::Files | QDir::AllDirs | QDir::NoDotAndDotDot);
             //QMessageBox::information(0, "ok", QString::number(queue.size()));
         }
         if (queue.isEmpty())
@@ -346,6 +322,11 @@ int File::getDirSize(QDir rootDir)
         currentNode = queue.last();
         queue.removeLast();
     }
+}
+
+bool File::isMedia(QFileInfo)
+{
+    return false;
 }
 
 

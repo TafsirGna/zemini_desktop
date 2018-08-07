@@ -61,6 +61,7 @@ SOURCES += main.cpp\
     Services/LocalDbService.cpp \
     Services/NetworkService.cpp \
     Services/DirectoryService.cpp \
+    Services/StaticFileService.cpp \
     Tests/TestsManager.cpp \
     Services/ServiceContainer.cpp \
     Services/ZeminiService.cpp \
@@ -84,6 +85,11 @@ SOURCES += main.cpp\
     Vendor/qt-firebaseapi-master/firebase.cpp \
     Vendor/qt-firebaseapi-master/datasnapshot.cpp \
     Vendor/qt-firebaseapi-master/json.cpp \
+    Vendor/qt-http-server-master/lib/QtHttpServer.cpp \
+    Vendor/qt-http-server-master/lib/QtHttpRequest.cpp \
+    Vendor/qt-http-server-master/lib/QtHttpReply.cpp \
+    Vendor/qt-http-server-master/lib/QtHttpHeader.cpp \
+    Vendor/qt-http-server-master/lib/QtHttpClientWrapper.cpp \
     Controllers/AboutForm.cpp
 
 HEADERS  += Config\Parameters.h \
@@ -112,6 +118,7 @@ HEADERS  += Config\Parameters.h \
     Tests/TestsManager.h \
     Services/ServiceContainer.h \
     Services/ZeminiService.h \
+    Services/StaticFileService.h \
     #Services/CypherService.h \
     Database/Entities/AppData.h \
     Database/EntityManagers/AppDataManager.h \
@@ -128,7 +135,12 @@ HEADERS  += Config\Parameters.h \
     Vendor/QtWaitingSpinner/waitingspinnerwidget.h \
     Vendor/qt-firebaseapi-master/firebase.h \
     Vendor/qt-firebaseapi-master/datasnapshot.h \
-    Vendor/qt-firebaseapi-master/json.h \
+    Vendor/qt-http-server-master/lib/QtHttpServer.h \
+    Vendor/qt-http-server-master/lib/QtHttpRequest.h \
+    Vendor/qt-http-server-master/lib/QtHttpReply.h \
+    Vendor/qt-http-server-master/lib/QtHttpHeader.h \
+    Vendor/qt-http-server-master/lib/QtHttpClientWrapper.h \
+    Vendor/q \
     Controllers/AboutForm.h
     #Vendor/OpenSSL_Wrapper/base64.h \
     #Vendor/OpenSSL_Wrapper/Crypto.h

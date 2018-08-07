@@ -21,8 +21,6 @@ class File : public DbEntity
 private:
     int id;
     QDateTime createdAt;
-    QDateTime updatedAt;
-    QDateTime addedAt;
     QString path;
     QString fileName;
     int size;
@@ -32,11 +30,12 @@ private:
     File * folder;
     QFileInfo * thumbnail;
     Drive * drive;
+    int length; // represents the file length
 
 public:
     //Constructors
     File();
-    File(int id, QString fileName, QString path, QDateTime createdAt, QDateTime addedAt, QDateTime updatedAt, int size, int status, QFileInfo *thumbnail, FileType * type, Category * category, File * folder, Drive * drive);
+    File(int id, QString fileName, QString path, QDateTime createdAt, QDateTime addedAt, QDateTime updatedAt, int size, int status, QFileInfo *thumbnail, int length, FileType * type, Category * category, File * folder, Drive * drive);
     File(const File & file);
     File & operator =(const File & file);
 
@@ -55,6 +54,7 @@ public:
     bool isFile() const;
     bool isDir() const;
     static int getDirSize(QDir);
+    static bool isMedia(QFileInfo);
 
     //Setters
     void setId(int id);
@@ -64,10 +64,9 @@ public:
     void setFolder(File * folder);
     void setType(FileType * fileType);
     void setFileName(QString fileName);
-    void setCreatedAt(QDateTime);
-    void setUpdatedAt(QDateTime);
     void setThumbnail(QFileInfo *value);
     void setRequestParams(QUrlQuery &);
+    void setCreatedAt(QDateTime);
 
     QString toString();
     QString serialize();
@@ -81,8 +80,8 @@ public:
     void setStatus(bool value);
     Drive *getDrive() const;
     void setDrive(Drive *value);
-    QDateTime getAddedAt() const;
-    void setAddedAt(const QDateTime &value);
+    int getLength() const;
+    void setLength(int value);
 };
 
 #endif // CLASSFILE_H
