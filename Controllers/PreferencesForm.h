@@ -6,6 +6,7 @@
 #include "Database/EntityManagers/FileTypeManager.h"
 #include <QFileDialog>
 #include "Database/EntityManagers/UserManager.h"
+#include "Database/EntityManagers/AppDataManager.h"
 #include <QFileSystemWatcher>
 #include <Services/ServiceContainer.h>
 
@@ -32,7 +33,7 @@ private slots:
     void on_bt_cancel_clicked();
     void on_bt_ok_clicked();
     void on_bt_otherLocation_clicked();
-    void on_chkbx_updatecompte_clicked(bool checked);
+    void on_chkbx_launchOnStart_clicked(bool);
 
 public slots:
     void handle_current_tab_changed(int);

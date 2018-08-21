@@ -20,7 +20,7 @@ public :
 
     File* add(QFileInfo);
     File* add(File * file);
-    File* update(File * file);
+    static File* update(File * file);
     bool symDelete(File * file);
     bool hardDelete(File * file);
     bool updateDirContent(QDir);
@@ -29,17 +29,23 @@ public :
     static bool setFileSaved(int);
     static File * convertToFile(QFileInfo);
     static File *getOneBy(QMap<QString, QString>);
+    static QList<File *> *getBy(QMap<QString, QString>);
     static void printAll();
     static void deleteAll();
+    static bool updateDbChildrenOf(File *);
 
     //void setCategoryManager(CategoryManager *);
     //void setFileTypeManager(FileTypeManager *);
 
     static Category * getCategory(QFileInfo);
     static FileType * getType(QFileInfo);
-    static File * getFolder(QFileInfo);
-    static File * getFileAt(QFileInfo);
     Drive *getDrive();
+    static int getSizeOnFS(QFileInfo);
+    static int getSizeOnDb(File *);
+    static int getSizeOnDb(QFileInfo );
+
+    //static int getSizeOf(QFileInfo);
+    static int getSizePercentage(QFileInfo, QDir);
 
 public slots:
 

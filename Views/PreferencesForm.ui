@@ -23,7 +23,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>Appliquer</string>
+    <string>Apply</string>
    </property>
   </widget>
   <widget class="QPushButton" name="bt_ok">
@@ -58,7 +58,7 @@
    </property>
    <widget class="QWidget" name="tab">
     <attribute name="title">
-     <string>Général</string>
+     <string>General</string>
     </attribute>
     <widget class="QGroupBox" name="groupBox">
      <property name="geometry">
@@ -82,20 +82,7 @@
        </rect>
       </property>
       <property name="text">
-       <string>Lancer Zémini au démarrage du système</string>
-      </property>
-     </widget>
-     <widget class="QCheckBox" name="checkBox_3">
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>60</y>
-        <width>301</width>
-        <height>18</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Notifier à mes contacts mes modifications</string>
+       <string>start Zemini on your computer boot</string>
       </property>
      </widget>
     </widget>
@@ -109,7 +96,7 @@
       </rect>
      </property>
      <property name="title">
-      <string>Langue</string>
+      <string>Language</string>
      </property>
      <widget class="QComboBox" name="cb_language">
       <property name="geometry">
@@ -125,7 +112,7 @@
    </widget>
    <widget class="QWidget" name="tab_2">
     <attribute name="title">
-     <string>Compte</string>
+     <string>Account</string>
     </attribute>
     <widget class="QGroupBox" name="groupBox_3">
      <property name="geometry">
@@ -133,33 +120,20 @@
        <x>10</x>
        <y>10</y>
        <width>351</width>
-       <height>161</height>
+       <height>81</height>
       </rect>
      </property>
      <property name="title">
       <string>Informations </string>
      </property>
-     <widget class="QCheckBox" name="chkbx_updatecompte">
+     <widget class="QLabel" name="label">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
       <property name="geometry">
        <rect>
         <x>10</x>
         <y>20</y>
-        <width>171</width>
-        <height>18</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Modifier informations compte</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="geometry">
-       <rect>
-        <x>10</x>
-        <y>50</y>
         <width>46</width>
         <height>13</height>
        </rect>
@@ -170,18 +144,18 @@
      </widget>
      <widget class="QLabel" name="lb_otherLocation">
       <property name="enabled">
-       <bool>false</bool>
+       <bool>true</bool>
       </property>
       <property name="geometry">
        <rect>
         <x>10</x>
-        <y>80</y>
+        <y>50</y>
         <width>111</width>
         <height>16</height>
        </rect>
       </property>
       <property name="text">
-       <string>Autre emplacement :</string>
+       <string>Zemini folder location :</string>
       </property>
      </widget>
      <widget class="QLineEdit" name="le_email">
@@ -190,8 +164,8 @@
       </property>
       <property name="geometry">
        <rect>
-        <x>120</x>
-        <y>50</y>
+        <x>130</x>
+        <y>20</y>
         <width>141</width>
         <height>20</height>
        </rect>
@@ -203,8 +177,8 @@
       </property>
       <property name="geometry">
        <rect>
-        <x>120</x>
-        <y>80</y>
+        <x>130</x>
+        <y>50</y>
         <width>191</width>
         <height>20</height>
        </rect>
@@ -213,29 +187,52 @@
        <string extracomment="ij"/>
       </property>
      </widget>
-     <widget class="QPushButton" name="bt_otherLocation">
+    </widget>
+    <widget class="QGroupBox" name="groupBox_5">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>100</y>
+       <width>351</width>
+       <height>80</height>
+      </rect>
+     </property>
+     <property name="title">
+      <string>Directory Settings</string>
+     </property>
+     <widget class="QLabel" name="label_9">
       <property name="enabled">
-       <bool>false</bool>
+       <bool>true</bool>
       </property>
       <property name="geometry">
        <rect>
-        <x>320</x>
-        <y>80</y>
-        <width>21</width>
+        <x>10</x>
+        <y>30</y>
+        <width>171</width>
         <height>16</height>
        </rect>
       </property>
       <property name="text">
-       <string>...</string>
+       <string>Number of thumbnails by video : </string>
+      </property>
+     </widget>
+     <widget class="QComboBox" name="cb_nbThumbnails">
+      <property name="geometry">
+       <rect>
+        <x>250</x>
+        <y>30</y>
+        <width>69</width>
+        <height>22</height>
+       </rect>
       </property>
      </widget>
     </widget>
    </widget>
    <widget class="QWidget" name="tab_3">
     <attribute name="title">
-     <string>Statistiques</string>
+     <string>Statistics</string>
     </attribute>
-    <widget class="QProgressBar" name="progressBarMovies">
+    <widget class="QProgressBar" name="progressBar1">
      <property name="geometry">
       <rect>
        <x>130</x>
@@ -248,33 +245,33 @@
       <number>24</number>
      </property>
     </widget>
-    <widget class="QLabel" name="label_3">
+    <widget class="QLabel" name="progressBarLabel1">
      <property name="geometry">
       <rect>
-       <x>40</x>
-       <y>30</y>
-       <width>47</width>
-       <height>13</height>
+       <x>20</x>
+       <y>20</y>
+       <width>71</width>
+       <height>16</height>
       </rect>
      </property>
      <property name="text">
-      <string>Films</string>
+      <string>category1</string>
      </property>
     </widget>
-    <widget class="QLabel" name="label_4">
+    <widget class="QLabel" name="progressBarLabel2">
      <property name="geometry">
       <rect>
-       <x>40</x>
-       <y>70</y>
-       <width>47</width>
-       <height>13</height>
+       <x>20</x>
+       <y>60</y>
+       <width>71</width>
+       <height>16</height>
       </rect>
      </property>
      <property name="text">
-      <string>Séries</string>
+      <string>category2</string>
      </property>
     </widget>
-    <widget class="QProgressBar" name="progressBarSeries">
+    <widget class="QProgressBar" name="progressBar2">
      <property name="geometry">
       <rect>
        <x>130</x>
@@ -287,20 +284,20 @@
       <number>24</number>
      </property>
     </widget>
-    <widget class="QLabel" name="label_5">
+    <widget class="QLabel" name="progressBarLabel3">
      <property name="geometry">
       <rect>
-       <x>40</x>
-       <y>110</y>
-       <width>47</width>
-       <height>13</height>
+       <x>20</x>
+       <y>100</y>
+       <width>71</width>
+       <height>16</height>
       </rect>
      </property>
      <property name="text">
-      <string>Logiciels</string>
+      <string>category3</string>
      </property>
     </widget>
-    <widget class="QProgressBar" name="progressBarSoftwares">
+    <widget class="QProgressBar" name="progressBar3">
      <property name="geometry">
       <rect>
        <x>130</x>
@@ -313,20 +310,20 @@
       <number>24</number>
      </property>
     </widget>
-    <widget class="QLabel" name="label_6">
+    <widget class="QLabel" name="progressBarLabel5">
      <property name="geometry">
       <rect>
-       <x>40</x>
-       <y>190</y>
-       <width>47</width>
-       <height>13</height>
+       <x>20</x>
+       <y>180</y>
+       <width>71</width>
+       <height>16</height>
       </rect>
      </property>
      <property name="text">
-      <string>Autres</string>
+      <string>category5</string>
      </property>
     </widget>
-    <widget class="QProgressBar" name="progressBarOthers">
+    <widget class="QProgressBar" name="progressBar5">
      <property name="geometry">
       <rect>
        <x>130</x>
@@ -339,7 +336,7 @@
       <number>24</number>
      </property>
     </widget>
-    <widget class="QProgressBar" name="progressBarSongs">
+    <widget class="QProgressBar" name="progressBar4">
      <property name="geometry">
       <rect>
        <x>130</x>
@@ -352,18 +349,82 @@
       <number>24</number>
      </property>
     </widget>
-    <widget class="QLabel" name="label_7">
+    <widget class="QLabel" name="progressBarLabel4">
      <property name="geometry">
       <rect>
-       <x>40</x>
-       <y>150</y>
-       <width>47</width>
-       <height>13</height>
+       <x>20</x>
+       <y>140</y>
+       <width>71</width>
+       <height>16</height>
       </rect>
      </property>
      <property name="text">
-      <string>Musiques</string>
+      <string>category4</string>
      </property>
+    </widget>
+   </widget>
+   <widget class="QWidget" name="tab_4">
+    <attribute name="title">
+     <string>Sync</string>
+    </attribute>
+    <widget class="QGroupBox" name="groupBox_4">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>10</y>
+       <width>351</width>
+       <height>101</height>
+      </rect>
+     </property>
+     <property name="title">
+      <string>Network Sync settings</string>
+     </property>
+     <widget class="QLabel" name="label_2">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>30</y>
+        <width>101</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Pull in Data every :</string>
+      </property>
+     </widget>
+     <widget class="QComboBox" name="cb_pullInOption">
+      <property name="geometry">
+       <rect>
+        <x>258</x>
+        <y>30</y>
+        <width>81</width>
+        <height>22</height>
+       </rect>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_8">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>70</y>
+        <width>111</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Send out Data every :</string>
+      </property>
+     </widget>
+     <widget class="QComboBox" name="cb_sendOutOption">
+      <property name="geometry">
+       <rect>
+        <x>258</x>
+        <y>70</y>
+        <width>81</width>
+        <height>22</height>
+       </rect>
+      </property>
+     </widget>
     </widget>
    </widget>
   </widget>
@@ -377,7 +438,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>Fermer</string>
+    <string>Cancel</string>
    </property>
   </widget>
  </widget>

@@ -18,7 +18,6 @@ DirectoryService::DirectoryService()
 void DirectoryService::start()
 {
     active = true;
-    new StaticFileService(QDir::homePath(), NULL);
     watchZeminiFolder();
 }
 
@@ -29,11 +28,17 @@ void DirectoryService::watchZeminiFolder()
 {
     FileManager::deleteAll();
 
+    //qDebug() << "nbFileTypes : " << FileTypeManager::getAll()->size() << endl;
+    //qDebug() << "nbFileFormats : " << FileFormatManager::getAll()->size() << endl;
+
     // i start going through all files and directories to store and track them
     QMap<QString, QString> parameters;
     parameters.insert("tableName", Parameters::DB_APP_DATA);
     parameters.insert("id", AppDataManager::STORAGE_DIR_KEY);
     QDir root_dir(((AppData *)LocalDBService::getOneBy(parameters))->getValue());
+
+    // starting the static file service that wil serve requested files
+    new StaticFileService(root_dir.absolutePath(), NULL);
 
     QString thumbsDir = root_dir.absolutePath()+"/"+Parameters::THUMBS_DIR_NAME;
 
@@ -73,10 +78,25 @@ void DirectoryService::watchZeminiFolder()
         }
         if (queue->isEmpty())
             break;
+
+        // i set the size of the parent folder
+        if (currentObject.absolutePath() != queue->last().absolutePath()){
+            QFileInfo parentFileInfo = QFileInfo(currentObject.absolutePath());
+            if (parentFileInfo.fileName() != Parameters::ROOT_DIR_NAME){
+                QMap<QString, QString> fileProperties;
+                fileProperties.insert("path", Functions::getRelativePath(parentFileInfo.absolutePath()));
+                fileProperties.insert("filename", parentFileInfo.fileName());
+                qDebug() << "Curo : " << currentObject.absolutePath() << Functions::getRelativePath(parentFileInfo.absolutePath()) << parentFileInfo.fileName() << endl;
+                File * file = FileManager::getOneBy(fileProperties);
+                file->setSize(FileManager::getSizeOnDb(file));
+                file = FileManager::update(file);
+
+                qDebug() << "Curo fin :" << file->getSize() << endl;
+            }
+        }
         currentObject = (queue->last());
         queue->removeLast();
     }
-
     qDebug() << "Folder on watching " << endl;
     emit rootFolderOnWatching();
 }

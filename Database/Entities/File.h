@@ -35,7 +35,7 @@ private:
 public:
     //Constructors
     File();
-    File(int id, QString fileName, QString path, QDateTime createdAt, QDateTime addedAt, QDateTime updatedAt, int size, int status, QFileInfo *thumbnail, int length, FileType * type, Category * category, File * folder, Drive * drive);
+    File(int id, QString fileName, QString path, QDateTime createdAt, int size, int status, QFileInfo *thumbnail, int length, FileType * type, Category * category, File * folder, Drive * drive);
     File(const File & file);
     File & operator =(const File & file);
 
@@ -53,8 +53,6 @@ public:
     QString getAbsolutePath() const;
     bool isFile() const;
     bool isDir() const;
-    static int getDirSize(QDir);
-    static bool isMedia(QFileInfo);
 
     //Setters
     void setId(int id);

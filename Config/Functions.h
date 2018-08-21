@@ -37,21 +37,27 @@ public:
 
     static QList<FileFormat*> *  fromJsonToFileFormats(QVariant);
 
+    static FileFormat* fromJsonToFileFormat(QVariant);
+
     static bool makeLinkToRootFolder(QDir);
 
     static QString getRelativePath(QString);
 
     static QFileInfo * generateThumbnails(QFileInfo);
 
-    static QFileInfo *extractThumbnail(QFileInfo);
+    static void extractThumbnails(QFileInfo, QDir);
 
     static bool isVideoFile(QFileInfo);
 
     static bool isImageFile(QFileInfo);
 
+    static bool isMediaFile(QFileInfo);
+
     static QString getDriveAbsPath(QString);
 
     static File * fromSqlRecord2File(QSqlRecord);
+
+    static FileFormat * fromSqlRecord2FileFormat(QSqlRecord);
 
     static double fromOctect2Ko(int size);
 
@@ -60,6 +66,8 @@ public:
     static double fromOctect2Go(int);
 
     static QMap<QString, QString> fromOctect2Normal(int);
+
+    static int getLength(QFileInfo);
 };
 
 #endif // FUNCTIONS_H

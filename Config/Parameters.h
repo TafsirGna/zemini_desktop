@@ -59,8 +59,6 @@ public:
 
     const static bool USE_OPENSSL;
 
-    const static QStringList VIDEO_FORMATS;
-
     const static int MAX_SCREEN_REC_TIME;
 
     const static int NB_FRAMES_PER_SEC;
@@ -85,6 +83,8 @@ public:
 
     const static int CODE_ACCOUNT_CHECKING;
 
+    const static int CODE_APP_VERSION_CHECKING;
+
     // Database services constants
 
     const static QString DB_USER;
@@ -106,6 +106,8 @@ public:
     const static QString DB_FILE_FORMAT;
 
     const static QStringList DB_INIT_DATA_LIST;
+
+    const static QString STARTUP_PROG_FOLDER;
 
 };
 

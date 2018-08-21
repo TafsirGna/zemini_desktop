@@ -19,6 +19,7 @@ public:
     NetRequest();
     NetRequest(int, QString tableName);
     NetRequest(int, DbEntity *);
+    NetRequest(int, QFileInfo);
     void exec();
     QString getType() const;
     void setType(const QString &value);

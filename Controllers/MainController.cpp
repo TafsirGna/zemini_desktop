@@ -65,6 +65,8 @@ MainController::MainController()
     QWidget::connect(openZeminiweb, SIGNAL(triggered()), this , SLOT(showZeminiWebSite()));
     //QAction * recordScreen = new QAction(QIcon(),tr("Start recording"),this);
     //QWidget::connect(recordScreen, SIGNAL(triggered()), this , SLOT(recordScreen()));
+    QAction * watchVideo = new QAction(QIcon(),tr("Watch video"),this);
+    QWidget::connect(watchVideo, SIGNAL(triggered()), this , SLOT(openVideoForm()));
     QAction * aboutZemini = new QAction(QIcon(),tr("About"),this);
     QWidget::connect(aboutZemini, SIGNAL(triggered()), this , SLOT(showAboutForm()));
     QAction * uploadingProcess = new QAction(QIcon(),tr("Syncing files ... (1%)"),this);
@@ -73,6 +75,7 @@ MainController::MainController()
 
     QMenu * contextMenu = new QMenu();
     contextMenu->addAction(openFolder);
+    contextMenu->addAction(watchVideo);
     //contextMenu->addAction(recordScreen);
     contextMenu->addAction(contextMenu->addSeparator());
     contextMenu->addAction(openPreferences);
@@ -175,13 +178,18 @@ void MainController::showPreferences()
         preferencesForm->setVisible(true);
 
     // Connecting signals to slots
-    QWidget::connect(preferencesForm, SIGNAL(setupDirectory(QStringList)),this, SLOT(addFileSystemWatcher(QStringList)));
+    //QWidget::connect(preferencesForm, SIGNAL(setupDirectory(QStringList)),this, SLOT(addFileSystemWatcher(QStringList)));
 }
 
 /***    this launches a web navigator to the zemini web site url    ***/
 void MainController::showZeminiWebSite()
 {
     QDesktopServices::openUrl(QUrl(Parameters::WEB_SITE));
+}
+
+void MainController::openVideoForm()
+{
+
 }
 
 void MainController::showUploadingForm()

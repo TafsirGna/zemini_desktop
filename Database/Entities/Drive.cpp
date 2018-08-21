@@ -33,7 +33,7 @@ void Drive::setType(DriveType *value)
 void Drive::setRequestParams(QUrlQuery & params)
 {
     type->setRequestParams(params);
-    params.addQueryItem("drivePath", absolutepath.replace("/", "+"));
+    params.addQueryItem("drivePath", absolutepath);
 }
 
 QString Drive::toString()
@@ -43,7 +43,7 @@ QString Drive::toString()
 
 QString Drive::serialize()
 {
-    return absolutepath.replace("/", "+")+Parameters::NET_REQUEST_SEPARATOR+type->serialize();
+    return absolutepath+Parameters::NET_REQUEST_SEPARATOR+type->serialize();
 }
 
 Drive::Drive()

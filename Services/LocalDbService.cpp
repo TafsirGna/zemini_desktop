@@ -208,7 +208,7 @@ void LocalDBService::onDbInit(QMap<QString, QString> metaData, QList<DbEntity*> 
 
             QMap<QString, QString> parameters;
             parameters.insert("tableName", Parameters::DB_CATEGORY);
-            if (save(parameters, category))
+            if (!save(parameters, category))
                 qDebug() << "category " << category->getName() <<" not inserted : " << endl;
         }
         if (entityName == Parameters::DB_FILE_FORMAT){
@@ -216,7 +216,7 @@ void LocalDBService::onDbInit(QMap<QString, QString> metaData, QList<DbEntity*> 
 
             QMap<QString, QString> parameters;
             parameters.insert("tableName", Parameters::DB_FILE_FORMAT);
-            if (save(parameters, format))
+            if (!save(parameters, format))
                 qDebug() << "format " << format->getName() <<" not inserted : " << endl;
         }
         if (entityName == Parameters::DB_FILE_TYPE){
@@ -224,7 +224,7 @@ void LocalDBService::onDbInit(QMap<QString, QString> metaData, QList<DbEntity*> 
 
             QMap<QString, QString> parameters;
             parameters.insert("tableName", Parameters::DB_FILE_TYPE);
-            if (save(parameters, type))
+            if (!save(parameters, type))
                 qDebug() << "type " << type->getName() <<" not inserted : " << endl;
         }
     }
@@ -235,6 +235,20 @@ void LocalDBService::onDbInit(QMap<QString, QString> metaData, QList<DbEntity*> 
         dbInitStatus = true;
         emit dbInitialized();
     }
+
+    // storing the parameters in the data
+    if (AppDataManager::add(new AppData("pullInDataFrequency", QString::number(5*60))) != NULL){
+            qDebug() << "Succeeded in inserting the pull in frequency " << endl;
+    }
+
+    if (AppDataManager::add(new AppData("sendOutDataFrequency", QString::number(15))) != NULL){
+        qDebug() << "Succeeded in inserting the send out frequency " << endl;
+    }
+
+    if (AppDataManager::add(new AppData("thumbsNumber", QString::number(4))) != NULL){
+        qDebug() << "Succeeded in inserting the thumbs number setting " << endl;
+    }
+
 }
 
 void LocalDBService::completeDbInit()
@@ -335,6 +349,7 @@ void LocalDBService::onRequestReplyReceived(QMap<QString, QString> metaData, QLi
             QMap<QString, QString> map;
             map.insert("id", QString::number(file->getId()));
             file = FileManager::getOneBy(map);
+            //qDebug() << "Finished" << endl;
             if (file->getThumbnail() == NULL){
                 getFileManager()->setFileSaved(file->getId());
                 nbFiles2Send--;

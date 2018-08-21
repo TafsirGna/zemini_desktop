@@ -51,7 +51,7 @@ RegisterForm::RegisterForm(QWidget *parent, ServiceContainer *serviceContainer) 
     QWidget::connect(networkService, SIGNAL(connectionError(int)), this, SLOT(onConnectionError(int)));
     QWidget::connect(networkService, SIGNAL(requestFailed(int)), this, SLOT(onRequestFailed(int)));
     QWidget::connect(localDbService, SIGNAL(userSaved(int)), this, SLOT(onUserSaved(int)));
-    networkService->getInitialDbData();
+    //networkService->getInitialDbData();
 
     initDbTimer = new QTimer(this);
     initDbTimer->setInterval(Parameters::CHECK_CON_TIME_OUT);

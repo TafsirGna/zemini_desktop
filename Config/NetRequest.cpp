@@ -88,6 +88,12 @@ NetRequest::NetRequest(int code, QString tableName)
                                                         Parameters::NET_REQUEST_SEPARATOR+tableName));
         this->networkRequest->setSslConfiguration(QSslConfiguration::defaultConfiguration());
     }
+
+    if (code == Parameters::CODE_APP_VERSION_CHECKING){
+        this->type = "GET";
+        this->networkRequest = new QNetworkRequest(QUrl(Parameters::URL+Parameters::NET_REQUEST_SEPARATOR+"check_desktop_version"));
+        this->networkRequest->setSslConfiguration(QSslConfiguration::defaultConfiguration());
+    }
 }
 
 NetRequest::NetRequest(int code , DbEntity * entity)
@@ -157,19 +163,27 @@ NetRequest::NetRequest(int code , DbEntity * entity)
         networkRequest = new QNetworkRequest(QUrl(url));
         networkRequest->setHeader(QNetworkRequest::ContentTypeHeader, "application/x-www-form-urlencoded");
     }
+}
 
+NetRequest::NetRequest(int code, QFileInfo fileInfo)
+{
     if (code == Parameters::CODE_SAVE_THUMBS){
+
+        QMap<QString, QString> fileProperties;
+        fileProperties.insert("thumbnail", fileInfo.absolutePath().split("/").last());
+        File * file = FileManager::getOneBy(fileProperties);
 
         this->type = "POST";
         this->entityClass = Parameters::DB_FILE;
-        this->entity = entity;
+        this->entity = (DbEntity * ) file;
 
-        qDebug() << "thumbnail file : " << ((File*) entity)->getFileName() << " / " << ((File*) entity)->getThumbnail()->absoluteFilePath() << endl;
-        QFile qfile(((File*) entity)->getThumbnail()->absoluteFilePath()); //lets get the file by filename
+        //qDebug() << "thumbnail file : " << file->getFileName() << " / " << ((File*) entity)->getThumbnail()->absoluteFilePath() << endl;
+        QFile qfile(fileInfo.absoluteFilePath()); //lets get the file by filename
         if (!qfile.open(QIODevice::ReadOnly)) //accessibility controll for file
         {
-            qDebug() << "file open failure"; //send message if file cant open
+            qDebug() << "file open failure" << endl; //send message if file cant open
         }
+
         QByteArray line = qfile.readAll();
         //we read file line by line with no error handling for reading time!!
 
@@ -195,7 +209,7 @@ NetRequest::NetRequest(int code , DbEntity * entity)
         QUrlQuery params;
         params.addQueryItem("email", user->getEmail());
         params.addQueryItem("password", user->getPassword());
-        ((File *) entity)->setRequestParams(params);
+        file->setRequestParams(params);
         qDebug() << "datas : " << params.toString() << endl;
 
         networkRequest = new QNetworkRequest(QUrl(Parameters::URL+Parameters::NET_REQUEST_SEPARATOR+"save_thumbnails?"+params.toString()));

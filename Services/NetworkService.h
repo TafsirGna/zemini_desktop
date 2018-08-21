@@ -66,6 +66,8 @@ public:
         //void getFreshDbData();
         void checkCredentials(QString, QString);
         void checkUserAccount();
+        void checkNewVersion();
+        void downloadNewVersion();
 
 public slots:
         void handleRequestReply(QNetworkReply*);

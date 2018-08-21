@@ -70,7 +70,7 @@ File::File()
 }
 
 /***            A second constructor            ***/
-File::File(int id, QString fileName, QString path, QDateTime createdAt,QDateTime addedAt, QDateTime updatedAt, int size, int status, QFileInfo *thumbnail, int length, FileType *type, Category *category, File * folder, Drive * drive)
+File::File(int id, QString fileName, QString path, QDateTime createdAt, int size, int status, QFileInfo *thumbnail, int length, FileType *type, Category *category, File * folder, Drive * drive)
 {
     this->id = id;
     this->fileName = fileName;
@@ -261,7 +261,7 @@ void File::setPath(QString path)
 QString File::toString()
 {
     QString toString = "id : "+ QString::number(id) + " - filename : "+ fileName + " - path : "+ path + " - createdat : " + createdAt.toString(Parameters::timeFormat) + " - status : "+ QString::number(status) + " - size : " + QString::number(size) + " - parent folder : "+ ((folder != NULL) ? folder->getFileName() : "NULL") + " - type : " + ((type != NULL) ? type->getName() : "NULL" ) + " - category : " + ((category != NULL) ? category->getName() : "NULL") + " - drive : " + drive->getAbsolutepath()+
-            " - thumbnail : "+((thumbnail == NULL) ? "NULL" : thumbnail->absolutePath());
+            " - thumbnail : "+((thumbnail == NULL) ? "NULL" : thumbnail->absoluteFilePath());
     return toString;
 }
 
@@ -293,40 +293,12 @@ void File::setRequestParams(QUrlQuery & params)
     params.addQueryItem("fileId", QString::number(id));
     params.addQueryItem("fileName", fileName);
     params.addQueryItem("filePath", path);
+    params.addQueryItem("fileLength", QString::number(length));
     params.addQueryItem("fileSize", QString::number(size));
     params.addQueryItem("fileCreatedAt", createdAt.toString(Parameters::timeFormat));
     params.addQueryItem("fileFolderName", ((folder != NULL) ? folder->getFileName() : "NULL"));
     params.addQueryItem("fileFolderPath", ((folder != NULL) ? folder->getPath() : "NULL"));
-    params.addQueryItem("fileTypeName", type->getName());
+    params.addQueryItem("fileTypeName", ((type == NULL) ? "NULL" : type->getName()));
     params.addQueryItem("fileTypeSuffix", ((type == NULL || type->getName()== "directory") ? "NULL" : type->getSuffix()));
-    params.addQueryItem("fileCategoryName", category->getName());
+    params.addQueryItem("fileCategoryName", ((category == NULL) ? "NULL" : category->getName()));
 }
-
-int File::getDirSize(QDir rootDir)
-{
-    int dirSize = 0;
-    QFileInfoList queue;
-    QFileInfo currentNode(rootDir.absolutePath()) ;
-    while(true){
-        // if the root directory is a file then
-        if (currentNode.isFile()){
-            dirSize += currentNode.size();
-        }
-        else{
-            //otherwise
-            queue += QDir(currentNode.absoluteFilePath()).entryInfoList(QDir::Files | QDir::AllDirs | QDir::NoDotAndDotDot);
-            //QMessageBox::information(0, "ok", QString::number(queue.size()));
-        }
-        if (queue.isEmpty())
-            return dirSize;
-        currentNode = queue.last();
-        queue.removeLast();
-    }
-}
-
-bool File::isMedia(QFileInfo)
-{
-    return false;
-}
-
-

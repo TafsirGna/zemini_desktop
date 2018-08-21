@@ -50,7 +50,8 @@ void StaticFileService::onRequestNeedsReply (QtHttpRequest * request, QtHttpRepl
     QString command = request->getCommand ();
     if (command == QStringLiteral ("GET")) {
         QString path = request->getUrl ().path ();
-        QFile file (m_baseUrl % "/" % path);
+        QFile file (m_baseUrl % path);
+        qDebug() << m_baseUrl % path << endl;
         if (file.exists ()) {
             QMimeType mime = m_mimeDb->mimeTypeForFile (file.fileName ());
             if (file.open (QFile::ReadOnly)) {

@@ -20,6 +20,15 @@ NetworkService::NetworkService()
     this->timer2 = new QTimer(this);
     filesToSend = new QList<File*>();
     QWidget::connect(networkAccessManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(handleRequestReply(QNetworkReply*)));
+
+    getInitialDbData();
+    checkNewVersion();
+
+    QTimer * refreshDbTimer = new QTimer(this);
+    QWidget::connect(refreshDbTimer, SIGNAL(timeout()), this, SLOT(getInitialDbData()));
+    qDebug() << "frequency : " << ((AppDataManager::getByKey("pullInDataFrequency") == NULL) ? "NULL" : "NOT NULL") << endl;
+    //if (AppDataManager::getByKey("pullInDataFrequency") != NULL)
+    //    refreshDbTimer->start(AppDataManager::getByKey("pullInDataFrequency")->getValue().toInt()*60*1000);
 }
 
 // this function sends a request to the remote server to get its initial data to get started
@@ -34,11 +43,16 @@ void NetworkService::getInitialDbData()
 
 void NetworkService::sendNextRequest()
 {
-    if (pauseUploading)
+    if (pauseUploading){
+        qDebug() << "Paused " << endl;
         return;
+    }
 
-    if (stopUploading)
+    if (stopUploading){
+        qDebug() << "Stopped " << endl;
         requestsList->clear();
+    }
+
     if (!requestsList->isEmpty()){
         NetRequest * netRequest = requestsList->first();
         netRequest->exec();
@@ -150,6 +164,19 @@ void NetworkService::checkUserAccount()
     sendNextRequest();
 }
 
+void NetworkService::checkNewVersion()
+{
+    NetRequest * netRequest = new NetRequest(Parameters::CODE_APP_VERSION_CHECKING, Parameters::DB_APP_DATA);
+    requestsList->append(netRequest);
+
+    sendNextRequest();
+}
+
+void NetworkService::downloadNewVersion()
+{
+    qDebug() << "Downloading the new version " << endl;
+}
+
 /*
 void NetworkService::sendFiles(QList<File*>* files)
 {
@@ -187,8 +214,11 @@ void NetworkService::saveFile(File* file)
     requestsList->append(new NetRequest(Parameters::CODE_FILE_SAVE, file));
     //networkAccessManager->post((const QNetworkRequest &)*networkRequest, data);
     // if the file has a generated thumbnails
+    //qDebug() << "Saving file : " << file->getFileName() << endl;
     if (file->getThumbnail() != NULL){
+        //qDebug() << "contains thumbnail" << requestsList->size() << endl;
         sendFileThumbnail(file);
+        //qDebug() << "and now : " << requestsList->size() << endl;
     }
 }
 
@@ -217,6 +247,8 @@ void NetworkService::handleGoodRequestReply(QNetworkReply * reply)
     QJsonObject jsonObject = jsonResponse.object();
     QVariantMap json_map = jsonObject.toVariantMap();
 
+    qDebug() << "handleGood" << json_map["requestCode"].toString() << endl;
+
     int requestCode = json_map["requestCode"].toInt();
     if  (requestCode == Parameters::CODE_REGISTER_USER){
         bool success = json_map["success"].toBool();
@@ -231,6 +263,16 @@ void NetworkService::handleGoodRequestReply(QNetworkReply * reply)
             formRequestReply(Parameters::CODE_REGISTER_USER, Parameters::DB_USER, user);
         }
         return;
+    }
+    if  (requestCode == Parameters::CODE_APP_VERSION_CHECKING){
+        if (json_map["success"].toBool()){
+            QString newVersionNumber = json_map["current_version"].toString();
+            qDebug() << "Current version is " << newVersionNumber << endl;
+            //Once, i get the version, i compare it with the one stored int the local database
+            if (newVersionNumber.toDouble() > Parameters::APP_VERSION.toDouble()){
+                downloadNewVersion();
+            }
+        }
     }
     if  (requestCode == Parameters::CODE_USER_LOGIN){
         User * user = NULL;
@@ -350,9 +392,14 @@ void NetworkService::sendThumbnails()
 
 void NetworkService::sendFileThumbnail(File * file)
 {
-    NetRequest * netRequest = new NetRequest(Parameters::CODE_SAVE_THUMBS, file);
-    //networkAccessManager->post(req,datas); //send all data
-    requestsList->append(netRequest);
+    QFileInfoList thumbsList = QDir(file->getThumbnail()->absoluteFilePath()).entryInfoList(QDir::Files | QDir::NoSymLinks | QDir::AllDirs | QDir::NoDotAndDotDot);
+    //qDebug() << "Fury : " << file->getThumbnail()->absoluteFilePath() << thumbsList.size() << endl;
+    int size(thumbsList.size());
+    for (int i(0); i < size; i++){
+        NetRequest * netRequest = new NetRequest(Parameters::CODE_SAVE_THUMBS, thumbsList.at(i));
+        //networkAccessManager->post(req,datas); //send all data
+        requestsList->append(netRequest);
+    }
 }
 
 void NetworkService::formRequestReply(int code, QString tableName, QList<DbEntity*> * data)

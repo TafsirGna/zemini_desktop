@@ -66,6 +66,7 @@ private slots:
     void showLogInForm();
     void showPreferences();
     void showZeminiWebSite();
+    void openVideoForm();
     void showUploadingForm();
     void setArgs(AbstractController * );
     void recordScreen();

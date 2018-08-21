@@ -97,5 +97,5 @@ QString FileType::getSuffix()
  */
 void FileType::toString()
 {
-    qDebug() << "id : " << id << " , name : " << name << " , suffix : " << suffix << endl;
+    qDebug() << "id : " << id << " , name : " << name << " , suffix : " << suffix << ", format : " << ((fileFormat == NULL) ? "NULL" : QString::number(fileFormat->getId())+" | "+fileFormat->getName()) <<endl;
 }

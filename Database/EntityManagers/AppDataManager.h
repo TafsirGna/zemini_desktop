@@ -9,8 +9,8 @@ class AppDataManager: public AbstractManager
 public:
     AppDataManager();
 
-    AppData *add(AppData*);
-    AppData * update(AppData*);
+    static AppData *add(AppData*);
+    static AppData * update(AppData*);
     bool remove(AppData*);
     QList<AppData *> * getAll();
 

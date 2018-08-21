@@ -1,6 +1,6 @@
 #include "Config/Parameters.h"
 
-const QString Parameters::APP_VERSION = "1.0";
+const QString Parameters::APP_VERSION = "0.1";
 
 QString Parameters::THUMBS_DIR_PATH = "";
 
@@ -53,8 +53,6 @@ const QString Parameters::KEYS_DIR = Parameters::setupDirectory
 
 const bool Parameters::USE_OPENSSL = true;
 
-const QStringList Parameters::VIDEO_FORMATS = (QStringList() << "avi" << "wmv");
-
 const int Parameters::FRAME_COUNT_DIVIDER = 64;
 
 // Network Request Codes
@@ -73,6 +71,8 @@ const int Parameters::CODE_SAVE_THUMBS = 6;
 
 const int Parameters::CODE_ACCOUNT_CHECKING = 7;
 
+const int Parameters::CODE_APP_VERSION_CHECKING = 8;
+
 // Database services constants
 
 const QString Parameters::DB_USER = "User";
@@ -90,5 +90,7 @@ const QString Parameters::DB_DRIVE_TYPE = "drive_type";
 const QString Parameters::DB_DRIVE = "Drive";
 
 const QString Parameters::DB_FILE_FORMAT = "FileFormat";
+
+const QString Parameters::STARTUP_PROG_FOLDER = QDir().homePath()+"/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Startup";
 
 const QStringList Parameters::DB_INIT_DATA_LIST = (QStringList() << Parameters::DB_CATEGORY << Parameters::DB_FILE_FORMAT << Parameters::DB_FILE_TYPE );

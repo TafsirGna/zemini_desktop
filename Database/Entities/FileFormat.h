@@ -10,6 +10,7 @@ private:
     int id;
     QString name;
 
+
 public:
     FileFormat();
     FileFormat(int id, QString name);

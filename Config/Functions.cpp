@@ -61,6 +61,24 @@ QMap<QString, QString> Functions::fromOctect2Normal(int size)
     }
 }
 
+int Functions::getLength(QFileInfo fileInfo)
+{
+    // trying to get the duration of a given file
+    int length(0);
+    if (fileInfo.isFile() && Functions::isMediaFile(fileInfo)){
+        VideoCapture vcap(cv::String(fileInfo.absoluteFilePath().toStdString()));
+        if (!vcap.isOpened()){
+            qDebug() << "Failed in opening the video file" << endl;
+        }
+        else{
+            length = (int) vcap.get(CV_CAP_PROP_FRAME_COUNT);
+            length /= vcap.get(CV_CAP_PROP_FPS);
+            qDebug() << "length is " << length << endl;
+        }
+    }
+    return length;
+}
+
 /**
  * @brief isEmailValid
  * @param email
@@ -98,30 +116,49 @@ QList<Category*> *  Functions::fromJsonToCategories(QVariant variant)
 QList<FileFormat*> *  Functions::fromJsonToFileFormats(QVariant variant)
 {
     QList<FileFormat*> * fileFormats = new QList<FileFormat*>();
-    /*
-    for (QVariantMap::const_iterator iter = variantMap.begin(); iter != variantMap.end(); ++iter){
-        if (iter.key() != "requestCode"){
-            Category * cat = new Category(iter.key().toInt(), iter.value().toString());
-            categories->append(*cat);
-            //qDebug() << "id : " << cat->getId() << " name : " << cat->getName()<< endl;
+    if (variant.canConvert<QVariantList>())
+    {
+        QSequentialIterable iterable = variant.value<QSequentialIterable>();
+        // Can use iterators:
+        QSequentialIterable::const_iterator it = iterable.begin();
+        const QSequentialIterable::const_iterator end = iterable.end();
+        for ( ; it != end; ++it) {
+            fileFormats->append(Functions::fromJsonToFileFormat(*it));
         }
     }
-    */
     return fileFormats;
+}
+
+FileFormat*  Functions::fromJsonToFileFormat(QVariant variant)
+{
+    if (variant.toMap().empty())
+        return NULL;
+    QMap<QString, QVariant> map = variant.toMap();
+    return new FileFormat(map["id"].toInt(), map["name"].toString());
 }
 
 QList<FileType*> *  Functions::fromJsonToFileTypes(QVariant variant)
 {
     QList<FileType*> * fileTypes = new QList<FileType*>();
-    /*
-    for (QVariantMap::const_iterator iter = variantMap.begin(); iter != variantMap.end(); ++iter){
-        if (iter.key() != "requestCode"){
-            Category * cat = new Category(iter.key().toInt(), iter.value().toString());
-            categories->append(*cat);
-            //qDebug() << "id : " << cat->getId() << " name : " << cat->getName()<< endl;
+    if (variant.canConvert<QVariantList>())
+    {
+        QSequentialIterable iterable = variant.value<QSequentialIterable>();
+        // Can use iterators:
+        QSequentialIterable::const_iterator it = iterable.begin();
+        const QSequentialIterable::const_iterator end = iterable.end();
+        for ( ; it != end; ++it) {
+            QMap<QString, QVariant> map = (*it).toMap();
+            FileFormat * fileFormat = Functions::fromJsonToFileFormat(map["format"]);
+            if (fileFormat != NULL){
+                QMap<QString, QString> fileFormatProperties;
+                fileFormatProperties.insert("name", fileFormat->getName());
+                fileFormat = FileFormatManager::getOneBy(fileFormatProperties);
+            }
+            fileTypes->append(new FileType(map["id"].toInt(), map["name"].toString(), map["suffix"].toString(), fileFormat));
+            //qDebug() << "Rhoor" << map["format"] << endl;
+            //(new FileType(map["id"].toInt(), map["name"].toString(), map["suffix"].toString(), fileFormat))->toString();
         }
     }
-    */
     return fileTypes;
 }
 
@@ -160,15 +197,24 @@ QString Functions::getRelativePath(QString path)
  */
 QFileInfo *Functions::generateThumbnails(QFileInfo fileInfo)
 {
-    if (isVideoFile(fileInfo))
-        return extractThumbnail(fileInfo);
+    AppData * appData = (AppData *) AppDataManager::getByKey(AppDataManager::STORAGE_DIR_KEY);
+    QString thumbsPath = appData->getValue()+"/"+Parameters::THUMBS_DIR_NAME;
+    if (!QDir(thumbsPath).exists()){
+        QDir(thumbsPath).mkdir(".");
+    }
 
-    if (isImageFile(fileInfo)){
+    QDir fileThumbsFolder(thumbsPath+"/"+QString::number(QDateTime::currentMSecsSinceEpoch()));
+    if (!fileThumbsFolder.mkdir(".")){
+        qDebug() << "Failed to create the file thumbs directory ! " << endl;
         return NULL;
     }
 
-    try {
+    //qDebug() << "cooler " << isVideoFile(fileInfo) << fileInfo.suffix() << endl;
+    if (isVideoFile(fileInfo)){
+        extractThumbnails(fileInfo, fileThumbsFolder);
+    }
 
+    try {
     } catch (...) {
     }
 
@@ -176,53 +222,44 @@ QFileInfo *Functions::generateThumbnails(QFileInfo fileInfo)
     QFileIconProvider *provider = new QFileIconProvider();
     QImage *image = new QImage(provider->icon(fileInfo).pixmap(128,128).toImage());
 
-
-    AppData * appData = (AppData *) AppDataManager::getByKey(AppDataManager::STORAGE_DIR_KEY);
-    QString thumbsPath = appData->getValue()+"/"+Parameters::THUMBS_DIR_NAME;
-    if (!QDir(thumbsPath).exists()){
-        QDir(thumbsPath).mkdir(".");
-    }
-    QString thumbPath = thumbsPath+"/"+QString::number(QDateTime::currentMSecsSinceEpoch())+".png";
+    QString thumbPath = fileThumbsFolder.absolutePath()+"/logo.png";
     if (!image->save(thumbPath)){
         qDebug() << "An error occured while saving the icon" << endl;
         return NULL;
     }
-    return new QFileInfo(thumbPath);
-
-    return NULL;
+    return new QFileInfo(fileThumbsFolder.absolutePath());
 }
 
-QFileInfo *Functions::extractThumbnail(QFileInfo fileInfo)
+void Functions::extractThumbnails(QFileInfo fileInfo, QDir thumbsFolder)
 {
+
     // i use opencv to extract a picture out of the video, that's gonna be the video thumbnail
     VideoCapture vcap(cv::String(fileInfo.absoluteFilePath().toStdString()));
     if (!vcap.isOpened()){
         qDebug() << "Failed in opening the video file" << endl;
-        return NULL;
+        return;
     }
+
+    AppData * thumbSetting = AppDataManager::getByKey("thumbsNumber");
     // Everything's ok then
-    int frameIndex = (int) vcap.get(CV_CAP_PROP_FRAME_COUNT);
-    frameIndex /= Parameters::FRAME_COUNT_DIVIDER;
+    int frameCount = (int) vcap.get(CV_CAP_PROP_FRAME_COUNT);
+    int sectorFrameCount = (int) (frameCount / (thumbSetting->getValue().toInt()));
 
     Mat frame;
-    int i(0);
-    while(i < frameIndex){
-        vcap >> frame;
+    int i(0), sectorFrameIndex(0), count(0);
+    while(i < frameCount){
+        if (sectorFrameIndex == sectorFrameCount){
+            count++;
+            vcap >> frame;
+
+            if (!imwrite(cv::String((thumbsFolder.absolutePath()+"/"+QString::number(count)+".png").toStdString()), frame))
+                qDebug() << "Failed to generate the thumbnail n°" << count << endl;
+
+            sectorFrameIndex = 0;
+        }
+        sectorFrameIndex++;
         i++;
     }
-
-    AppData * appData = (AppData *) AppDataManager::getByKey(AppDataManager::STORAGE_DIR_KEY);
-    QString thumbsPath = appData->getValue()+"/"+Parameters::THUMBS_DIR_NAME;
-    if (!QDir(thumbsPath).exists()){
-        QDir(thumbsPath).mkdir(".");
-    }
-    QString thumbPath = thumbsPath+"/"+QString::number(QDateTime::currentMSecsSinceEpoch())+".png";
-
-    //qDebug() << "in gen thumbnails " << endl;
-    if (imwrite(cv::String(thumbPath.toStdString()), frame))
-        return new QFileInfo(thumbPath);
-
-    return NULL;
 }
 
 /**
@@ -232,13 +269,37 @@ QFileInfo *Functions::extractThumbnail(QFileInfo fileInfo)
  */
 bool Functions::isVideoFile(QFileInfo fileInfo)
 {
-    if (Parameters::VIDEO_FORMATS.contains(fileInfo.suffix()))
+    QMap<QString, QString> fileTypeProperties, fileFormatProperties;
+    fileFormatProperties.insert("name", "video");
+    fileTypeProperties.insert("format_id", QString::number(FileFormatManager::getOneBy(fileFormatProperties)->getId()));
+    QList<FileType * > * fileTypes = FileTypeManager::getBy(fileTypeProperties);
+    qDebug() << "After cooler " << endl;
+
+    for (int i(0); i < FileTypeManager::getAll()->size(); i++){
+        //qDebug () << "inc " << i << endl;
+        //FileTypeManager::getAll()->at(i)->toString();
+    }
+
+    QStringList suffixesList;
+    int size = fileTypes->size();
+    for (int i(0); i < size; i++){
+        suffixesList.append(fileTypes->at(i)->getSuffix());
+    }
+
+    if (suffixesList.contains(fileInfo.suffix()))
         return true;
     return false;
 }
 
 bool Functions::isImageFile(QFileInfo)
 {
+    return false;
+}
+
+bool Functions::isMediaFile(QFileInfo fileInfo)
+{
+    if (Functions::isVideoFile(fileInfo))
+        return true;
     return false;
 }
 
@@ -257,9 +318,13 @@ File * Functions::fromSqlRecord2File(QSqlRecord sqlRecord)
 
     //qDebug() << sqlRecord.value(8).toString() <<" :/ " << sqlRecord.value(11).toString() << endl;
     QString absPath = AppDataManager::getByKey(AppDataManager::STORAGE_DIR_KEY)->getValue();
-    QStringList pathList = absPath.split("/");
-    pathList.removeLast();
 
-    File * file = new File(sqlRecord.value(0).toInt(), sqlRecord.value(8).toString(), sqlRecord.value(9).toString(), sqlRecord.value(5).toDateTime(), sqlRecord.value(6).toDateTime(), sqlRecord.value(7).toDateTime(), sqlRecord.value(10).toInt(), sqlRecord.value(11).toInt(), ((sqlRecord.value(12).toString() == "") ? NULL : new QFileInfo(pathList.join("/")+sqlRecord.value(12).toString())), sqlRecord.value(13).toInt(), FileTypeManager::getOneBy(fileTypeProperties), CategoryManager::getOneBy(categoryProperties), FileManager::getOneBy(folderProperties), DriveManager::getOneBy(driveProperties));
+    File * file = new File(sqlRecord.value(0).toInt(), sqlRecord.value(6).toString(), sqlRecord.value(7).toString(), sqlRecord.value(5).toDateTime(), sqlRecord.value(8).toInt(), sqlRecord.value(9).toInt(), ((sqlRecord.value(10).toString() == "") ? NULL : new QFileInfo(absPath+"/"+Parameters::THUMBS_DIR_NAME+"/"+sqlRecord.value(10).toString())), sqlRecord.value(11).toInt(), FileTypeManager::getOneBy(fileTypeProperties), CategoryManager::getOneBy(categoryProperties), FileManager::getOneBy(folderProperties), DriveManager::getOneBy(driveProperties));
     return file;
+}
+
+FileFormat *Functions::fromSqlRecord2FileFormat(QSqlRecord sqlRecord)
+{
+     FileFormat * fileFormat = new FileFormat(sqlRecord.value(0).toInt(), sqlRecord.value(1).toString());
+     return fileFormat;
 }

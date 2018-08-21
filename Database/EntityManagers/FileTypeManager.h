@@ -21,6 +21,7 @@ public:
     static void print(QList<FileType *> *);
     static FileType * getType(QFileInfo);
     static void printAll();
+    static QList<FileType *> *getBy(QMap<QString, QString> properties);
 
     /*
     //functions to retrieve a type object from the local database using a given critera

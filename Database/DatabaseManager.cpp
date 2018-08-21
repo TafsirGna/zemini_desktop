@@ -66,7 +66,7 @@ void DatabaseManager::createTables(const QString &conName)
 
     QString formatCreateQuery = "CREATE TABLE IF NOT EXISTS File_format("
                               "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-                              "name TEXT NOT NULL"
+                              "name TEXT NOT NULL UNIQUE"
                               ");";
 
     QString typeCreateQuery = "CREATE TABLE IF NOT EXISTS File_type("
@@ -88,7 +88,7 @@ void DatabaseManager::createTables(const QString &conName)
                               "path TEXT,"
                               "size TEXT,"
                               "status INT,"
-                              "thumbnail TEXT NULL,"
+                              "thumbnail TEXT NULL UNIQUE,"
                               "length INT,"
                               "unique(filename, path) on conflict replace,"
                               "CONSTRAINT fk_file_id_type FOREIGN KEY(idtype) REFERENCES File_type(id),"

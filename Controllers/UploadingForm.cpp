@@ -102,7 +102,7 @@ void UploadingForm::onStartWatchingRootDir()
     menuAction->setText("Preparing ...");
     ui->lb_step->setText("Preparing ...");
     ui->pt_detail->clear();
-    totalSize = Functions::fromOctect2Ko(File::getDirSize(QDir(AppDataManager::getByKey(AppDataManager::STORAGE_DIR_KEY)->getValue())));
+    totalSize = Functions::fromOctect2Ko(FileManager::getSizeOnFS(QFileInfo(AppDataManager::getByKey(AppDataManager::STORAGE_DIR_KEY)->getValue())));
 
     ui->lb_step->setText("Step "+QString::number(currentStep)+"/"+QString::number(uploadingSteps.size())+" : "+uploadingSteps[QString::number(currentStep)]);
     ui->pt_detail->appendPlainText("*** Step "+QString::number(currentStep)+"/"+QString::number(uploadingSteps.size())+" : "+uploadingSteps[QString::number(currentStep)]);
