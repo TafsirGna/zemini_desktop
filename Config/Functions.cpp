@@ -197,21 +197,18 @@ QString Functions::getRelativePath(QString path)
  */
 QFileInfo *Functions::generateThumbnails(QFileInfo fileInfo)
 {
-    AppData * appData = (AppData *) AppDataManager::getByKey(AppDataManager::STORAGE_DIR_KEY);
-    QString thumbsPath = appData->getValue()+"/"+Parameters::THUMBS_DIR_NAME;
-    if (!QDir(thumbsPath).exists()){
-        QDir(thumbsPath).mkdir(".");
+    if (!QDir(Parameters::THUMBS_DIR_PATH).exists()){
+        QDir(Parameters::THUMBS_DIR_PATH).mkdir(".");
     }
 
-    QDir fileThumbsFolder(thumbsPath+"/"+QString::number(QDateTime::currentMSecsSinceEpoch()));
+    QDir fileThumbsFolder(Parameters::THUMBS_DIR_PATH+"/"+QString::number(QDateTime::currentMSecsSinceEpoch()));
     if (!fileThumbsFolder.mkdir(".")){
-        qDebug() << "Failed to create the file thumbs directory ! " << endl;
+        qDebug() << "Failed to create the file thumbnails folder" << endl;
         return NULL;
     }
 
-    //qDebug() << "cooler " << isVideoFile(fileInfo) << fileInfo.suffix() << endl;
     if (isVideoFile(fileInfo)){
-        extractThumbnails(fileInfo, fileThumbsFolder);
+        extractVideoThumbs(fileInfo, fileThumbsFolder);
     }
 
     try {
@@ -222,15 +219,16 @@ QFileInfo *Functions::generateThumbnails(QFileInfo fileInfo)
     QFileIconProvider *provider = new QFileIconProvider();
     QImage *image = new QImage(provider->icon(fileInfo).pixmap(128,128).toImage());
 
-    QString thumbPath = fileThumbsFolder.absolutePath()+"/logo.png";
-    if (!image->save(thumbPath)){
+    if (!image->save(fileThumbsFolder.path()+"/logo.png")){
         qDebug() << "An error occured while saving the icon" << endl;
-        return NULL;
     }
-    return new QFileInfo(fileThumbsFolder.absolutePath());
+
+    JlCompress::compressDir(fileThumbsFolder.path()+".zip", fileThumbsFolder.path());
+    fileThumbsFolder.removeRecursively();
+    return new QFileInfo(fileThumbsFolder.path()+".zip");
 }
 
-void Functions::extractThumbnails(QFileInfo fileInfo, QDir thumbsFolder)
+void Functions::extractVideoThumbs(QFileInfo fileInfo, QDir folder)
 {
 
     // i use opencv to extract a picture out of the video, that's gonna be the video thumbnail
@@ -240,10 +238,9 @@ void Functions::extractThumbnails(QFileInfo fileInfo, QDir thumbsFolder)
         return;
     }
 
-    AppData * thumbSetting = AppDataManager::getByKey("thumbsNumber");
     // Everything's ok then
     int frameCount = (int) vcap.get(CV_CAP_PROP_FRAME_COUNT);
-    int sectorFrameCount = (int) (frameCount / (thumbSetting->getValue().toInt()));
+    int sectorFrameCount = (int) (frameCount / (Parameters::NB_THUMBS_PER_FILE));
 
     Mat frame;
     int i(0), sectorFrameIndex(0), count(0);
@@ -252,7 +249,7 @@ void Functions::extractThumbnails(QFileInfo fileInfo, QDir thumbsFolder)
             count++;
             vcap >> frame;
 
-            if (!imwrite(cv::String((thumbsFolder.absolutePath()+"/"+QString::number(count)+".png").toStdString()), frame))
+            if (!imwrite(cv::String((folder.path()+"/"+QString::number(count)+".png").toStdString()), frame))
                 qDebug() << "Failed to generate the thumbnail n°" << count << endl;
 
             sectorFrameIndex = 0;
@@ -325,6 +322,6 @@ File * Functions::fromSqlRecord2File(QSqlRecord sqlRecord)
 
 FileFormat *Functions::fromSqlRecord2FileFormat(QSqlRecord sqlRecord)
 {
-     FileFormat * fileFormat = new FileFormat(sqlRecord.value(0).toInt(), sqlRecord.value(1).toString());
-     return fileFormat;
+    FileFormat * fileFormat = new FileFormat(sqlRecord.value(0).toInt(), sqlRecord.value(1).toString());
+    return fileFormat;
 }

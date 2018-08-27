@@ -109,6 +109,8 @@ public:
 
     const static QString STARTUP_PROG_FOLDER;
 
+    static int NB_THUMBS_PER_FILE;
+
 };
 
 #endif // ZEMINIPARAMETERS_H

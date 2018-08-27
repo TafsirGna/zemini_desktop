@@ -16,7 +16,7 @@
 #include "Database/EntityManagers/FileManager.h"
 #include "Database/EntityManagers/DriveManager.h"
 #include "Database/EntityManagers/AppDataManager.h"
-//#include "Services/DirectoryService.h"
+#include <JlCompress.h>
 #include <QMessageBox>
 #include <QFileIconProvider>
 #include <QSequentialIterable>
@@ -45,7 +45,7 @@ public:
 
     static QFileInfo * generateThumbnails(QFileInfo);
 
-    static void extractThumbnails(QFileInfo, QDir);
+    static void extractVideoThumbs(QFileInfo, QDir);
 
     static bool isVideoFile(QFileInfo);
 

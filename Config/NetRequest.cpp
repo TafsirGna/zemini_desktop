@@ -170,7 +170,7 @@ NetRequest::NetRequest(int code, QFileInfo fileInfo)
     if (code == Parameters::CODE_SAVE_THUMBS){
 
         QMap<QString, QString> fileProperties;
-        fileProperties.insert("thumbnail", fileInfo.absolutePath().split("/").last());
+        fileProperties.insert("thumbnail", fileInfo.fileName());
         File * file = FileManager::getOneBy(fileProperties);
 
         this->type = "POST";

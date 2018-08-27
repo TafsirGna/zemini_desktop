@@ -24,6 +24,7 @@
 #include <Services/LocalDbService.h>
 #include <QUrlQuery>
 #include <QSslKey>
+#include <Services/DownloadManager.h>
 //#include <QHttpPart>
 #include <Config/NetRequest.h>
 #include <Vendor/qt-firebaseapi-master/firebase.h>

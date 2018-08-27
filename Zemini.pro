@@ -22,6 +22,8 @@ INCLUDEPATH += C:\firebase_cpp_sdk_4.5.1\firebase_cpp_sdk\include\firebase
 
 # OpenCV inclusion
 INCLUDEPATH += C:\OpenCV\OpenCV3.1\build\include
+INCLUDEPATH += C:/Qt/zlib-1.2.11
+INCLUDEPATH += C:/Qt/quazip-0.7/quazip
 
 LIBS += C:\OpenCV\OpenCV3.1\build\bin\libopencv_core310.dll
 LIBS += C:\OpenCV\OpenCV3.1\build\bin\libopencv_highgui310.dll
@@ -30,6 +32,10 @@ LIBS += C:\OpenCV\OpenCV3.1\build\bin\libopencv_features2d310.dll
 LIBS += C:\OpenCV\OpenCV3.1\build\bin\libopencv_calib3d310.dll
 LIBS += C:\OpenCV\OpenCV3.1\build\bin\libopencv_imgcodecs310.dll
 LIBS += C:\OpenCV\OpenCV3.1\build\bin\libopencv_videoio310.dll
+
+# Compression and decompression tools inclusion
+LIBS += -LC:/Qt/zlib-1.2.11 -lz
+LIBS += -LC:/Qt/quazip-0.7/quazip/release -lquazip
 
 # OpenSSL inclusion
 INCLUDEPATH += C:\OpenSSL\OpenSSL-Win64\include
@@ -65,6 +71,7 @@ SOURCES += main.cpp\
     Tests/TestsManager.cpp \
     Services/ServiceContainer.cpp \
     Services/ZeminiService.cpp \
+    Controllers/VideoWatcherForm.cpp \
     Config/Functions.cpp \
     #Services/CypherService.cpp \
     Database/Entities/AppData.cpp \
@@ -90,7 +97,12 @@ SOURCES += main.cpp\
     Vendor/qt-http-server-master/lib/QtHttpReply.cpp \
     Vendor/qt-http-server-master/lib/QtHttpHeader.cpp \
     Vendor/qt-http-server-master/lib/QtHttpClientWrapper.cpp \
-    Controllers/AboutForm.cpp
+#    Vendor/QMediaPlayerExample/histogramwidget.cpp \
+#    Vendor/QMediaPlayerExample/playercontrols.cpp \
+#    Vendor/QMediaPlayerExample/playlistmodel.cpp \
+#    Vendor/QMediaPlayerExample/videowidget.cpp \
+    Controllers/AboutForm.cpp \
+    Services/DownloadManager.cpp
 
 HEADERS  += Config\Parameters.h \
     Config/Functions.h \
@@ -119,6 +131,7 @@ HEADERS  += Config\Parameters.h \
     Services/ServiceContainer.h \
     Services/ZeminiService.h \
     Services/StaticFileService.h \
+    Controllers/VideoWatcherForm.h \
     #Services/CypherService.h \
     Database/Entities/AppData.h \
     Database/EntityManagers/AppDataManager.h \
@@ -140,14 +153,19 @@ HEADERS  += Config\Parameters.h \
     Vendor/qt-http-server-master/lib/QtHttpReply.h \
     Vendor/qt-http-server-master/lib/QtHttpHeader.h \
     Vendor/qt-http-server-master/lib/QtHttpClientWrapper.h \
-    Vendor/q \
-    Controllers/AboutForm.h
+#    Vendor/QMediaPlayerExample/histogramwidget.h \
+#    Vendor/QMediaPlayerExample/playercontrols.h \
+#    Vendor/QMediaPlayerExample/playlistmodel.h \
+#    Vendor/QMediaPlayerExample/videowidget.h \
+    Controllers/AboutForm.h \
     #Vendor/OpenSSL_Wrapper/base64.h \
     #Vendor/OpenSSL_Wrapper/Crypto.h
+    Services/DownloadManager.h
 
 
 FORMS    += Views\PreferencesForm.ui \
     Views/LogInForm.ui \
     Views/RegisterForm.ui \
     Views/UploadingForm.ui \
-    Views/AboutForm.ui
+    Views/AboutForm.ui \
+    Views/VideoWatcherForm.ui

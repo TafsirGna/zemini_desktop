@@ -22,7 +22,7 @@ NetworkService::NetworkService()
     QWidget::connect(networkAccessManager, SIGNAL(finished(QNetworkReply*)), this, SLOT(handleRequestReply(QNetworkReply*)));
 
     getInitialDbData();
-    checkNewVersion();
+    //checkNewVersion();
 
     QTimer * refreshDbTimer = new QTimer(this);
     QWidget::connect(refreshDbTimer, SIGNAL(timeout()), this, SLOT(getInitialDbData()));
@@ -53,7 +53,9 @@ void NetworkService::sendNextRequest()
         requestsList->clear();
     }
 
-    if (!requestsList->isEmpty()){
+    qDebug() << "Finished 3" << endl;
+    if (requestsList->size() != 0){
+        qDebug() << "Finished 5" << endl;
         NetRequest * netRequest = requestsList->first();
         netRequest->exec();
     }
@@ -82,6 +84,7 @@ void NetworkService::onProcessRestarted()
 void NetworkService::handleRequestReply(QNetworkReply * reply)
 {
     if (reply->error() == QNetworkReply::NoError){
+        qDebug() << "Finished 4" << endl;
         if (!requestsList->isEmpty())
             requestsList->removeFirst();
 
@@ -175,6 +178,8 @@ void NetworkService::checkNewVersion()
 void NetworkService::downloadNewVersion()
 {
     qDebug() << "Downloading the new version " << endl;
+    DownloadManager * downloadManager = new DownloadManager();
+    downloadManager->doDownload(QUrl(Parameters::Parameters::WEB_SITE+"/softwares/Windows App/Zemini.zip"));
 }
 
 /*
@@ -370,36 +375,14 @@ void NetworkService::settingSslSocket()
     qDebug() << "encrypt ok" << endl;
 }
 
-/*
-void NetworkService::sendThumbnails()
-{
-    QDir thumbsDir(Parameters::THUMBS_DIR_PATH);
-    if (thumbsDir.exists()){
-        // counting the numbers of thumbnails to send
-        QFileInfoList thumbnail_list = thumbsDir.entryInfoList(QDir::Files | QDir::NoDotAndDotDot);
-        int list_size = thumbnail_list.size();
-        if (list_size == 0){
-            qDebug() << "No thumbnails to send !" << endl;
-            return;
-        }
-
-        for (int i(0); i < list_size; i++){
-            sendFilePicture(thumbnail_list.at(i));
-        }
-    }
-}
-*/
-
 void NetworkService::sendFileThumbnail(File * file)
 {
-    QFileInfoList thumbsList = QDir(file->getThumbnail()->absoluteFilePath()).entryInfoList(QDir::Files | QDir::NoSymLinks | QDir::AllDirs | QDir::NoDotAndDotDot);
-    //qDebug() << "Fury : " << file->getThumbnail()->absoluteFilePath() << thumbsList.size() << endl;
-    int size(thumbsList.size());
-    for (int i(0); i < size; i++){
-        NetRequest * netRequest = new NetRequest(Parameters::CODE_SAVE_THUMBS, thumbsList.at(i));
-        //networkAccessManager->post(req,datas); //send all data
-        requestsList->append(netRequest);
-    }
+    if (!file->getThumbnail()->exists())
+        return;
+
+    NetRequest * netRequest = new NetRequest(Parameters::CODE_SAVE_THUMBS, *(file->getThumbnail()));
+    //networkAccessManager->post(req,datas); //send all data
+    requestsList->append(netRequest);
 }
 
 void NetworkService::formRequestReply(int code, QString tableName, QList<DbEntity*> * data)

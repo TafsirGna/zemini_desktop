@@ -349,7 +349,6 @@ void LocalDBService::onRequestReplyReceived(QMap<QString, QString> metaData, QLi
             QMap<QString, QString> map;
             map.insert("id", QString::number(file->getId()));
             file = FileManager::getOneBy(map);
-            //qDebug() << "Finished" << endl;
             if (file->getThumbnail() == NULL){
                 getFileManager()->setFileSaved(file->getId());
                 nbFiles2Send--;

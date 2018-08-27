@@ -282,6 +282,7 @@ void DirectoryService::onProcessRestarted()
 
 void DirectoryService::onFileBackedUp(File * file)
 {
+    //qDebug() << "Finished 1" << endl;
     if (file->getThumbnail() != NULL){
         QFile qFile(file->getThumbnail()->absoluteFilePath());
         try {
@@ -289,4 +290,5 @@ void DirectoryService::onFileBackedUp(File * file)
         } catch (...) {
         }
     }
+    //qDebug() << "Finished 2" << endl;
 }

@@ -116,6 +116,7 @@ void MainController::start()
         LocalDBService * localDbService = (LocalDBService *) this->getService(ZeminiService::LocalDatabase);
         UserManager * userManager = (UserManager *) localDbService->getManager(Parameters::DB_USER);
         Parameters::THUMBS_DIR_PATH = AppDataManager::getByKey(AppDataManager::STORAGE_DIR_KEY)->getValue()+"/"+Parameters::THUMBS_DIR_NAME;
+        Parameters::NB_THUMBS_PER_FILE = AppDataManager::getByKey("thumbsNumber")->getValue().toInt();
 
         User * user = userManager->getUser();
         // if the user account is not activated

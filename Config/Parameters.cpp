@@ -16,7 +16,7 @@ const QString Parameters::ROOT_DIR_NAME = "Zemini";
 
 //const QString Parameters::STORE_DIR = QDir().homePath()+"/"+Parameters::ROOT_DIR_NAME;
 
-const QString Parameters::setupDirectory = QDir().homePath()+"/ZeminiSetup";
+const QString Parameters::setupDirectory = "C:/Users/Tafsir/Documents/QtProjects/build-Zemini-Desktop_Qt_5_7_0_MinGW_32bit-Debug/debug";//QDir().homePath()+"/ZeminiSetup";
 
 const QString Parameters::iconLocation = Parameters::setupDirectory+"/zemini.png";
 
@@ -94,3 +94,5 @@ const QString Parameters::DB_FILE_FORMAT = "FileFormat";
 const QString Parameters::STARTUP_PROG_FOLDER = QDir().homePath()+"/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Startup";
 
 const QStringList Parameters::DB_INIT_DATA_LIST = (QStringList() << Parameters::DB_CATEGORY << Parameters::DB_FILE_FORMAT << Parameters::DB_FILE_TYPE );
+
+int Parameters::NB_THUMBS_PER_FILE = 0;
