@@ -14,11 +14,11 @@ const int Parameters::networkTimer2Frequency = 30000;
 
 const QString Parameters::ROOT_DIR_NAME = "Zemini";
 
-//const QString Parameters::STORE_DIR = QDir().homePath()+"/"+Parameters::ROOT_DIR_NAME;
+QString Parameters::ROOT_DIR_PATH = QDir().homePath()+"/"+Parameters::ROOT_DIR_NAME;
 
-const QString Parameters::setupDirectory = "C:/Users/Tafsir/Documents/QtProjects/build-Zemini-Desktop_Qt_5_7_0_MinGW_32bit-Debug/debug";//QDir().homePath()+"/ZeminiSetup";
+const QString Parameters::SETUP_DIR = "C:/Users/Tafsir/Documents/QtProjects/build-Zemini-Desktop_Qt_5_7_0_MinGW_32bit-Debug/debug";//QDir().homePath()+"/ZeminiSetup";
 
-const QString Parameters::iconLocation = Parameters::setupDirectory+"/zemini.png";
+const QString Parameters::iconLocation = Parameters::SETUP_DIR+"/zemini.png";
 
 const QString Parameters::devAppFolder = "C:\\Users\\Tafsir\\Documents\\QtProjects\\Zemini_desktop";
 
@@ -38,7 +38,7 @@ const QRegExp * Parameters::emailRegExpr = new QRegExp("^[a-z0-9._-]+@[a-z0-9._-
 
 const QSqlDatabase Parameters::localDb = DatabaseManager::connectToDatabase("ZeminiDB", "root","localhost", 3306, "","QSQLITE", "db");
 
-const QString Parameters::refreshingIconLocation = Parameters::setupDirectory+"/refreshing_icon.png";
+const QString Parameters::refreshingIconLocation = Parameters::SETUP_DIR+"/refreshing_icon.png";
 
 const QString Parameters::NET_REQUEST_SEPARATOR = "/";
 
@@ -48,7 +48,7 @@ const QString Parameters::FILE_SYS_SEPARATOR = "/";
 
 const QString Parameters::THUMBS_DIR_NAME = ".thumbs";
 
-const QString Parameters::KEYS_DIR = Parameters::setupDirectory
+const QString Parameters::KEYS_DIR = Parameters::SETUP_DIR
         +Parameters::FILE_SYS_SEPARATOR+".keystore";
 
 const bool Parameters::USE_OPENSSL = true;

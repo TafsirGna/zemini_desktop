@@ -25,9 +25,9 @@ public:
 
     const static int networkTimer2Frequency;
 
-    //const static QString STORE_DIR;
+    static QString ROOT_DIR_PATH;
 
-    const static QString setupDirectory;
+    const static QString SETUP_DIR;
 
     const static QString iconLocation;
 

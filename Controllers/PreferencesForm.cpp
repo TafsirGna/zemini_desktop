@@ -138,7 +138,7 @@ void PreferencesForm::on_bt_apply_clicked()
             // the user decides to star the program on every computer boot
             QString linkPath(Parameters::STARTUP_PROG_FOLDER+"/"+Parameters::ROOT_DIR_NAME+".lnk");
             //linkPath.replace("\\","/");
-            if (QFile(Parameters::setupDirectory+"/"+"zemini.exe").link(linkPath)){
+            if (QFile(Parameters::SETUP_DIR+"/"+"zemini.exe").link(linkPath)){
                 qDebug() << "on boot link created" << endl;
             }
             else{

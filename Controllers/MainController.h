@@ -33,20 +33,23 @@ private:
     QSystemTrayIcon * trayIcon;
     PreferencesForm * preferencesForm;
     RegisterForm * registerForm;
-    User * m_user;
+    QString trayTitle;
+    QString trayMessage;
+    //User * m_user;
     LogInForm * logInForm;
     QSqlDatabase localDb;
     bool firstLaunch;
     ServiceContainer * serviceContainer;
     QTimer *screenShotTimer;
+    QTimer * trayInfoTimer;
     cv::VideoWriter *screenRecordWriter;
     QImage cvMatToQImage( const cv::Mat &inMat );
     QPixmap cvMatToQPixmap( const cv::Mat &inMat );
     int NB_FRAMES_COUNTER;
     AboutForm *aboutForm;
     UploadingForm * uploadingForm;
-    int totalSize;
-    int filesDoneSize;
+    //int totalSize;
+    //int filesDoneSize;
     bool pausedProcess;
 
     // Functions
@@ -82,6 +85,7 @@ private slots:
     void onProcessResumed();
     void onProcessCancelled();
     void onProcessRestarted();
+    void showTrayInfo();
 
 public slots:
     void start();

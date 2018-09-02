@@ -73,5 +73,6 @@ signals:
     void userEnabled(bool);
     void dbInitialized();
     void fileBackedUp(File *);
+    void thumbBackedUp(File *);
 };
 #endif // LOCALDBSERVICE_H

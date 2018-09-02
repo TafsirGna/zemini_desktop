@@ -27,6 +27,7 @@ private:
 
     //Functions
     bool removeWatchOver(QFileInfo);
+    void checkRootDirIntegrity();
 
 protected:
 
@@ -48,7 +49,7 @@ signals:
 
 private slots:
     void handleDirChanges(QString);
-    void handleFileChanges(QString);
+    //void handleFileChanges(QString);
 
 public slots:
     void watchFile(File *);
@@ -57,7 +58,7 @@ public slots:
     void onProcessCancelled();
     void onProcessResumed();
     void onProcessRestarted();
-    void onFileBackedUp(File *);
+    void onThumbBackedUp(File *);
 
 
 signals:

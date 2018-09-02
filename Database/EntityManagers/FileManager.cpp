@@ -86,7 +86,6 @@ File* FileManager::add(File * file)
     }
 
     // After inserting the file, update the property "iddir" of its children already saved
-    //qDebug() << "frou " << file->getAbsolutePath() << endl;
     if (QFileInfo(file->getAbsolutePath()).isDir()){
         updateDbChildrenOf(file);
     }
@@ -260,7 +259,7 @@ int FileManager::getSizeOnDb(File * file)
         File * childFile = childrenFiles->at(i);
         result += childFile->getSize();
     }
-    qDebug() << "Result : " << file->getFileName() << size << result << endl;
+    //qDebug() << "Result : " << file->getFileName() << size << result << endl;
     return result;
 }
 
@@ -268,7 +267,7 @@ int FileManager::getSizeOnDb(QFileInfo fileInfo)
 {
     qDebug() << "Zoo" << fileInfo.fileName() << Parameters::ROOT_DIR_NAME << endl;
     File * file = NULL;
-    if (fileInfo.fileName() == Parameters::ROOT_DIR_NAME){
+    if (fileInfo.absoluteFilePath() == Parameters::ROOT_DIR_PATH){
         file = new File();
         file->setId(NULL);
         file->setPath(Functions::getRelativePath(fileInfo.absolutePath()));
@@ -338,9 +337,7 @@ File *FileManager::convertToFile(QFileInfo fileInfo)
     File * file = NULL;
     if (savedFile != NULL){
         file = savedFile;
-        if (fileInfo.isDir())
-            file->setSize(getSizeOnDb(file));
-        else
+        if (!fileInfo.isDir())
             file->setSize(fileInfo.size());
         file->setStatus(File::FILE_UPDATED); // TODO temporary value
     }
@@ -357,10 +354,7 @@ File *FileManager::convertToFile(QFileInfo fileInfo)
 
         qDebug() << "Converting file" << fileInfo.fileName() <<  endl;
         int size(0);
-        if (fileInfo.isDir()){
-            size = 0;
-        }
-        else{
+        if (!fileInfo.isDir()){
             size = fileInfo.size();
         }
 

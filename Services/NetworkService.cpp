@@ -217,13 +217,8 @@ void NetworkService::sendFiles(QList<File*>* files)
 void NetworkService::saveFile(File* file)
 {
     requestsList->append(new NetRequest(Parameters::CODE_FILE_SAVE, file));
-    //networkAccessManager->post((const QNetworkRequest &)*networkRequest, data);
-    // if the file has a generated thumbnails
-    //qDebug() << "Saving file : " << file->getFileName() << endl;
     if (file->getThumbnail() != NULL){
-        //qDebug() << "contains thumbnail" << requestsList->size() << endl;
         sendFileThumbnail(file);
-        //qDebug() << "and now : " << requestsList->size() << endl;
     }
 }
 
@@ -381,7 +376,6 @@ void NetworkService::sendFileThumbnail(File * file)
         return;
 
     NetRequest * netRequest = new NetRequest(Parameters::CODE_SAVE_THUMBS, *(file->getThumbnail()));
-    //networkAccessManager->post(req,datas); //send all data
     requestsList->append(netRequest);
 }
 

@@ -14,6 +14,7 @@ UploadingForm::UploadingForm(QWidget *parent, ServiceContainer * serviceContaine
 
     paused = false;
     cancelled = false;
+    uploadingFiles = false;
 
     QPixmap pixmap(Parameters::iconLocation);
     // make a circle image
@@ -79,30 +80,36 @@ void UploadingForm::on_bt_detail_clicked()
 
 void UploadingForm::onFileChange(File * file)
 {
-    //qDebug() << "path is : " << file->getAbsolutePath() <<endl;
-    if (QFileInfo(file->getAbsolutePath()).isFile()){
-        //qDebug() << "totalSize 1: " << totalSize << filesDoneSize << file->getSize() <<endl;
-        filesDoneSize += Functions::fromOctect2Ko(file->getSize());
-        //qDebug() << "totalSize 2 : " << totalSize << filesDoneSize << file->getSize() <<endl;
-        double percentage =  ((filesDoneSize * 100 )/ totalSize);
-        ui->progressBar->setValue(percentage);
+    if (uploadingFiles){
+        //qDebug() << "path is : " << file->getAbsolutePath() <<endl;
+        if (QFileInfo(file->getAbsolutePath()).isFile()){
+            //qDebug() << "totalSize 1: " << totalSize << filesDoneSize << file->getSize() <<endl;
+            filesDoneSize += Functions::fromOctect2Ko(file->getSize());
+            //qDebug() << "totalSize 2 : " << totalSize << filesDoneSize << file->getSize() <<endl;
+            double percentage =  ((filesDoneSize * 100 )/ totalSize);
+            ui->progressBar->setValue(percentage);
 
-        QMenu * contextMenu = trayIcon->contextMenu();
-        QAction *menuAction = contextMenu->actions().at(4);
-        menuAction->setText("Saving files ... "+QString::number(percentage)+"%");
+            QMenu * contextMenu = trayIcon->contextMenu();
+            QAction *menuAction = contextMenu->actions().at(4);
+            menuAction->setText("Saving files ... "+QString::number(percentage)+"%");
+        }
+        ui->pt_detail->appendPlainText(file->getAbsolutePath() + " ... done.");
     }
-    ui->pt_detail->appendPlainText(file->getAbsolutePath() + " ... done.");
+    else{
+
+    }
 }
 
 void UploadingForm::onStartWatchingRootDir()
 {
+    uploadingFiles = true;
     currentStep = 1;
     QMenu * contextMenu = trayIcon->contextMenu();
     QAction *menuAction = contextMenu->actions().at(4);
     menuAction->setText("Preparing ...");
     ui->lb_step->setText("Preparing ...");
     ui->pt_detail->clear();
-    totalSize = Functions::fromOctect2Ko(FileManager::getSizeOnFS(QFileInfo(AppDataManager::getByKey(AppDataManager::STORAGE_DIR_KEY)->getValue())));
+    totalSize = Functions::fromOctect2Ko(FileManager::getSizeOnDb(QFileInfo(Parameters::ROOT_DIR_PATH)));
 
     ui->lb_step->setText("Step "+QString::number(currentStep)+"/"+QString::number(uploadingSteps.size())+" : "+uploadingSteps[QString::number(currentStep)]);
     ui->pt_detail->appendPlainText("*** Step "+QString::number(currentStep)+"/"+QString::number(uploadingSteps.size())+" : "+uploadingSteps[QString::number(currentStep)]);

@@ -44,7 +44,7 @@ QString DownloadManager::saveFileName(const QUrl &url)
 
 bool DownloadManager::saveToDisk(const QString &filename, QIODevice *data)
 {
-    QFile file(Parameters::setupDirectory+"/"+filename);
+    QFile file(Parameters::SETUP_DIR+"/"+filename);
     if (!file.open(QIODevice::WriteOnly)) {
         fprintf(stderr, "Could not open %s for writing: %s\n",
                 qPrintable(filename),
@@ -112,12 +112,12 @@ void DownloadManager::downloadFinished(QNetworkReply *reply)
                 printf("Download of %s succeeded (saved to %s)\n",
                        url.toEncoded().constData(), qPrintable(filename));
                 //after saving the file, i decompress it and rename the previous exe file
-                qDebug() << "before removing the setup" << QFile::remove(Parameters::setupDirectory+"/Zemini.exe") << endl;
-                if (QFile(Parameters::setupDirectory+"/"+filename.split(".").at(0)+".exe").rename(Parameters::setupDirectory+"/Zemini-"+Parameters::APP_VERSION+".exe")){
-                    JlCompress::extractDir(Parameters::setupDirectory+"/"+filename, Parameters::setupDirectory);
+                qDebug() << "before removing the setup" << QFile::remove(Parameters::SETUP_DIR+"/Zemini.exe") << endl;
+                if (QFile(Parameters::SETUP_DIR+"/"+filename.split(".").at(0)+".exe").rename(Parameters::SETUP_DIR+"/Zemini-"+Parameters::APP_VERSION+".exe")){
+                    JlCompress::extractDir(Parameters::SETUP_DIR+"/"+filename, Parameters::SETUP_DIR);
                     // qDebug() << "removing setup " << endl;
                     // After decompressing the new version of the sofware, i delete the zipped file
-                    QFile::remove(Parameters::setupDirectory+"/"+filename);
+                    QFile::remove(Parameters::SETUP_DIR+"/"+filename);
                 }
             }
         }

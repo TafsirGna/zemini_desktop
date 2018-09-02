@@ -26,35 +26,28 @@ void DirectoryService::start()
  */
 void DirectoryService::watchZeminiFolder()
 {
+    //first, i check that all directories corresponding to the categories exist
+    checkRootDirIntegrity();
+
     FileManager::deleteAll();
 
     //qDebug() << "nbFileTypes : " << FileTypeManager::getAll()->size() << endl;
     //qDebug() << "nbFileFormats : " << FileFormatManager::getAll()->size() << endl;
 
     // i start going through all files and directories to store and track them
-    QMap<QString, QString> parameters;
-    parameters.insert("tableName", Parameters::DB_APP_DATA);
-    parameters.insert("id", AppDataManager::STORAGE_DIR_KEY);
-    QDir root_dir(((AppData *)LocalDBService::getOneBy(parameters))->getValue());
+    QDir root_dir(Parameters::ROOT_DIR_PATH);
 
     // starting the static file service that wil serve requested files
     new StaticFileService(root_dir.absolutePath(), NULL);
 
-    QString thumbsDir = root_dir.absolutePath()+"/"+Parameters::THUMBS_DIR_NAME;
-
     queue = new QFileInfoList();
-    (*queue) += root_dir.entryInfoList(QDir::Files | QDir::AllDirs | QDir::NoDotAndDotDot);
-
-    if (queue->size() == 0){
-        QMessageBox::critical(0, "Zemini error", "Some folders are currently missing in the workplace, preventing the app from working correctly. Please! Try to reinstall Zemini!",QMessageBox::Ok);
-        return;
-    }
+    (*queue) += root_dir.entryInfoList( QDir::AllDirs | QDir::NoDotAndDotDot);
 
     QFileInfo currentObject = (queue->last());
     queue->removeLast();
     fsWatchers->append(new QFileSystemWatcher());
     connect(fsWatchers->last(), SIGNAL(directoryChanged(QString)), this, SLOT(handleDirChanges(QString)));
-    connect(fsWatchers->last(), SIGNAL(fileChanged(QString)), this, SLOT(handleFileChanges(QString)));
+    //connect(fsWatchers->last(), SIGNAL(fileChanged(QString)), this, SLOT(handleFileChanges(QString)));
 
     emit startWatchingRootDir();
 
@@ -69,10 +62,10 @@ void DirectoryService::watchZeminiFolder()
             break;
         }
         qDebug() << "test : " << currentObject.absoluteFilePath() << endl;
-        if (currentObject.absoluteFilePath() != thumbsDir)
+        if (currentObject.absoluteFilePath() != Parameters::THUMBS_DIR_PATH)
             emit storeInDb(currentObject);
 
-        if (currentObject.isDir() && currentObject.absoluteFilePath() != thumbsDir){
+        if (currentObject.isDir() && (currentObject.absoluteFilePath() != Parameters::THUMBS_DIR_PATH)){
             // get its children
             (*queue) += QDir(currentObject.absoluteFilePath()).entryInfoList(QDir::Files | QDir::AllDirs | QDir::NoDotAndDotDot);
         }
@@ -86,12 +79,9 @@ void DirectoryService::watchZeminiFolder()
                 QMap<QString, QString> fileProperties;
                 fileProperties.insert("path", Functions::getRelativePath(parentFileInfo.absolutePath()));
                 fileProperties.insert("filename", parentFileInfo.fileName());
-                qDebug() << "Curo : " << currentObject.absolutePath() << Functions::getRelativePath(parentFileInfo.absolutePath()) << parentFileInfo.fileName() << endl;
                 File * file = FileManager::getOneBy(fileProperties);
                 file->setSize(FileManager::getSizeOnDb(file));
                 file = FileManager::update(file);
-
-                qDebug() << "Curo fin :" << file->getSize() << endl;
             }
         }
         currentObject = (queue->last());
@@ -107,14 +97,13 @@ void DirectoryService::watchZeminiFolder()
  */
 void DirectoryService::watchFile(File *file)
 {
-    QFileInfo fileInfo(file->getAbsolutePath());
-    qDebug() << "watching "+fileInfo.fileName() << endl;
-    bool added = fsWatchers->last()->addPath(fileInfo.absoluteFilePath());
+    //qDebug() << "watching "+file->getFileName() << endl;
+    bool added = fsWatchers->last()->addPath(file->getAbsolutePath());
     if (!added){
         fsWatchers->append(new QFileSystemWatcher());
         connect(fsWatchers->last(), SIGNAL(directoryChanged(QString)), this, SLOT(handleDirChanges(QString)));
-        connect(fsWatchers->last(), SIGNAL(fileChanged(QString)), this, SLOT(handleFileChanges(QString)));
-        fsWatchers->last()->addPath(fileInfo.absoluteFilePath());
+        //connect(fsWatchers->last(), SIGNAL(fileChanged(QString)), this, SLOT(handleFileChanges(QString)));
+        fsWatchers->last()->addPath(file->getAbsolutePath());
     }
     qDebug() << "Added successfully" << endl;
 }
@@ -198,10 +187,38 @@ bool DirectoryService::removeWatchOver(QFileInfo fileInfo)
     return false;
 }
 
+void DirectoryService::checkRootDirIntegrity()
+{
+    // first, i check if the zemini dire is still there, if no then i create a new one corresponding to the previous one
+    if (!QDir(Parameters::ROOT_DIR_PATH).exists()){
+        qDebug() << "The zemini root directory doesn't exist! " << endl;
+        try {
+            QDir(Parameters::ROOT_DIR_PATH).mkdir(".");
+        } catch (...) {
+        }
+    }
+
+    // checking that all directories corresponding to each category exists otherwise create them
+    QList<Category> * categories = CategoryManager::getAll();
+    int size(categories->size());
+    for (int i(0); i < size; i++){
+        Category category = categories->at(i);
+        QDir categoryDir(Parameters::ROOT_DIR_PATH+"/"+category.getName());
+        if (!categoryDir.exists()){
+            qDebug() << "Directory : "+category.getName()+" didn't exist !" << endl;
+            try {
+                categoryDir.mkdir(".");
+            } catch (...) {
+            }
+        }
+    }
+}
+
 /**
  * @brief DirectoryService::handleFileChanges
  * @param filePath
  */
+/*
 void DirectoryService::handleFileChanges(QString filePath)
 {
     //updated = true;
@@ -215,6 +232,7 @@ void DirectoryService::handleFileChanges(QString filePath)
         emit fileDeleted(fileInfo);
     }
 }
+*/
 
 bool DirectoryService::setUserFolder(QWidget* parent)
 {
@@ -280,15 +298,15 @@ void DirectoryService::onProcessRestarted()
     stopSaving = false;
 }
 
-void DirectoryService::onFileBackedUp(File * file)
+void DirectoryService::onThumbBackedUp(File * file)
 {
-    //qDebug() << "Finished 1" << endl;
     if (file->getThumbnail() != NULL){
         QFile qFile(file->getThumbnail()->absoluteFilePath());
         try {
-            qFile.remove();
+            if (qFile.remove()){
+                qDebug() << "Failed to remove the thumbnail of file " << file->getAbsolutePath() << endl;
+            }
         } catch (...) {
         }
     }
-    //qDebug() << "Finished 2" << endl;
 }

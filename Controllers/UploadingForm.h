@@ -43,6 +43,7 @@ private:
     bool cancelled;
     QMap<QString, QString> uploadingSteps;
     int currentStep;
+    bool uploadingFiles;
 
 signals:
     void processPaused();

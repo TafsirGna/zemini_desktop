@@ -195,7 +195,7 @@ void LocalDBService::startBackingUp()
         return;
     }
     nbFiles2Send = notSavedFiles->size();
-    emit filesToSend(Parameters::DB_FILE, (QList<DbEntity*>*)notSavedFiles);
+    emit filesToSend(Parameters::DB_FILE, (QList<DbEntity*>*) notSavedFiles);
 }
 
 void LocalDBService::onDbInit(QMap<QString, QString> metaData, QList<DbEntity*> * data)
@@ -238,7 +238,7 @@ void LocalDBService::onDbInit(QMap<QString, QString> metaData, QList<DbEntity*> 
 
     // storing the parameters in the data
     if (AppDataManager::add(new AppData("pullInDataFrequency", QString::number(5*60))) != NULL){
-            qDebug() << "Succeeded in inserting the pull in frequency " << endl;
+        qDebug() << "Succeeded in inserting the pull in frequency " << endl;
     }
 
     if (AppDataManager::add(new AppData("sendOutDataFrequency", QString::number(15))) != NULL){
@@ -386,12 +386,9 @@ void LocalDBService::onRequestReplyReceived(QMap<QString, QString> metaData, QLi
             map.insert("id", QString::number(file->getId()));
             qDebug() << "Thumbs saved !" << (file == NULL) << file->getId() << endl;
             file = FileManager::getOneBy(map);
-            if (file->getThumbnail() != NULL){
-                getFileManager()->setFileSaved(file->getId());
-                nbFiles2Send--;
-                emit fileBackedUp(file);
-            }
-
+            getFileManager()->setFileSaved(file->getId());
+            nbFiles2Send--;
+            emit thumbBackedUp(file);
             if (nbFiles2Send == 0)
                 QTimer::singleShot(Parameters::CHECK_CON_TIME_OUT, this, SLOT(startBackingUp()));
         }
