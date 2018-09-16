@@ -102,21 +102,21 @@ void UploadingForm::onFileChange(File * file)
 
 void UploadingForm::onStartWatchingRootDir()
 {
-    uploadingFiles = true;
-    currentStep = 1;
-    QMenu * contextMenu = trayIcon->contextMenu();
-    QAction *menuAction = contextMenu->actions().at(4);
-    menuAction->setText("Preparing ...");
-    ui->lb_step->setText("Preparing ...");
-    ui->pt_detail->clear();
-    totalSize = Functions::fromOctect2Ko(FileManager::getSizeOnDb(QFileInfo(Parameters::ROOT_DIR_PATH)));
+//    uploadingFiles = true;
+//    currentStep = 1;
+//    QMenu * contextMenu = trayIcon->contextMenu();
+//    QAction *menuAction = contextMenu->actions().at(4);
+//    menuAction->setText("Preparing ...");
+//    ui->lb_step->setText("Preparing ...");
+//    ui->pt_detail->clear();
+//    totalSize = Functions::fromOctect2Ko(FileManager::getSizeOnDb(QFileInfo(Parameters::ROOT_DIR_PATH)));
 
-    ui->lb_step->setText("Step "+QString::number(currentStep)+"/"+QString::number(uploadingSteps.size())+" : "+uploadingSteps[QString::number(currentStep)]);
-    ui->pt_detail->appendPlainText("*** Step "+QString::number(currentStep)+"/"+QString::number(uploadingSteps.size())+" : "+uploadingSteps[QString::number(currentStep)]);
-    filesDoneSize = 0;
-    menuAction->setEnabled(true); //enabling the context menu action
-    menuAction->setText("Saving files ... "+QString::number(filesDoneSize)+"%");
-    ui->progressBar->setValue(filesDoneSize);
+//    ui->lb_step->setText("Step "+QString::number(currentStep)+"/"+QString::number(uploadingSteps.size())+" : "+uploadingSteps[QString::number(currentStep)]);
+//    ui->pt_detail->appendPlainText("*** Step "+QString::number(currentStep)+"/"+QString::number(uploadingSteps.size())+" : "+uploadingSteps[QString::number(currentStep)]);
+//    filesDoneSize = 0;
+//    menuAction->setEnabled(true); //enabling the context menu action
+//    menuAction->setText("Saving files ... "+QString::number(filesDoneSize)+"%");
+//    ui->progressBar->setValue(filesDoneSize);
 }
 
 void UploadingForm::onStartSendingFiles(QString tableName, QList<DbEntity *> * entities)

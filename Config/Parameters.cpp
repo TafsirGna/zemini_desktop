@@ -2,8 +2,6 @@
 
 const QString Parameters::APP_VERSION = "0.1";
 
-QString Parameters::THUMBS_DIR_PATH = "";
-
 const QString Parameters::WEB_SITE = "http://192.168.56.1/Symfony/web";
 
 const QString Parameters::URL = Parameters::WEB_SITE+"/desktop";
@@ -13,8 +11,6 @@ const int Parameters::networkTimer1Frequency = 15000;
 const int Parameters::networkTimer2Frequency = 30000;
 
 const QString Parameters::ROOT_DIR_NAME = "Zemini";
-
-QString Parameters::ROOT_DIR_PATH = QDir().homePath()+"/"+Parameters::ROOT_DIR_NAME;
 
 const QString Parameters::SETUP_DIR = "C:/Users/Tafsir/Documents/QtProjects/build-Zemini-Desktop_Qt_5_7_0_MinGW_32bit-Debug/debug";//QDir().homePath()+"/ZeminiSetup";
 

@@ -227,7 +227,6 @@ void NetRequest::exec()
     else if (type == "GET"){
         qDebug() << "GET / Url : " << networkRequest->url() << endl;
         NetworkAccessManager->get(*networkRequest);
-        qDebug() << "Getting data " << endl;
     }
 }
 

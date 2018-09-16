@@ -9,7 +9,7 @@ class DriveTypeManager: public AbstractManager
 {
 public:
     DriveTypeManager();
-    DriveType* add(DriveType * type);
+    static DriveType* add(DriveType * type);
     bool remove(DriveType * type);
     DriveType* update(DriveType * type);
     void initDbTable();

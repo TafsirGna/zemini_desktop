@@ -264,12 +264,6 @@ void LocalDBService::completeDbInit()
     // initializing the datetime of the last exit from the app
     getAppDataManager()->add(new AppData(AppData::LAST_EXIT, "0000-00-00 00:00:00"));
 
-    // Creating a drive object corresponding to the device on which the software is being installed
-    QMap<QString, QString> properties;
-    properties.insert("Name", DriveType::COMPUTER);
-    DriveType * computerType = getDriveTypeManager()->getOneBy(properties);
-    getDriveManager()->add(new Drive(0, QDir().homePath(), computerType));
-
     //DriveManager::displayAll();
 }
 
@@ -350,10 +344,12 @@ void LocalDBService::onRequestReplyReceived(QMap<QString, QString> metaData, QLi
             map.insert("id", QString::number(file->getId()));
             file = FileManager::getOneBy(map);
             if (file->getThumbnail() == NULL){
+                //qDebug() << "oops : " << nbFiles2Send << " / " << file->getFileName() << endl;
                 getFileManager()->setFileSaved(file->getId());
                 nbFiles2Send--;
                 emit fileBackedUp(file);
             }
+
             if (nbFiles2Send == 0)
                 QTimer::singleShot(Parameters::CHECK_CON_TIME_OUT, this, SLOT(startBackingUp()));
         }

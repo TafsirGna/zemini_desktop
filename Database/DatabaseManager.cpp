@@ -61,6 +61,7 @@ void DatabaseManager::createTables(const QString &conName)
                                   "id INTEGER PRIMARY KEY AUTOINCREMENT,"
                                   "absolutepath TEXT NOT NULL UNIQUE,"
                                   "driveType_id INT,"
+                                  "default_drive INT,"
                                   "CONSTRAINT fk_drive_id_drivetype FOREIGN KEY(driveType_id) REFERENCES Drive_type(id)"
                                   ");";
 

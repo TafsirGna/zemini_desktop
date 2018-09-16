@@ -13,10 +13,7 @@ public:
     static AppData * update(AppData*);
     bool remove(AppData*);
     QList<AppData *> * getAll();
-
     static AppData * getByKey(QString);
-
-    const static QString STORAGE_DIR_KEY;
 };
 
 #endif // APPDATAMANAGER_H

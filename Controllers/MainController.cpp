@@ -111,9 +111,7 @@ void MainController::start()
 
         LocalDBService * localDbService = (LocalDBService *) this->getService(ZeminiService::LocalDatabase);
         UserManager * userManager = (UserManager *) localDbService->getManager(Parameters::DB_USER);
-        Parameters::THUMBS_DIR_PATH = AppDataManager::getByKey(AppDataManager::STORAGE_DIR_KEY)->getValue()+"/"+Parameters::THUMBS_DIR_NAME;
         Parameters::NB_THUMBS_PER_FILE = AppDataManager::getByKey("thumbsNumber")->getValue().toInt();
-        Parameters::ROOT_DIR_PATH = AppDataManager::getByKey("STORAGE_DIR_KEY")->getValue()+"/"+Parameters::ROOT_DIR_NAME;
 
         User * user = userManager->getUser();
         // if the user account is not activated
@@ -140,11 +138,7 @@ void MainController::start()
 /***    this opens the windows' explorer on the zemini folder   ***/
 void MainController::showDirectory()
 {
-    QMap<QString, QString> parameters;
-    parameters.insert("tableName", Parameters::DB_APP_DATA);
-    parameters.insert("id", AppDataManager::STORAGE_DIR_KEY);
-
-    QString dirPath = ((AppData *)LocalDBService::getOneBy(parameters))->getValue();
+    QString dirPath = DriveManager::getDefaultDrive()->getAbsolutepath();
     QDesktopServices::openUrl(QUrl::fromLocalFile(dirPath.replace("\\","/")));
 }
 
@@ -208,12 +202,9 @@ void MainController::completeInstallation()
     delete(registerForm);
 
     // Second, the zemini directory status
-    QMap<QString, QString> parameters;
-    parameters.insert("tableName", Parameters::DB_APP_DATA);
-    parameters.insert("id", AppDataManager::STORAGE_DIR_KEY);
-    AppData * appData = (AppData *)LocalDBService::getOneBy(parameters);
+    Drive * drive = DriveManager::getDefaultDrive();
 
-    if (appData == NULL){
+    if (drive == NULL){
         logInForm->show();
         logInForm->waiting();
         if (!DirectoryService::setUserFolder(logInForm)){
@@ -247,12 +238,8 @@ bool MainController::installationCompleted()
         return false;
 
     // Second, the zemini directory status
-    QMap<QString, QString> parameters;
-    parameters.insert("tableName", Parameters::DB_APP_DATA);
-    parameters.insert("id", AppDataManager::STORAGE_DIR_KEY);
-    AppData * appData = (AppData *)LocalDBService::getOneBy(parameters);
-
-    if (appData == NULL)
+    Drive * drive = DriveManager::getDefaultDrive();
+    if (drive == NULL)
         return false;
     return true;
 }

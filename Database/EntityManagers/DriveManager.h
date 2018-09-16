@@ -25,6 +25,7 @@ public:
     static Drive *getDrive(QFileInfo);
     static QList<Drive *> *getBy(QMap<QString, QString>);
     static void displayAll();
+    static Drive * getDefaultDrive();
 };
 
 #endif // DRIVEMANAGER_H

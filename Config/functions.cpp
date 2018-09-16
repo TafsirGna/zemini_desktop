@@ -197,11 +197,16 @@ QString Functions::getRelativePath(QString path)
  */
 QFileInfo *Functions::generateThumbnails(QFileInfo fileInfo)
 {
-    if (!QDir(Parameters::THUMBS_DIR_PATH).exists()){
-        QDir(Parameters::THUMBS_DIR_PATH).mkdir(".");
+    QString path = fileInfo.absoluteFilePath();
+    path = path.remove(path.indexOf("/"+Parameters::ROOT_DIR_NAME), path.size()-1)+"/"+Parameters::ROOT_DIR_NAME+"/"+Parameters::THUMBS_DIR_NAME;
+
+    qDebug() << "pathoo " << path << endl;
+    QDir thumbsDir(path);
+    if (!thumbsDir.exists()){
+        thumbsDir.mkdir(".");
     }
 
-    QDir fileThumbsFolder(Parameters::THUMBS_DIR_PATH+"/"+QString::number(QDateTime::currentMSecsSinceEpoch()));
+    QDir fileThumbsFolder(thumbsDir.absolutePath()+"/"+QString::number(QDateTime::currentMSecsSinceEpoch()));
     if (!fileThumbsFolder.mkdir(".")){
         qDebug() << "Failed to create the file thumbnails folder" << endl;
         return NULL;
@@ -313,11 +318,18 @@ File * Functions::fromSqlRecord2File(QSqlRecord sqlRecord)
     categoryProperties.insert("id", sqlRecord.value(3).toString());
     folderProperties.insert("id", sqlRecord.value(1).toString());
 
-    //qDebug() << sqlRecord.value(8).toString() <<" :/ " << sqlRecord.value(11).toString() << endl;
-    QString absPath = AppDataManager::getByKey(AppDataManager::STORAGE_DIR_KEY)->getValue();
+    Drive *drive = DriveManager::getOneBy(driveProperties);
 
-    File * file = new File(sqlRecord.value(0).toInt(), sqlRecord.value(6).toString(), sqlRecord.value(7).toString(), sqlRecord.value(5).toDateTime(), sqlRecord.value(8).toInt(), sqlRecord.value(9).toInt(), ((sqlRecord.value(10).toString() == "") ? NULL : new QFileInfo(absPath+"/"+Parameters::THUMBS_DIR_NAME+"/"+sqlRecord.value(10).toString())), sqlRecord.value(11).toInt(), FileTypeManager::getOneBy(fileTypeProperties), CategoryManager::getOneBy(categoryProperties), FileManager::getOneBy(folderProperties), DriveManager::getOneBy(driveProperties));
+    File * file = new File(sqlRecord.value(0).toInt(), sqlRecord.value(6).toString(), sqlRecord.value(7).toString(), sqlRecord.value(5).toDateTime(), sqlRecord.value(8).toInt(), sqlRecord.value(9).toInt(), ((sqlRecord.value(10).toString() == "") ? NULL : new QFileInfo(drive->getAbsolutepath()+"/"+Parameters::ROOT_DIR_NAME+"/"+Parameters::THUMBS_DIR_NAME+"/"+sqlRecord.value(10).toString())), sqlRecord.value(11).toInt(), FileTypeManager::getOneBy(fileTypeProperties), CategoryManager::getOneBy(categoryProperties), FileManager::getOneBy(folderProperties), drive);
     return file;
+}
+
+Drive *Functions::fromSqlRecord2Drive(QSqlRecord sqlRecord)
+{
+    QMap<QString, QString> properties;
+    properties.insert("id", sqlRecord.value(2).toString());
+    return new Drive(sqlRecord.value(0).toInt(), sqlRecord.value(1).toString(),
+                     DriveTypeManager::getOneBy(properties), ((sqlRecord.value(3).toInt() == 1) ? true : false ));
 }
 
 FileFormat *Functions::fromSqlRecord2FileFormat(QSqlRecord sqlRecord)

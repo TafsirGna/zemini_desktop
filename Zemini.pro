@@ -102,7 +102,8 @@ SOURCES += main.cpp\
 #    Vendor/QMediaPlayerExample/playlistmodel.cpp \
 #    Vendor/QMediaPlayerExample/videowidget.cpp \
     Controllers/AboutForm.cpp \
-    Services/DownloadManager.cpp
+    Services/DownloadManager.cpp \
+    Controllers/DriveTypeDialog.cpp
 
 HEADERS  += Config\Parameters.h \
     Config/Functions.h \
@@ -160,7 +161,8 @@ HEADERS  += Config\Parameters.h \
     Controllers/AboutForm.h \
     #Vendor/OpenSSL_Wrapper/base64.h \
     #Vendor/OpenSSL_Wrapper/Crypto.h
-    Services/DownloadManager.h
+    Services/DownloadManager.h \
+    Controllers/DriveTypeDialog.h
 
 
 FORMS    += Views\PreferencesForm.ui \
@@ -168,4 +170,5 @@ FORMS    += Views\PreferencesForm.ui \
     Views/RegisterForm.ui \
     Views/UploadingForm.ui \
     Views/AboutForm.ui \
-    Views/VideoWatcherForm.ui
+    Views/VideoWatcherForm.ui \
+    Views/DriveTypeDialog.ui

@@ -63,6 +63,7 @@ File* FileManager::add(File * file)
             +", "+ ((file->getThumbnail() == NULL) ? "NULL": "'"+file->getThumbnail()->fileName()+"'")
             +", "+QString::number(file->getLength())+" where not exists (select 1 from File where path = '"+file->getPath()+"' and filename = '"+file->getFileName()+"');";
 
+    qDebug() << "test " << endl;
     /*
     QString request = "insert or replace into File(id, iddir, idtype, idcategory, createdat, updatedat, filename, path, size, status, thumbnail) values(NULL, "
             +((file->getFolder() == NULL) ? "NULL" : QString::number(file->getFolder()->getId()))+", "
@@ -267,7 +268,7 @@ int FileManager::getSizeOnDb(QFileInfo fileInfo)
 {
     qDebug() << "Zoo" << fileInfo.fileName() << Parameters::ROOT_DIR_NAME << endl;
     File * file = NULL;
-    if (fileInfo.absoluteFilePath() == Parameters::ROOT_DIR_PATH){
+    if (fileInfo.absoluteFilePath() == DriveManager::getDefaultDrive()->getAbsolutepath()){ //TODO
         file = new File();
         file->setId(NULL);
         file->setPath(Functions::getRelativePath(fileInfo.absolutePath()));
@@ -390,7 +391,7 @@ File *FileManager::getOneBy(QMap<QString, QString> properties)
         return NULL;
     }
 
-    qDebug() << "request is : " << request << endl;
+    //qDebug() << "request is : " << request << endl;
     if (sqlQuery.next()){
         return Functions::fromSqlRecord2File(sqlQuery.record());
     }

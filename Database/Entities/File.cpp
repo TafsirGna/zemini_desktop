@@ -12,11 +12,7 @@ QFileInfo *File::getThumbnail() const
 
 QString File::getAbsolutePath() const
 {
-    QString absPath = AppDataManager::getByKey(AppDataManager::STORAGE_DIR_KEY)->getValue();
-    QStringList pathList = absPath.split("/");
-    pathList.removeLast();
-
-    return pathList.join("/")+path+Parameters::FILE_SYS_SEPARATOR+fileName;
+    return this->drive->getAbsolutepath()+"/"+this->getPath();
 }
 
 bool File::isFile() const

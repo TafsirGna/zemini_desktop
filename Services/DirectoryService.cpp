@@ -27,65 +27,70 @@ void DirectoryService::start()
 void DirectoryService::watchZeminiFolder()
 {
     //first, i check that all directories corresponding to the categories exist
-    checkRootDirIntegrity();
-
     FileManager::deleteAll();
 
-    //qDebug() << "nbFileTypes : " << FileTypeManager::getAll()->size() << endl;
-    //qDebug() << "nbFileFormats : " << FileFormatManager::getAll()->size() << endl;
-
+    QList<Drive*> * drives = DriveManager::getAll();
     // i start going through all files and directories to store and track them
-    QDir root_dir(Parameters::ROOT_DIR_PATH);
+    int nbDrives(drives->size());
 
-    // starting the static file service that wil serve requested files
-    new StaticFileService(root_dir.absolutePath(), NULL);
+    for (int iter(0); iter < nbDrives; iter++){
 
-    queue = new QFileInfoList();
-    (*queue) += root_dir.entryInfoList( QDir::AllDirs | QDir::NoDotAndDotDot);
+        Drive * drive = drives->at(iter);
+        checkRootDirIntegrity(drive);
 
-    QFileInfo currentObject = (queue->last());
-    queue->removeLast();
-    fsWatchers->append(new QFileSystemWatcher());
-    connect(fsWatchers->last(), SIGNAL(directoryChanged(QString)), this, SLOT(handleDirChanges(QString)));
-    //connect(fsWatchers->last(), SIGNAL(fileChanged(QString)), this, SLOT(handleFileChanges(QString)));
+        QDir root_dir(drive->getAbsolutepath()+"/"+Parameters::ROOT_DIR_NAME);
+        //qDebug() << "Drive path : " << drive->getAbsolutepath() <<endl;
+        QDir thumbsDir(root_dir.absolutePath()+"/"+Parameters::THUMBS_DIR_NAME);
+        // starting the static file service that wil serve requested files
+        StaticFileService * fileServer = new StaticFileService(root_dir.absolutePath(), NULL);
 
-    emit startWatchingRootDir();
+        queue = new QFileInfoList();
+        (*queue) += root_dir.entryInfoList(QDir::AllDirs | QDir::NoDotAndDotDot);
 
-    while(true){
-
-        if (pauseSaving){
-            break;
-        }
-
-        if (stopSaving){
-            queue->clear();
-            break;
-        }
-        qDebug() << "test : " << currentObject.absoluteFilePath() << endl;
-        if (currentObject.absoluteFilePath() != Parameters::THUMBS_DIR_PATH)
-            emit storeInDb(currentObject);
-
-        if (currentObject.isDir() && (currentObject.absoluteFilePath() != Parameters::THUMBS_DIR_PATH)){
-            // get its children
-            (*queue) += QDir(currentObject.absoluteFilePath()).entryInfoList(QDir::Files | QDir::AllDirs | QDir::NoDotAndDotDot);
-        }
-        if (queue->isEmpty())
-            break;
-
-        // i set the size of the parent folder
-        if (currentObject.absolutePath() != queue->last().absolutePath()){
-            QFileInfo parentFileInfo = QFileInfo(currentObject.absolutePath());
-            if (parentFileInfo.fileName() != Parameters::ROOT_DIR_NAME){
-                QMap<QString, QString> fileProperties;
-                fileProperties.insert("path", Functions::getRelativePath(parentFileInfo.absolutePath()));
-                fileProperties.insert("filename", parentFileInfo.fileName());
-                File * file = FileManager::getOneBy(fileProperties);
-                file->setSize(FileManager::getSizeOnDb(file));
-                file = FileManager::update(file);
-            }
-        }
-        currentObject = (queue->last());
+        QFileInfo currentObject = (queue->last());
         queue->removeLast();
+        fsWatchers->append(new QFileSystemWatcher());
+        connect(fsWatchers->last(), SIGNAL(directoryChanged(QString)), this, SLOT(handleDirChanges(QString)));
+        //connect(fsWatchers->last(), SIGNAL(fileChanged(QString)), this, SLOT(handleFileChanges(QString)));
+
+        emit startWatchingRootDir();
+
+        while(true){
+
+            if (pauseSaving){
+                break;
+            }
+
+            if (stopSaving){
+                queue->clear();
+                break;
+            }
+            qDebug() << "test : " << currentObject.absoluteFilePath() << endl;
+            if (currentObject.absoluteFilePath() != thumbsDir.absolutePath())
+                emit storeInDb(currentObject);
+
+            if (currentObject.isDir() && (currentObject.absoluteFilePath() != thumbsDir.absolutePath())){
+                // get its children
+                (*queue) += QDir(currentObject.absoluteFilePath()).entryInfoList(QDir::Files | QDir::AllDirs | QDir::NoDotAndDotDot);
+            }
+            if (queue->isEmpty())
+                break;
+
+            // i set the size of the parent folder
+            if (currentObject.absolutePath() != queue->last().absolutePath()){
+                QFileInfo parentFileInfo = QFileInfo(currentObject.absolutePath());
+                if (parentFileInfo.fileName() != Parameters::ROOT_DIR_NAME){
+                    QMap<QString, QString> fileProperties;
+                    fileProperties.insert("path", Functions::getRelativePath(parentFileInfo.absolutePath()));
+                    fileProperties.insert("filename", parentFileInfo.fileName());
+                    File * file = FileManager::getOneBy(fileProperties);
+                    file->setSize(FileManager::getSizeOnDb(file));
+                    file = FileManager::update(file);
+                }
+            }
+            currentObject = (queue->last());
+            queue->removeLast();
+        }
     }
     qDebug() << "Folder on watching " << endl;
     emit rootFolderOnWatching();
@@ -133,6 +138,7 @@ bool DirectoryService::initFolder(QDir rootDir, QStringList dirNames)
         return false;
 
     QDir zeminiDir(rootDir.absolutePath()+"/"+Parameters::ROOT_DIR_NAME);
+    //qDebug() << "Diro " << zeminiDir.absolutePath() << zeminiDir.exists() < endl;
     if (!zeminiDir.exists() && !zeminiDir.mkdir(".")){
         qDebug() << "Failed to create zemini folder" << endl;
         QMessageBox::critical(0, "Zemini Folder", "An error occured when making the main folder. Check the reason and restart please.", QMessageBox::Yes);
@@ -187,23 +193,29 @@ bool DirectoryService::removeWatchOver(QFileInfo fileInfo)
     return false;
 }
 
-void DirectoryService::checkRootDirIntegrity()
+bool DirectoryService::checkRootDirIntegrity(Drive * drive)
 {
     // first, i check if the zemini dire is still there, if no then i create a new one corresponding to the previous one
-    if (!QDir(Parameters::ROOT_DIR_PATH).exists()){
+    QDir rootDir(drive->getAbsolutepath());
+    if (!rootDir.exists()){
         qDebug() << "The zemini root directory doesn't exist! " << endl;
         try {
-            QDir(Parameters::ROOT_DIR_PATH).mkdir(".");
+            if (rootDir.mkdir(".")){
+                QMessageBox::warning(0, "Zemini Info", "Zemini is unable to access the drive "+drive->getAbsolutepath(), QMessageBox::Yes);
+                return false;
+            }
         } catch (...) {
         }
     }
+    else
+        return false;
 
     // checking that all directories corresponding to each category exists otherwise create them
     QList<Category> * categories = CategoryManager::getAll();
     int size(categories->size());
     for (int i(0); i < size; i++){
         Category category = categories->at(i);
-        QDir categoryDir(Parameters::ROOT_DIR_PATH+"/"+category.getName());
+        QDir categoryDir(rootDir.absolutePath()+"/"+category.getName());
         if (!categoryDir.exists()){
             qDebug() << "Directory : "+category.getName()+" didn't exist !" << endl;
             try {
@@ -254,12 +266,28 @@ bool DirectoryService::setUserFolder(QWidget* parent)
         return false;
     }
 
+    // after entering the select folder to serve as the zemini folder, he user is asked to entrer where is the folder
+    DriveTypeDialog *dialog = new DriveTypeDialog();
+    QString driveTypeName;
+    if (dialog->exec() == QDialog::Accepted){
+        driveTypeName = dialog->getSelectedSupport();
+    }
+
     // making the directories following the categories
     QStringList subDirNames = LocalDBService::getSubDirNames();
     if (initFolder(QDir(selectedDirPath), subDirNames)){
-        QMap<QString, QString> parameters;
-        parameters.insert("tableName", Parameters::DB_APP_DATA);
-        LocalDBService::save(parameters, new AppData(AppDataManager::STORAGE_DIR_KEY, QDir(selectedDirPath).absolutePath()+"/"+Parameters::ROOT_DIR_NAME));
+
+        // Creating a drive object corresponding to the device on which the software is being installed
+        QMap<QString, QString> properties;
+        properties.insert("Name", driveTypeName);
+        DriveType * computerType = DriveTypeManager::getOneBy(properties);
+
+        if (computerType == NULL)
+            computerType = DriveTypeManager::add(new DriveType(0, driveTypeName));
+
+        if (computerType != NULL){
+            DriveManager::add(new Drive(0, selectedDirPath, computerType, true));
+        }
         qDebug() << "root folder inserted" << endl;
         return true;
     }

@@ -1,7 +1,5 @@
 #include "AppDataManager.h"
 
-const QString AppDataManager::STORAGE_DIR_KEY = "STORAGE_DIR";
-
 AppDataManager::AppDataManager() : AbstractManager()
 {
 
@@ -19,7 +17,7 @@ AppData * AppDataManager::add(AppData * data)
         qDebug() << "Failed in inserting an app data ! " << sqlQuery.lastError().text() << endl;
         return NULL;
     }
-
+    //qDebug() << "ouuoj" << ((getByKey(Parameters::s)))
     return data;
 }
 

@@ -12,10 +12,11 @@ private:
     int id;
     QString absolutepath;
     DriveType * type;
+    bool defaultDrive;
 
 public:
     Drive();
-    Drive(int, QString, DriveType *);
+    Drive(int, QString, DriveType *, bool);
     int getId() const;
     void setId(int value);
     QString getAbsolutepath() const;
@@ -26,6 +27,8 @@ public:
 
     QString toString();
     QString serialize();
+    bool isDefaultDrive() const;
+    void setDefault(bool value);
 };
 
 #endif // DRIVE_H

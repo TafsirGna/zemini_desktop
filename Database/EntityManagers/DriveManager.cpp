@@ -7,12 +7,12 @@ DriveManager::DriveManager() : AbstractManager()
 
 Drive * DriveManager::add(Drive * drive)
 {
-    QString request = "insert into Drive(id, absolutepath, driveType_id) select NULL, '"+drive->getAbsolutepath()+"', "+QString::number(drive->getType()->getId())+" where not exists (select 1 from Drive where absolutepath = '"+drive->getAbsolutepath()+"')";
-    //qDebug() << request << endl;
+    QString request = "insert into Drive(id, absolutepath, driveType_id, default_drive) select NULL, '"+drive->getAbsolutepath()+"', "+QString::number(drive->getType()->getId())+", "+((drive->isDefaultDrive()) ? "1" : "0")+" where not exists (select 1 from Drive where absolutepath = '"+drive->getAbsolutepath()+"')";
+    qDebug() << request << endl;
     QSqlQuery sqlQuery(Parameters::localDb);
     sqlQuery.exec(request);
     if (sqlQuery.isActive()){
-        qDebug() << "Failed to insert a drive in the db !" << endl;
+        qDebug() << "Failed to insert a drive in the db !" << sqlQuery.lastError().text() << endl;
         return NULL;
     }
 
@@ -68,7 +68,7 @@ QList<Drive *> *DriveManager::getAll()
     while (sqlQuery.next()){
         QMap<QString, QString> properties;
         properties.insert("id", sqlQuery.value(2).toString());
-        drives->append(new Drive(sqlQuery.value(0).toInt(), sqlQuery.value(1).toString(), DriveTypeManager::getOneBy(properties)));
+        drives->append(Functions::fromSqlRecord2Drive(sqlQuery.record()));
     }
     return drives;
 }
@@ -89,15 +89,12 @@ Drive *DriveManager::getOneBy(QMap<QString, QString> properties)
     QSqlQuery sqlQuery(Parameters::localDb);
     sqlQuery.exec(request);
     if (!sqlQuery.isActive()){
-        qDebug() << "Failed to select the drive object ! " << endl;
+        qDebug() << "Failed to select the drive object ! " << sqlQuery.lastError() << endl;
         return NULL;
     }
 
     if (sqlQuery.next()){
-        QMap<QString, QString> properties;
-        properties.insert("id", sqlQuery.value(2).toString());
-        //qDebug() << "Yes drive" << endl;
-        return new Drive(sqlQuery.value(0).toInt(), sqlQuery.value(1).toString(), DriveTypeManager::getOneBy(properties));
+        return Functions::fromSqlRecord2Drive(sqlQuery.record());
     }
     return NULL;
 }
@@ -107,12 +104,12 @@ Drive *DriveManager::getDrive(QFileInfo fileInfo)
     QMap<QString, QString> properties;
     properties.insert("absolutepath", Functions::getDriveAbsPath(fileInfo.absoluteFilePath()));
     Drive *drive = getOneBy(properties);
-    if (drive == NULL){
-        QMap<QString, QString> driveTypeProperties;
-        driveTypeProperties.insert("name", DriveType::COMPUTER);
-        return add(new Drive(0, Functions::getDriveAbsPath(fileInfo.absoluteFilePath()), DriveTypeManager::getOneBy(driveTypeProperties)));
-    }
-    qDebug() << drive->toString() << endl;
+//    if (drive == NULL){
+//        QMap<QString, QString> driveTypeProperties;
+//        driveTypeProperties.insert("name", DriveType::COMPUTER);
+//        return add(new Drive(0, Functions::getDriveAbsPath(fileInfo.absoluteFilePath()), DriveTypeManager::getOneBy(driveTypeProperties)));
+//    }
+//    qDebug() << drive->toString() << endl;
     return drive;
 }
 
@@ -124,4 +121,11 @@ void DriveManager::displayAll()
         Drive *drive = drives->at(i);
         qDebug() << drive->toString() << endl;
     }
+}
+
+Drive *DriveManager::getDefaultDrive()
+{
+    QMap<QString, QString> properties;
+    properties.insert("default_drive", "1");
+    return getOneBy(properties);
 }

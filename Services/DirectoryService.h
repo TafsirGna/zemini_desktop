@@ -13,6 +13,7 @@
 #include <Services/StaticFileService.h>
 #include <QMessageBox>
 #include <QFileDialog>
+#include <Controllers/DriveTypeDialog.h>
 
 class DirectoryService : public ZeminiService
 {
@@ -27,7 +28,7 @@ private:
 
     //Functions
     bool removeWatchOver(QFileInfo);
-    void checkRootDirIntegrity();
+    bool checkRootDirIntegrity(Drive *drive);
 
 protected:
 

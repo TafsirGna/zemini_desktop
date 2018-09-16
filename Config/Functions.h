@@ -57,6 +57,8 @@ public:
 
     static File * fromSqlRecord2File(QSqlRecord);
 
+    static Drive *fromSqlRecord2Drive(QSqlRecord);
+
     static FileFormat * fromSqlRecord2FileFormat(QSqlRecord);
 
     static double fromOctect2Ko(int size);

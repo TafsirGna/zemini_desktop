@@ -46,16 +46,28 @@ QString Drive::serialize()
     return absolutepath+Parameters::NET_REQUEST_SEPARATOR+type->serialize();
 }
 
+bool Drive::isDefaultDrive() const
+{
+    return defaultDrive;
+}
+
+void Drive::setDefault(bool value)
+{
+    defaultDrive = value;
+}
+
 Drive::Drive()
 {
     id = 0;
     absolutepath = "";
     type = new DriveType();
+    defaultDrive = false;
 }
 
-Drive::Drive(int id , QString path, DriveType * type)
+Drive::Drive(int id , QString path, DriveType * type, bool defaultDrive)
 {
     this->id = id;
     this->absolutepath = path;
     this->type = type;
+    this->defaultDrive = defaultDrive;
 }

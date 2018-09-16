@@ -31,7 +31,8 @@ PreferencesForm::PreferencesForm(QWidget *parent, ServiceContainer * serviceCont
 
 
     // here's the code that calculates the percentage of each type and shows it under the statistics tab
-    AppData * appData = (AppData *) AppDataManager::getByKey(AppDataManager::STORAGE_DIR_KEY);
+    Drive * drive = DriveManager::getDefaultDrive();
+    QDir rootDir(drive->getAbsolutepath());
 
     QList<Category> * categories = CategoryManager::getAll();
     Category category1(categories->at(0)), category2(categories->at(1)),
@@ -45,11 +46,11 @@ PreferencesForm::PreferencesForm(QWidget *parent, ServiceContainer * serviceCont
 
     qDebug() << "Preferences " << endl;
     //FileManager::printAll();
-    ui->progressBar1->setValue(FileManager::getSizePercentage(QFileInfo(appData->getValue()+"/"+category1.getName()), QDir(appData->getValue())));
-    ui->progressBar2->setValue(FileManager::getSizePercentage(QFileInfo(appData->getValue()+"/"+category2.getName()), QDir(appData->getValue())));
-    ui->progressBar3->setValue(FileManager::getSizePercentage(QFileInfo(appData->getValue()+"/"+category3.getName()), QDir(appData->getValue())));
-    ui->progressBar4->setValue(FileManager::getSizePercentage(QFileInfo(appData->getValue()+"/"+category4.getName()), QDir(appData->getValue())));
-    ui->progressBar5->setValue(FileManager::getSizePercentage(QFileInfo(appData->getValue()+"/"+category5.getName()), QDir(appData->getValue())));
+    ui->progressBar1->setValue(FileManager::getSizePercentage(QFileInfo(rootDir.absolutePath()+"/"+category1.getName()), rootDir));
+    ui->progressBar2->setValue(FileManager::getSizePercentage(QFileInfo(rootDir.absolutePath()+"/"+category2.getName()), rootDir));
+    ui->progressBar3->setValue(FileManager::getSizePercentage(QFileInfo(rootDir.absolutePath()+"/"+category3.getName()), rootDir));
+    ui->progressBar4->setValue(FileManager::getSizePercentage(QFileInfo(rootDir.absolutePath()+"/"+category4.getName()), rootDir));
+    ui->progressBar5->setValue(FileManager::getSizePercentage(QFileInfo(rootDir.absolutePath()+"/"+category5.getName()), rootDir));
 
 
     // And here, i fill the email field with user's email

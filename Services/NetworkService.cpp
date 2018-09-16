@@ -25,8 +25,8 @@ NetworkService::NetworkService()
     //checkNewVersion();
 
     QTimer * refreshDbTimer = new QTimer(this);
-    QWidget::connect(refreshDbTimer, SIGNAL(timeout()), this, SLOT(getInitialDbData()));
-    qDebug() << "frequency : " << ((AppDataManager::getByKey("pullInDataFrequency") == NULL) ? "NULL" : "NOT NULL") << endl;
+    //QWidget::connect(refreshDbTimer, SIGNAL(timeout()), this, SLOT(getInitialDbData()));
+    //qDebug() << "frequency : " << ((AppDataManager::getByKey("pullInDataFrequency") == NULL) ? "NULL" : "NOT NULL") << endl;
     //if (AppDataManager::getByKey("pullInDataFrequency") != NULL)
     //    refreshDbTimer->start(AppDataManager::getByKey("pullInDataFrequency")->getValue().toInt()*60*1000);
 }
@@ -53,9 +53,7 @@ void NetworkService::sendNextRequest()
         requestsList->clear();
     }
 
-    qDebug() << "Finished 3" << endl;
     if (requestsList->size() != 0){
-        qDebug() << "Finished 5" << endl;
         NetRequest * netRequest = requestsList->first();
         netRequest->exec();
     }
@@ -218,6 +216,7 @@ void NetworkService::saveFile(File* file)
 {
     requestsList->append(new NetRequest(Parameters::CODE_FILE_SAVE, file));
     if (file->getThumbnail() != NULL){
+        qDebug() << "thumbnail not null" << file->getFileName() << endl;
         sendFileThumbnail(file);
     }
 }
@@ -374,7 +373,7 @@ void NetworkService::sendFileThumbnail(File * file)
 {
     if (!file->getThumbnail()->exists())
         return;
-
+    qDebug() << "Roukou " << endl;
     NetRequest * netRequest = new NetRequest(Parameters::CODE_SAVE_THUMBS, *(file->getThumbnail()));
     requestsList->append(netRequest);
 }

@@ -25,8 +25,6 @@ public:
 
     const static int networkTimer2Frequency;
 
-    static QString ROOT_DIR_PATH;
-
     const static QString SETUP_DIR;
 
     const static QString iconLocation;
@@ -64,8 +62,6 @@ public:
     const static int NB_FRAMES_PER_SEC;
 
     const static int FRAME_COUNT_DIVIDER;
-
-    static QString THUMBS_DIR_PATH;
 
     // Network request Codes
 
